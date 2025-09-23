@@ -1,13 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { Camera, MapPin, Send, Eye, CheckCircle, Clock, AlertTriangle, User, LogOut, Plus, Filter, Search } from 'lucide-react';
+import { Camera, MapPin, Send, Eye, CheckCircle, Clock, AlertTriangle, User, LogOut, Plus, Filter, Search, Settings, Upload, Users, Mail, Edit, Trash2, FileText } from 'lucide-react';
 
 // Mock data for demonstration
 const mockUser = {
   id: 1,
   name: "John Smith",
-  role: "supervisor",
+  role: "admin", // Changed to admin for demo purposes
   email: "john@construction.com",
-  company: "ABC Electrical Ltd",
+  company: "Main Contractor",
   phone: "+44 7700 900123"
 };
 
@@ -29,7 +29,7 @@ const siteDrawings = [
 ];
 
 // Authorized users (pre-loaded from admin panel)
-const authorizedUsers = [
+const initialAuthorizedUsers = [
   { id: 1, name: "John Smith", company: "ABC Electrical Ltd", role: "supervisor", email: "john@abcelectrical.com", phone: "+44 7700 900123" },
   { id: 2, name: "Sarah Wilson", company: "PlumbPro Services", role: "foreman", email: "sarah@plumbpro.com", phone: "+44 7700 900124" },
   { id: 3, name: "Mike Johnson", company: "BuildRight Construction", role: "site_manager", email: "mike@buildright.com", phone: "+44 7700 900125" },
@@ -124,8 +124,29 @@ const BlockersApp = () => {
   const [lastTouch, setLastTouch] = useState(null);
   const [filterStatus, setFilterStatus] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Admin state management
+  const [drawings, setDrawings] = useState(siteDrawings);
+  const [users, setUsers] = useState(initialAuthorizedUsers);
+  const [adminView, setAdminView] = useState('drawings');
+  const [editingUser, setEditingUser] = useState(null);
+  const [newUser, setNewUser] = useState({
+    name: '',
+    email: '',
+    company: '',
+    role: 'supervisor',
+    phone: ''
+  });
+  const [inviteEmail, setInviteEmail] = useState({
+    email: '',
+    role: 'supervisor',
+    company: '',
+    message: ''
+  });
+
   const fileInputRef = useRef(null);
   const drawingRef = useRef(null);
+  const drawingUploadRef = useRef(null);
 
   const statusColors = {
     open: 'bg-red-100 text-red-800 border-red-200',
@@ -275,7 +296,7 @@ const BlockersApp = () => {
   };
 
   const handleFloorSelection = (floorName) => {
-    const drawing = siteDrawings.find(d => d.name === floorName);
+    const drawing = drawings.find(d => d.name === floorName);
     setSelectedDrawing(drawing);
     setNewBlocker(prev => ({ ...prev, selectedFloor: floorName, location: null }));
     setIsPinModeActive(false);
@@ -371,6 +392,82 @@ const BlockersApp = () => {
           }
         : blocker
     ));
+  };
+
+  // Admin Functions
+  const handleDrawingUpload = (e) => {
+    const files = Array.from(e.target.files);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const newDrawing = {
+          id: Date.now() + Math.random(),
+          name: file.name.replace(/\.[^/.]+$/, ""),
+          filename: file.name,
+          uploadedAt: new Date().toISOString().split('T')[0],
+          url: e.target.result
+        };
+        setDrawings(prev => [...prev, newDrawing]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const deleteDrawing = (drawingId) => {
+    if (window.confirm('Are you sure you want to delete this drawing?')) {
+      setDrawings(prev => prev.filter(d => d.id !== drawingId));
+    }
+  };
+
+  const addUser = () => {
+    if (!newUser.name || !newUser.email || !newUser.company) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    const user = {
+      ...newUser,
+      id: Date.now()
+    };
+
+    setUsers(prev => [...prev, user]);
+    setNewUser({ name: '', email: '', company: '', role: 'supervisor', phone: '' });
+    alert(`✅ User ${newUser.name} added successfully!`);
+  };
+
+  const editUser = (userId, updatedUser) => {
+    setUsers(prev => prev.map(user =>
+      user.id === userId ? { ...user, ...updatedUser } : user
+    ));
+    setEditingUser(null);
+    alert('✅ User updated successfully!');
+  };
+
+  const deleteUser = (userId) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      setUsers(prev => prev.filter(u => u.id !== userId));
+      alert('✅ User deleted successfully!');
+    }
+  };
+
+  const sendInvitation = () => {
+    if (!inviteEmail.email || !inviteEmail.company) {
+      alert('Please fill in email and company fields');
+      return;
+    }
+
+    // In a real app, this would send an actual email
+    const inviteData = {
+      ...inviteEmail,
+      invitedBy: mockUser.name,
+      invitedAt: new Date().toISOString(),
+      status: 'pending'
+    };
+
+    console.log('Sending invitation:', inviteData);
+    alert(`📧 Invitation sent to ${inviteEmail.email}!\n\nThey will receive:\n- Login credentials\n- Company assignment: ${inviteEmail.company}\n- Role: ${inviteEmail.role}\n- Custom message: ${inviteEmail.message || 'Welcome to the construction blocker system!'}`);
+
+    setInviteEmail({ email: '', role: 'supervisor', company: '', message: '' });
   };
 
   const renderDashboard = () => (
@@ -550,7 +647,7 @@ const BlockersApp = () => {
             className="w-full border border-gray-300 rounded-md px-3 py-2"
           >
             <option value="">Choose a floor...</option>
-            {siteDrawings.map(drawing => (
+            {drawings.map(drawing => (
               <option key={drawing.id} value={drawing.name}>
                 {drawing.name}
               </option>
@@ -1042,6 +1139,412 @@ const BlockersApp = () => {
     </div>
   );
 
+  // Admin Render Functions
+  const renderAdminDrawings = () => (
+    <div className="space-y-6">
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-gray-900">Site Drawings Management</h2>
+          <div className="flex items-center space-x-4">
+            <input
+              ref={drawingUploadRef}
+              type="file"
+              accept="image/*,.pdf"
+              multiple
+              onChange={handleDrawingUpload}
+              className="hidden"
+            />
+            <button
+              onClick={() => drawingUploadRef.current?.click()}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              <Upload className="h-4 w-4" />
+              <span>Upload Drawings</span>
+            </button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {drawings.map(drawing => (
+            <div key={drawing.id} className="border rounded-lg p-4 hover:shadow-md transition-shadow">
+              <div className="aspect-w-16 aspect-h-9 mb-4">
+                <img
+                  src={drawing.url}
+                  alt={drawing.name}
+                  className="w-full h-32 object-cover rounded-md bg-gray-100"
+                />
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-medium text-gray-900">{drawing.name}</h3>
+                <p className="text-sm text-gray-500">
+                  <FileText className="inline h-4 w-4 mr-1" />
+                  {drawing.filename}
+                </p>
+                <p className="text-sm text-gray-500">
+                  Uploaded: {new Date(drawing.uploadedAt).toLocaleDateString()}
+                </p>
+                <div className="flex justify-between items-center pt-2">
+                  <button
+                    onClick={() => window.open(drawing.url, '_blank')}
+                    className="flex items-center space-x-1 text-blue-600 hover:text-blue-700"
+                  >
+                    <Eye className="h-4 w-4" />
+                    <span>View</span>
+                  </button>
+                  <button
+                    onClick={() => deleteDrawing(drawing.id)}
+                    className="flex items-center space-x-1 text-red-600 hover:text-red-700"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    <span>Delete</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {drawings.length === 0 && (
+          <div className="text-center py-12 text-gray-500">
+            <Upload className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+            <p>No drawings uploaded yet. Click "Upload Drawings" to get started.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
+  const renderAdminUsers = () => (
+    <div className="space-y-6">
+      {/* Add New User */}
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <h2 className="text-xl font-bold text-gray-900 mb-6">Add New User</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <input
+            type="text"
+            placeholder="Full Name"
+            value={newUser.name}
+            onChange={(e) => setNewUser(prev => ({ ...prev, name: e.target.value }))}
+            className="border border-gray-300 rounded-md px-3 py-2"
+          />
+          <input
+            type="email"
+            placeholder="Email Address"
+            value={newUser.email}
+            onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
+            className="border border-gray-300 rounded-md px-3 py-2"
+          />
+          <input
+            type="text"
+            placeholder="Company"
+            value={newUser.company}
+            onChange={(e) => setNewUser(prev => ({ ...prev, company: e.target.value }))}
+            className="border border-gray-300 rounded-md px-3 py-2"
+          />
+          <select
+            value={newUser.role}
+            onChange={(e) => setNewUser(prev => ({ ...prev, role: e.target.value }))}
+            className="border border-gray-300 rounded-md px-3 py-2"
+          >
+            <option value="supervisor">Supervisor</option>
+            <option value="foreman">Foreman</option>
+            <option value="site_manager">Site Manager</option>
+            <option value="team_lead">Team Lead</option>
+            <option value="admin">Admin</option>
+          </select>
+          <input
+            type="tel"
+            placeholder="Phone Number"
+            value={newUser.phone}
+            onChange={(e) => setNewUser(prev => ({ ...prev, phone: e.target.value }))}
+            className="border border-gray-300 rounded-md px-3 py-2"
+          />
+          <button
+            onClick={addUser}
+            className="flex items-center justify-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+          >
+            <Plus className="h-4 w-4" />
+            <span>Add User</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Users List */}
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <h2 className="text-xl font-bold text-gray-900 mb-6">Authorized Users ({users.length})</h2>
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  User
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Company
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Role
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Contact
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Actions
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {users.map((user) => (
+                <tr key={user.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <User className="h-5 w-5 text-gray-400 mr-3" />
+                      <div>
+                        <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                        <div className="text-sm text-gray-500">{user.email}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    {user.company}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                      {user.role}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {user.phone}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                    <button
+                      onClick={() => setEditingUser(user)}
+                      className="text-blue-600 hover:text-blue-900"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => deleteUser(user.id)}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Edit User Modal */}
+      {editingUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <h3 className="text-lg font-bold text-gray-900 mb-4">Edit User</h3>
+            <div className="space-y-4">
+              <input
+                type="text"
+                placeholder="Full Name"
+                value={editingUser.name}
+                onChange={(e) => setEditingUser(prev => ({ ...prev, name: e.target.value }))}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              />
+              <input
+                type="email"
+                placeholder="Email Address"
+                value={editingUser.email}
+                onChange={(e) => setEditingUser(prev => ({ ...prev, email: e.target.value }))}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              />
+              <input
+                type="text"
+                placeholder="Company"
+                value={editingUser.company}
+                onChange={(e) => setEditingUser(prev => ({ ...prev, company: e.target.value }))}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              />
+              <select
+                value={editingUser.role}
+                onChange={(e) => setEditingUser(prev => ({ ...prev, role: e.target.value }))}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              >
+                <option value="supervisor">Supervisor</option>
+                <option value="foreman">Foreman</option>
+                <option value="site_manager">Site Manager</option>
+                <option value="team_lead">Team Lead</option>
+                <option value="admin">Admin</option>
+              </select>
+              <input
+                type="tel"
+                placeholder="Phone Number"
+                value={editingUser.phone}
+                onChange={(e) => setEditingUser(prev => ({ ...prev, phone: e.target.value }))}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              />
+            </div>
+            <div className="flex justify-end space-x-4 mt-6">
+              <button
+                onClick={() => setEditingUser(null)}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => editUser(editingUser.id, editingUser)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderAdminInvites = () => (
+    <div className="space-y-6">
+      <div className="bg-white p-6 rounded-lg shadow-sm border">
+        <h2 className="text-xl font-bold text-gray-900 mb-6">Send User Invitation</h2>
+        <div className="max-w-2xl">
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+              <input
+                type="email"
+                placeholder="user@company.com"
+                value={inviteEmail.email}
+                onChange={(e) => setInviteEmail(prev => ({ ...prev, email: e.target.value }))}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Company</label>
+              <input
+                type="text"
+                placeholder="Company Name"
+                value={inviteEmail.company}
+                onChange={(e) => setInviteEmail(prev => ({ ...prev, company: e.target.value }))}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+              <select
+                value={inviteEmail.role}
+                onChange={(e) => setInviteEmail(prev => ({ ...prev, role: e.target.value }))}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              >
+                <option value="supervisor">Supervisor</option>
+                <option value="foreman">Foreman</option>
+                <option value="site_manager">Site Manager</option>
+                <option value="team_lead">Team Lead</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Custom Message (Optional)</label>
+              <textarea
+                placeholder="Welcome to our construction site blocker management system..."
+                value={inviteEmail.message}
+                onChange={(e) => setInviteEmail(prev => ({ ...prev, message: e.target.value }))}
+                rows={4}
+                className="w-full border border-gray-300 rounded-md px-3 py-2"
+              />
+            </div>
+            <button
+              onClick={sendInvitation}
+              className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              <Mail className="h-5 w-5" />
+              <span>Send Invitation</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
+        <h3 className="text-lg font-medium text-blue-900 mb-2">Invitation Email Preview</h3>
+        <div className="text-sm text-blue-800 space-y-2">
+          <p><strong>To:</strong> {inviteEmail.email || 'user@company.com'}</p>
+          <p><strong>Subject:</strong> Invitation to Construction Blocker Management System</p>
+          <div className="mt-4 p-4 bg-white rounded border">
+            <p>Hello,</p>
+            <p className="mt-2">
+              You've been invited to join the Construction Blocker Management System by {mockUser.name}.
+            </p>
+            <p className="mt-2">
+              <strong>Company:</strong> {inviteEmail.company || '[Company Name]'}<br />
+              <strong>Role:</strong> {inviteEmail.role || 'supervisor'}
+            </p>
+            {inviteEmail.message && (
+              <div className="mt-2">
+                <strong>Message:</strong>
+                <p className="mt-1 italic">{inviteEmail.message}</p>
+              </div>
+            )}
+            <p className="mt-4">
+              Click the link below to set up your account and start managing construction blockers.
+            </p>
+            <div className="mt-4 p-2 bg-blue-100 rounded text-center">
+              <strong>[Setup Account Button]</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderAdminInterface = () => (
+    <div className="space-y-6">
+      {/* Admin Navigation */}
+      <div className="bg-white rounded-lg shadow-sm border">
+        <div className="border-b border-gray-200">
+          <nav className="flex space-x-8 px-6">
+            <button
+              onClick={() => setAdminView('drawings')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                adminView === 'drawings'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Upload className="inline h-4 w-4 mr-2" />
+              Site Drawings
+            </button>
+            <button
+              onClick={() => setAdminView('users')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                adminView === 'users'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Users className="inline h-4 w-4 mr-2" />
+              User Management
+            </button>
+            <button
+              onClick={() => setAdminView('invites')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm ${
+                adminView === 'invites'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <Mail className="inline h-4 w-4 mr-2" />
+              Send Invitations
+            </button>
+          </nav>
+        </div>
+      </div>
+
+      {/* Admin Content */}
+      {adminView === 'drawings' && renderAdminDrawings()}
+      {adminView === 'users' && renderAdminUsers()}
+      {adminView === 'invites' && renderAdminInvites()}
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -1110,6 +1613,23 @@ const BlockersApp = () => {
               <Plus className="h-4 w-4" />
               <span>Create Blocker</span>
             </button>
+            {mockUser.role === 'admin' && (
+              <button
+                onClick={() => {
+                  setCurrentView('admin');
+                  setSelectedBlocker(null);
+                  setIsCreatingBlocker(false);
+                }}
+                className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center space-x-1 ${
+                  currentView === 'admin'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <Settings className="h-4 w-4" />
+                <span>Admin</span>
+              </button>
+            )}
           </div>
         </div>
       </nav>
@@ -1119,6 +1639,7 @@ const BlockersApp = () => {
         {selectedBlocker ? renderBlockerDetail() :
          isCreatingBlocker ? renderCreateBlocker() :
          currentView === 'tracking' ? renderTrackingView() :
+         currentView === 'admin' ? renderAdminInterface() :
          renderDashboard()}
       </main>
     </div>

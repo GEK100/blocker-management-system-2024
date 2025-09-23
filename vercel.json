@@ -1,6 +1,6 @@
 {
-  "name": "construction-blockers-app",
   "version": 2,
+  "name": "construction-blockers-app",
   "builds": [
     {
       "src": "package.json",
@@ -11,6 +11,10 @@
     }
   ],
   "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/static/$1"
+    },
     {
       "src": "/(.*)",
       "dest": "/index.html"
