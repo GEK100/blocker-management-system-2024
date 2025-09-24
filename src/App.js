@@ -1,23 +1,12 @@
-import React, { useState, useRef } from 'react';
-import { Camera, MapPin, Send, Eye, CheckCircle, Clock, AlertTriangle, User, LogOut, Plus, Filter, Search, Settings, Upload, Users, Mail, Edit, Trash2, FileText } from 'lucide-react';
+import React, { useState, useRef, createContext, useContext, useEffect } from 'react';
+import { Camera, MapPin, Send, Eye, CheckCircle, Clock, AlertTriangle, User, LogOut, Plus, Filter, Search, Settings, Upload, Users, Mail, Edit, Trash2, FileText, Lock, UserPlus } from 'lucide-react';
+import { authAPI, userAPI, contractorAPI, drawingAPI, blockerAPI, statusHistoryAPI, invitationAPI } from './lib/api';
+import { supabase } from './lib/supabase';
 
-// Mock data for demonstration
-const mockUser = {
-  id: 1,
-  name: "John Smith",
-  role: "admin", // Changed to admin for demo purposes
-  email: "john@construction.com",
-  company: "Main Contractor",
-  phone: "+44 7700 900123"
-};
+// Authentication Context
+const AuthContext = createContext();
 
-const mockContractors = [
-  { id: 1, name: "ABC Electrical Ltd", type: "electrical", contact: "john@abcelectrical.com" },
-  { id: 2, name: "PlumbPro Services", type: "plumbing", contact: "info@plumbpro.com" },
-  { id: 3, name: "BuildRight Construction", type: "general", contact: "jobs@buildright.com" },
-  { id: 4, name: "SteelWorks Ltd", type: "structural", contact: "contact@steelworks.com" },
-  { id: 5, name: "FloorMasters", type: "flooring", contact: "bookings@floormasters.com" }
-];
+// This will be loaded from Supabase
 
 // Pre-uploaded site drawings
 const siteDrawings = [
@@ -100,9 +89,469 @@ const mockBlockers = [
   }
 ];
 
+// Authentication Provider Component with Supabase
+const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [profile, setProfile] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Initialize auth state on app load
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.user) {
+          setUser(session.user);
+          // Load user profile
+          const { data: profileData } = await userAPI.getProfile(session.user.id);
+          setProfile(profileData);
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initAuth();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (session?.user) {
+        setUser(session.user);
+        // Load user profile
+        const { data: profileData } = await userAPI.getProfile(session.user.id);
+        setProfile(profileData);
+      } else {
+        setUser(null);
+        setProfile(null);
+      }
+    });
+
+    return () => {
+      subscription?.unsubscribe();
+    };
+  }, []);
+
+  const login = async (email, password) => {
+    try {
+      const { data, error } = await authAPI.signIn(email, password);
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      // Profile will be loaded by the auth state change listener
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  const register = async (userData) => {
+    try {
+      const { data, error } = await authAPI.signUp(
+        userData.email,
+        userData.password,
+        {
+          name: userData.name,
+          company: userData.company,
+          phone: userData.phone,
+          role: userData.role || 'worker'
+        }
+      );
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      // Create user profile
+      if (data.user) {
+        const { error: profileError } = await userAPI.createProfile({
+          id: data.user.id,
+          name: userData.name,
+          company: userData.company,
+          phone: userData.phone,
+          role: userData.role || 'worker'
+        });
+
+        if (profileError) {
+          console.error('Profile creation error:', profileError);
+        }
+      }
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error.message };
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await authAPI.signOut();
+      setUser(null);
+      setProfile(null);
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  };
+
+  const hasPermission = (requiredRole) => {
+    if (!profile) return false;
+
+    const roleHierarchy = {
+      'worker': 1,
+      'supervisor': 2,
+      'admin': 3
+    };
+
+    return roleHierarchy[profile.role] >= roleHierarchy[requiredRole];
+  };
+
+  const value = {
+    user,
+    profile,
+    login,
+    register,
+    logout,
+    hasPermission,
+    isLoading
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+// Custom hook to use auth context
+const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+// Login Component
+const LoginForm = ({ onToggleForm }) => {
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    const result = await login(formData.email, formData.password);
+    if (!result.success) {
+      setError(result.error);
+    }
+    setIsLoading(false);
+  };
+
+  const handleChange = (e) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  // Demo credentials for easy testing
+  const demoCredentials = [
+    { role: 'Admin', email: 'admin@construction.com', password: 'admin123' },
+    { role: 'Supervisor', email: 'supervisor@construction.com', password: 'super123' },
+    { role: 'Worker', email: 'worker@construction.com', password: 'worker123' }
+  ];
+
+  return (
+    <div className="min-h-screen bg-orange-50 flex items-center justify-center p-4">
+      <div className="max-w-md w-full space-y-8">
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 bg-orange-500 rounded-lg flex items-center justify-center">
+            <Lock className="h-6 w-6 text-white" />
+          </div>
+          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Sign in to your account</h2>
+          <p className="mt-2 text-sm text-gray-600">Construction Blocker Management</p>
+        </div>
+
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
+
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+              placeholder="Enter your email"
+              value={formData.email}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+              placeholder="Enter your password"
+              value={formData.password}
+              onChange={handleChange}
+            />
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
+            >
+              {isLoading ? 'Signing in...' : 'Sign in'}
+            </button>
+          </div>
+
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={onToggleForm}
+              className="text-sm text-orange-600 hover:text-orange-500"
+            >
+              Don't have an account? Sign up
+            </button>
+          </div>
+        </form>
+
+        {/* Demo Credentials */}
+        <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">Demo Credentials:</h3>
+          <div className="space-y-2">
+            {demoCredentials.map((cred, index) => (
+              <div key={index} className="text-xs text-gray-600">
+                <strong>{cred.role}:</strong> {cred.email} / {cred.password}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Registration Component
+const RegisterForm = ({ onToggleForm }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    company: '',
+    phone: '',
+    role: 'worker'
+  });
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const { register } = useAuth();
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      setIsLoading(false);
+      return;
+    }
+
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      setIsLoading(false);
+      return;
+    }
+
+    const result = await register(formData);
+    if (!result.success) {
+      setError(result.error);
+    }
+    setIsLoading(false);
+  };
+
+  const handleChange = (e) => {
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  return (
+    <div className="min-h-screen bg-orange-50 flex items-center justify-center p-4">
+      <div className="max-w-md w-full space-y-8">
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 bg-orange-500 rounded-lg flex items-center justify-center">
+            <UserPlus className="h-6 w-6 text-white" />
+          </div>
+          <h2 className="mt-6 text-3xl font-extrabold text-gray-900">Create your account</h2>
+          <p className="mt-2 text-sm text-gray-600">Join the Construction Blocker Management system</p>
+        </div>
+
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+          {error && (
+            <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded">
+              {error}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">Full Name</label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                required
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                placeholder="Enter your full name"
+                value={formData.name}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                required
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="company" className="block text-sm font-medium text-gray-700">Company</label>
+              <select
+                id="company"
+                name="company"
+                required
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                value={formData.company}
+                onChange={handleChange}
+              >
+                <option value="">Select your company</option>
+                <option value="ABC Electrical Ltd">ABC Electrical Ltd</option>
+                <option value="PlumbPro Services">PlumbPro Services</option>
+                <option value="BuildRight Construction">BuildRight Construction</option>
+                <option value="SteelWorks Ltd">SteelWorks Ltd</option>
+                <option value="FloorMasters">FloorMasters</option>
+                <option value="Main Contractor">Main Contractor</option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">Phone</label>
+              <input
+                id="phone"
+                name="phone"
+                type="tel"
+                required
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                placeholder="Enter your phone number"
+                value={formData.phone}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="role" className="block text-sm font-medium text-gray-700">Role</label>
+              <select
+                id="role"
+                name="role"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                value={formData.role}
+                onChange={handleChange}
+              >
+                <option value="worker">Worker</option>
+                <option value="supervisor">Supervisor</option>
+              </select>
+              <p className="mt-1 text-xs text-gray-500">Admin accounts require approval</p>
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                required
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleChange}
+              />
+            </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirm Password</label>
+              <input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                required
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                placeholder="Confirm your password"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+              />
+            </div>
+          </div>
+
+          <div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50"
+            >
+              {isLoading ? 'Creating account...' : 'Create account'}
+            </button>
+          </div>
+
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={onToggleForm}
+              className="text-sm text-orange-600 hover:text-orange-500"
+            >
+              Already have an account? Sign in
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+// Auth Wrapper Component
+const AuthWrapper = () => {
+  const [showLogin, setShowLogin] = useState(true);
+
+  return showLogin ?
+    <LoginForm onToggleForm={() => setShowLogin(false)} /> :
+    <RegisterForm onToggleForm={() => setShowLogin(true)} />;
+};
+
 const BlockersApp = () => {
+  const { user, profile, logout, hasPermission } = useAuth();
+
+  // Use profile for user data (name, role, company, etc.)
+  const userData = profile || {};
   const [currentView, setCurrentView] = useState('dashboard');
-  const [blockers, setBlockers] = useState(mockBlockers);
+  const [blockers, setBlockers] = useState([]);
+  const [contractors, setContractors] = useState([]);
   const [selectedBlocker, setSelectedBlocker] = useState(null);
   const [isCreatingBlocker, setIsCreatingBlocker] = useState(false);
   const [newBlocker, setNewBlocker] = useState({
@@ -126,8 +575,9 @@ const BlockersApp = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Admin state management
-  const [drawings, setDrawings] = useState(siteDrawings);
-  const [users, setUsers] = useState(initialAuthorizedUsers);
+  const [drawings, setDrawings] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [isDataLoading, setIsDataLoading] = useState(true);
   const [adminView, setAdminView] = useState('drawings');
   const [editingUser, setEditingUser] = useState(null);
   const [newUser, setNewUser] = useState({
@@ -147,6 +597,41 @@ const BlockersApp = () => {
   const fileInputRef = useRef(null);
   const drawingRef = useRef(null);
   const drawingUploadRef = useRef(null);
+
+  // Load data on component mount
+  useEffect(() => {
+    const loadData = async () => {
+      if (!user) return;
+
+      try {
+        setIsDataLoading(true);
+
+        // Load all data in parallel
+        const [blockersRes, contractorsRes, drawingsRes, usersRes] = await Promise.all([
+          blockerAPI.getAll(),
+          contractorAPI.getAll(),
+          drawingAPI.getAll(),
+          userAPI.getAllProfiles()
+        ]);
+
+        if (blockersRes.data) setBlockers(blockersRes.data);
+        if (contractorsRes.data) setContractors(contractorsRes.data);
+        if (drawingsRes.data) setDrawings(drawingsRes.data);
+        if (usersRes.data) setUsers(usersRes.data);
+
+        if (blockersRes.error) console.error('Error loading blockers:', blockersRes.error);
+        if (contractorsRes.error) console.error('Error loading contractors:', contractorsRes.error);
+        if (drawingsRes.error) console.error('Error loading drawings:', drawingsRes.error);
+        if (usersRes.error) console.error('Error loading users:', usersRes.error);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setIsDataLoading(false);
+      }
+    };
+
+    loadData();
+  }, [user]);
 
   const statusColors = {
     open: 'bg-red-100 text-red-800 border-red-200',
@@ -308,72 +793,125 @@ const BlockersApp = () => {
     });
   };
 
-  const submitBlocker = () => {
-    if (!newBlocker.title || !newBlocker.description || !newBlocker.location || !newBlocker.selectedFloor) {
-      alert('Please fill in all required fields, select a floor, and mark the location on the drawing');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const submitBlocker = async () => {
+    if (!newBlocker.title || !newBlocker.description || !newBlocker.selectedFloor) {
+      alert('Please fill in all required fields and select a floor');
       return;
     }
 
-    const ticketNumber = `BLK-${new Date().getFullYear()}-${String(blockers.length + 1).padStart(3, '0')}`;
-    const now = new Date().toISOString();
+    try {
+      setIsSubmitting(true);
 
-    const blocker = {
-      ...newBlocker,
-      id: Date.now(),
-      ticketNumber,
-      status: 'open',
-      createdBy: mockUser.name,
-      createdByCompany: mockUser.company,
-      floor: newBlocker.selectedFloor,
-      assignedTo: null,
-      createdAt: now,
-      dueDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-      statusHistory: [
-        {
-          status: "submitted",
-          timestamp: now,
-          user: `${mockUser.name} (${mockUser.company})`,
-          action: "Blocker submitted to main contractor"
+      let photoUrl = null;
+
+      // Upload photo if exists
+      if (newBlocker.photo) {
+        const { data: photoData, error: photoError } = await blockerAPI.uploadPhoto(
+          newBlocker.photo,
+          'temp-' + Date.now() // Temporary ID until blocker is created
+        );
+
+        if (photoError) {
+          console.error('Error uploading photo:', photoError);
+        } else {
+          photoUrl = photoData.url;
         }
-      ]
-    };
+      }
 
-    setBlockers(prev => [blocker, ...prev]);
-    setNewBlocker({ title: '', description: '', photo: null, location: null, priority: 'medium', selectedFloor: '' });
-    setSelectedDrawing(null);
-    setIsPinModeActive(false);
-    setTempPinLocation(null);
-    setIsCreatingBlocker(false);
-    setCurrentView('dashboard');
+      // Create blocker
+      const blockerData = {
+        title: newBlocker.title,
+        description: newBlocker.description,
+        photo_url: photoUrl,
+        location_x: newBlocker.location?.x,
+        location_y: newBlocker.location?.y,
+        floor: newBlocker.selectedFloor,
+        priority: newBlocker.priority,
+        created_by: user.id,
+        due_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+      };
 
-    alert(`🚨 Telegram notification sent to main contractor!\nTicket Number: ${ticketNumber}\nFloor: ${newBlocker.selectedFloor}`);
+      const { data, error } = await blockerAPI.create(blockerData);
+
+      if (error) {
+        console.error('Error creating blocker:', error);
+        alert('Failed to create blocker: ' + error.message);
+        return;
+      }
+
+      // Add to local state
+      setBlockers(prev => [data, ...prev]);
+
+      // Reset form
+      setNewBlocker({ title: '', description: '', photo: null, location: null, priority: 'medium', selectedFloor: '' });
+      setSelectedDrawing(null);
+      setIsPinModeActive(false);
+      setTempPinLocation(null);
+      setIsCreatingBlocker(false);
+      setCurrentView('dashboard');
+
+      alert(`✅ Blocker created successfully!\nTicket Number: ${data.ticket_number}\nFloor: ${data.floor}`);
+    } catch (error) {
+      console.error('Error creating blocker:', error);
+      alert('Failed to create blocker');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const assignBlocker = (blockerId, contractorName) => {
-    const now = new Date().toISOString();
-    setBlockers(prev => prev.map(blocker =>
-      blocker.id === blockerId
-        ? {
-            ...blocker,
-            status: 'assigned',
-            assignedTo: contractorName,
-            statusHistory: [
-              ...blocker.statusHistory,
-              {
-                status: "assigned",
-                timestamp: now,
-                user: "Main Contractor",
-                action: `Assigned to ${contractorName}`
-              }
-            ]
-          }
-        : blocker
-    ));
+  const assignBlocker = async (blockerId, contractorId) => {
+    try {
+      const { data, error } = await blockerAPI.assign(blockerId, contractorId);
+      if (error) {
+        console.error('Error assigning blocker:', error);
+        alert('Failed to assign blocker: ' + error.message);
+        return;
+      }
 
-    alert(`📋 Telegram notification sent to ${contractorName}!`);
+      // Update local state
+      setBlockers(prev => prev.map(blocker =>
+        blocker.id === blockerId ? { ...blocker, ...data } : blocker
+      ));
+
+      const contractor = contractors.find(c => c.id === contractorId);
+      alert(`📋 Blocker assigned to ${contractor?.name}!`);
+    } catch (error) {
+      console.error('Error assigning blocker:', error);
+      alert('Failed to assign blocker');
+    }
   };
 
-  const updateBlockerStatus = (blockerId, newStatus) => {
+  const updateBlockerStatus = async (blockerId, newStatus) => {
+    try {
+      let updateData;
+
+      if (newStatus === 'resolved') {
+        const { data, error } = await blockerAPI.resolve(blockerId, user.id);
+        updateData = data;
+        if (error) throw error;
+      } else {
+        const { data, error } = await blockerAPI.update(blockerId, { status: newStatus });
+        updateData = data;
+        if (error) throw error;
+      }
+
+      // Update local state
+      setBlockers(prev => prev.map(blocker =>
+        blocker.id === blockerId ? { ...blocker, ...updateData } : blocker
+      ));
+
+      if (newStatus === 'resolved') {
+        alert('✅ Blocker marked as resolved!');
+      }
+    } catch (error) {
+      console.error('Error updating blocker status:', error);
+      alert('Failed to update blocker status: ' + error.message);
+    }
+  };
+
+  const updateBlockerStatusOld = (blockerId, newStatus) => {
     const now = new Date().toISOString();
     setBlockers(prev => prev.map(blocker =>
       blocker.id === blockerId
@@ -459,7 +997,7 @@ const BlockersApp = () => {
     // In a real app, this would send an actual email
     const inviteData = {
       ...inviteEmail,
-      invitedBy: mockUser.name,
+      invitedBy: userData.name,
       invitedAt: new Date().toISOString(),
       status: 'pending'
     };
@@ -470,7 +1008,19 @@ const BlockersApp = () => {
     setInviteEmail({ email: '', role: 'supervisor', company: '', message: '' });
   };
 
-  const renderDashboard = () => (
+  const renderDashboard = () => {
+    if (isDataLoading) {
+      return (
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin h-8 w-8 border-4 border-orange-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading dashboard...</p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -579,21 +1129,21 @@ const BlockersApp = () => {
                   <Eye className="h-4 w-4" />
                   <span>View</span>
                 </button>
-                {blocker.status === 'open' && (
+                {blocker.status === 'open' && hasPermission('supervisor') && (
                   <select
                     onChange={(e) => assignBlocker(blocker.id, e.target.value)}
                     className="border border-gray-300 rounded-md px-3 py-2"
                     defaultValue=""
                   >
                     <option value="" disabled>Assign to...</option>
-                    {mockContractors.map(contractor => (
-                      <option key={contractor.id} value={contractor.name}>
+                    {contractors.map(contractor => (
+                      <option key={contractor.id} value={contractor.id}>
                         {contractor.name}
                       </option>
                     ))}
                   </select>
                 )}
-                {blocker.status === 'assigned' && (
+                {blocker.status === 'assigned' && (hasPermission('supervisor') || (userData.company === blocker.assignedTo)) && (
                   <button
                     onClick={() => updateBlockerStatus(blocker.id, 'resolved')}
                     className="flex items-center space-x-1 px-3 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
@@ -621,19 +1171,19 @@ const BlockersApp = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
               <span className="font-medium text-blue-800">Name:</span>
-              <span className="ml-2 text-blue-700">{mockUser.name}</span>
+              <span className="ml-2 text-blue-700">{userData.name}</span>
             </div>
             <div>
               <span className="font-medium text-blue-800">Company:</span>
-              <span className="ml-2 text-blue-700">{mockUser.company}</span>
+              <span className="ml-2 text-blue-700">{userData.company}</span>
             </div>
             <div>
               <span className="font-medium text-blue-800">Role:</span>
-              <span className="ml-2 text-blue-700">{mockUser.role}</span>
+              <span className="ml-2 text-blue-700">{userData.role}</span>
             </div>
             <div>
               <span className="font-medium text-blue-800">Phone:</span>
-              <span className="ml-2 text-blue-700">{mockUser.phone}</span>
+              <span className="ml-2 text-blue-700">{userData.phone}</span>
             </div>
           </div>
         </div>
@@ -935,7 +1485,10 @@ const BlockersApp = () => {
   );
 
   const renderTrackingView = () => {
-    const myBlockers = blockers.filter(blocker => blocker.createdBy === mockUser.name);
+    // For Supabase, we need to filter by created_by ID instead of name
+    const myBlockers = blockers.filter(blocker =>
+      blocker.created_by === user?.id || blocker.creator?.name === userData.name
+    );
 
     return (
       <div className="space-y-6">
@@ -1471,7 +2024,7 @@ const BlockersApp = () => {
           <div className="mt-4 p-4 bg-white rounded border">
             <p>Hello,</p>
             <p className="mt-2">
-              You've been invited to join the Construction Blocker Management System by {mockUser.name}.
+              You've been invited to join the Construction Blocker Management System by {userData.name}.
             </p>
             <p className="mt-2">
               <strong>Company:</strong> {inviteEmail.company || '[Company Name]'}<br />
@@ -1556,8 +2109,12 @@ const BlockersApp = () => {
               <span className="text-sm text-gray-500">Field App</span>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">Welcome, {mockUser.name}</span>
-              <button className="p-2 text-gray-400 hover:text-gray-600">
+              <span className="text-sm text-gray-600">Welcome, {userData.name} ({userData.role})</span>
+              <button
+                onClick={logout}
+                className="p-2 text-gray-400 hover:text-gray-600"
+                title="Logout"
+              >
                 <LogOut className="h-5 w-5" />
               </button>
             </div>
@@ -1613,7 +2170,7 @@ const BlockersApp = () => {
               <Plus className="h-4 w-4" />
               <span>Create Blocker</span>
             </button>
-            {mockUser.role === 'admin' && (
+            {hasPermission('admin') && (
               <button
                 onClick={() => {
                   setCurrentView('admin');
@@ -1646,4 +2203,42 @@ const BlockersApp = () => {
   );
 };
 
-export default BlockersApp;
+// Main App with Authentication
+const App = () => {
+  return (
+    <AuthProvider>
+      <AuthApp />
+    </AuthProvider>
+  );
+};
+
+// App component that handles authentication state
+const AuthApp = () => {
+  const { user, profile, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin h-8 w-8 border-4 border-orange-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading || !user) {
+    return user ? <AuthWrapper /> : (
+      <div className="min-h-screen bg-orange-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin h-8 w-8 border-4 border-orange-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (user && profile) ? <BlockersApp /> : <AuthWrapper />;
+};
+
+export default App;

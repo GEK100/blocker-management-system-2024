@@ -1,0 +1,690 @@
+.mobile-invitation-acceptance {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.mobile-invitation-acceptance.mobile-optimized {
+  padding: 0.5rem;
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+}
+
+.mobile-invitation-acceptance.loading,
+.mobile-invitation-acceptance.error {
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-spinner,
+.error-container {
+  background: white;
+  border-radius: 12px;
+  padding: 3rem 2rem;
+  text-align: center;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 1rem;
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #2563eb;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-spinner p,
+.error-container p {
+  margin: 0.5rem 0;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.error-container h2 {
+  margin: 0 0 1rem 0;
+  color: #ef4444;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.error-actions {
+  margin-top: 2rem;
+}
+
+.acceptance-container {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  max-width: 900px;
+  overflow: hidden;
+}
+
+.mobile-optimized .acceptance-container {
+  border-radius: 12px;
+  max-width: 100%;
+  margin: 0;
+}
+
+.acceptance-header {
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+  color: white;
+  padding: 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.company-logo {
+  font-size: 3rem;
+  background: rgba(255, 255, 255, 0.2);
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.company-info h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+.company-info p {
+  margin: 0 0 0.5rem 0;
+  opacity: 0.9;
+  font-size: 1rem;
+}
+
+.mobile-indicator {
+  background: rgba(16, 185, 129, 0.2);
+  color: #10b981;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.native-app-option {
+  padding: 1rem;
+  background: #f0f9ff;
+  border-bottom: 1px solid #e0f2fe;
+}
+
+.app-option-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 12px;
+  border: 2px solid #bfdbfe;
+}
+
+.app-icon {
+  font-size: 2rem;
+  width: 60px;
+  height: 60px;
+  background: #eff6ff;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-info {
+  flex: 1;
+}
+
+.app-info h3 {
+  margin: 0 0 0.25rem 0;
+  color: #1a1a1a;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.app-info p {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.btn-app {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-app:hover {
+  background: #059669;
+  transform: translateY(-1px);
+}
+
+.invitation-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.invitation-card {
+  padding: 2rem;
+  background: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.invitation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.invitation-header h2 {
+  margin: 0;
+  color: #1a1a1a;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.mobile-invitation-badge {
+  background: #10b981;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.invitation-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-item .label {
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.info-item .value {
+  color: #1a1a1a;
+  font-weight: 500;
+  text-align: right;
+}
+
+.role-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.projects-access h4,
+.custom-message h4,
+.temp-credentials h4 {
+  margin: 0 0 1rem 0;
+  color: #1a1a1a;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.projects-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.project-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 6px;
+  border: 1px solid #e5e7eb;
+}
+
+.project-name {
+  font-weight: 500;
+  color: #1a1a1a;
+}
+
+.project-status {
+  color: #6b7280;
+  font-size: 0.75rem;
+  text-transform: capitalize;
+  background: #f3f4f6;
+  padding: 0.25rem 0.5rem;
+  border-radius: 12px;
+}
+
+.custom-message {
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  border-left: 4px solid #2563eb;
+}
+
+.custom-message p {
+  margin: 0;
+  color: #374151;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+.temp-credentials {
+  padding: 1rem;
+  background: #fef3c7;
+  border-radius: 8px;
+  border: 2px solid #fbbf24;
+}
+
+.temp-credentials p {
+  margin: 0 0 1rem 0;
+  color: #92400e;
+  line-height: 1.5;
+}
+
+.credentials-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.credential-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.875rem;
+}
+
+.credential-item span:first-child {
+  color: #92400e;
+  font-weight: 500;
+}
+
+.temp-password {
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  background: #fde68a;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  color: #78350f;
+}
+
+.credentials-note {
+  margin: 0 !important;
+  font-size: 0.75rem;
+  color: #b45309;
+}
+
+.acceptance-form {
+  padding: 2rem;
+}
+
+.acceptance-form h2 {
+  margin: 0 0 1.5rem 0;
+  color: #1a1a1a;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.password-section {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.password-section p {
+  margin: 0 0 1rem 0;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-group label {
+  color: #374151;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.form-group input {
+  padding: 0.75rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  background: white;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-group input.error {
+  border-color: #ef4444;
+}
+
+.error-text {
+  color: #ef4444;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.mobile-app-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: #f0f9ff;
+  border-radius: 8px;
+  border: 2px solid #bfdbfe;
+}
+
+.checkbox-label {
+  display: flex !important;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-weight: 400 !important;
+  line-height: 1.5;
+}
+
+.checkbox-label.mobile-setup {
+  font-weight: 500 !important;
+  color: #0369a1;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: #2563eb;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.checkbox-label input[type="checkbox"].error {
+  outline: 2px solid #ef4444;
+  outline-offset: 2px;
+}
+
+.mobile-app-benefits {
+  margin: 0.75rem 0 0 2rem;
+  color: #0369a1;
+  font-size: 0.875rem;
+  line-height: 1.4;
+}
+
+.legal-agreements {
+  background: #f9fafb;
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  margin: 2rem 0;
+}
+
+.legal-agreements .form-group {
+  margin-bottom: 1rem;
+}
+
+.legal-agreements .form-group:last-child {
+  margin-bottom: 0;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: #2563eb;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.link-button:hover {
+  color: #1d4ed8;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.875rem;
+  min-width: 200px;
+}
+
+.btn-primary.mobile-optimized {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1rem;
+  border-radius: 12px;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.btn-primary:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Mobile Device Optimizations */
+@media (max-width: 768px) {
+  .mobile-invitation-acceptance {
+    padding: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .acceptance-container {
+    margin: 0;
+    border-radius: 12px;
+  }
+
+  .acceptance-header {
+    padding: 1.5rem;
+  }
+
+  .company-logo {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+  }
+
+  .company-info h1 {
+    font-size: 1.5rem;
+  }
+
+  .invitation-card,
+  .acceptance-form {
+    padding: 1.5rem;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .info-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    text-align: left;
+  }
+
+  .info-item .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .info-item .value {
+    text-align: left;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .legal-agreements {
+    padding: 1rem;
+  }
+
+  .mobile-app-section {
+    padding: 1rem;
+  }
+
+  .app-option-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .mobile-invitation-acceptance {
+    padding: 0.25rem;
+  }
+
+  .acceptance-header {
+    padding: 1rem;
+  }
+
+  .company-logo {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+  }
+
+  .company-info h1 {
+    font-size: 1.25rem;
+  }
+
+  .invitation-card,
+  .acceptance-form {
+    padding: 1rem;
+  }
+
+  .temp-credentials,
+  .mobile-app-section {
+    padding: 1rem;
+  }
+
+  .legal-agreements {
+    padding: 0.75rem;
+  }
+
+  .btn-primary {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+
+  .projects-list {
+    gap: 0.75rem;
+  }
+
+  .project-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+    text-align: left;
+  }
+
+  .mobile-app-benefits {
+    margin-left: 1.5rem;
+    font-size: 0.8125rem;
+  }
+}
+
+/* Touch-friendly adjustments for mobile */
+@media (hover: none) and (pointer: coarse) {
+  .checkbox-label input[type="checkbox"] {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+
+  .btn-primary,
+  .btn-app {
+    min-height: 48px;
+    touch-action: manipulation;
+  }
+
+  .form-group input {
+    min-height: 48px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}
