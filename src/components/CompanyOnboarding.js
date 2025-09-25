@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { supabase } from '../supabase';
-import { multitenant } from '../api/multitenant-api';
+import { supabase } from '../lib/supabase';
+import { multitenant } from '../lib/multitenant-api';
 import PrivacyPolicyModal from './PrivacyPolicyModal';
 import './CompanyOnboarding.css';
 

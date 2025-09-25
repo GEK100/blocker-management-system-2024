@@ -1,4 +1,4 @@
-import { supabase } from '../supabase';
+import { supabase } from '../lib/supabase';
 
 export const gdprAPI = {
   // Get user's current consent preferences

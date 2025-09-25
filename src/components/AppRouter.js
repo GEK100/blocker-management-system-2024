@@ -11,7 +11,6 @@ import GDPRConsentForm from './GDPRConsentForm';
 import BlockerWorkflowManager from './BlockerWorkflowManager';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import RoleBasedDashboard from './RoleBasedDashboard';
-import MainApp from './MainApp'; // This will be the existing App component content
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
@@ -93,12 +92,6 @@ const AppRouter = () => {
             </ProtectedRoute>
           } />
 
-          {/* Main Application (legacy) */}
-          <Route path="/app" element={
-            <ProtectedRoute>
-              <MainApp />
-            </ProtectedRoute>
-          } />
 
           {/* Dashboard - Role-based redirect */}
           <Route path="/dashboard" element={<DashboardRouter />} />

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { multitenant } from '../api/multitenant-api';
-import { supabase } from '../supabase';
+import { multitenant } from '../lib/multitenant-api';
+import { supabase } from '../lib/supabase';
 import './InvitationSystem.css';
 
 const InvitationSystem = ({ company, currentUser, onUserAdded }) => {

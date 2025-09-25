@@ -8,7 +8,7 @@ import {
 import { format, subDays, startOfDay, endOfDay, isAfter, isBefore, parseISO } from 'date-fns';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { ChevronDownIcon, ChevronUpIcon, DocumentDownloadIcon, ChartBarIcon, TrendingUpIcon, ClockIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon, ChevronUpIcon, ArrowDownTrayIcon, ChartBarIcon, ArrowTrendingUpIcon, ClockIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { Fragment } from 'react';
 import { Transition } from '@headlessui/react';
 
@@ -553,7 +553,7 @@ const AnalyticsDashboard = () => {
                   className="btn btn-outline bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm"
                   title="Export raw data as JSON"
                 >
-                  <DocumentDownloadIcon className="h-5 w-5 mr-2" />
+                  <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
                   Export Data
                 </button>
                 <button
@@ -565,7 +565,7 @@ const AnalyticsDashboard = () => {
                   {exporting ? (
                     <div className="spinner-sm mr-2" />
                   ) : (
-                    <DocumentDownloadIcon className="h-5 w-5 mr-2" />
+                    <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
                   )}
                   {exporting ? 'Exporting...' : 'Export PDF'}
                 </button>
@@ -667,7 +667,7 @@ const AnalyticsDashboard = () => {
               <div className="px-6 py-4 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center">
-                    <TrendingUpIcon className="h-6 w-6 text-slate-600 mr-3" />
+                    <ArrowTrendingUpIcon className="h-6 w-6 text-slate-600 mr-3" />
                     <div>
                       <h2 className="text-xl font-bold text-slate-900">
                         Open Blockers by Contractor

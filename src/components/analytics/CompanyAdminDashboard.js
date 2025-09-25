@@ -10,7 +10,7 @@ import {
   ClockIcon,
   CheckCircleIcon,
   DocumentTextIcon,
-  BuildingIcon
+  BuildingOffice2Icon
 } from '@heroicons/react/24/outline';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
 
@@ -284,7 +284,7 @@ const CompanyAdminDashboard = ({ companyId }) => {
         <StatCard
           title="Active Projects"
           value={data.activeProjects.toLocaleString()}
-          icon={BuildingIcon}
+          icon={BuildingOffice2Icon}
           color="blue"
         />
         <StatCard

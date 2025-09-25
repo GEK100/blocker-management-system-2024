@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
-import { multitenant } from '../api/multitenant-api';
-import { supabase } from '../supabase';
+import { multitenant } from '../lib/multitenant-api';
+import { supabase } from '../lib/supabase';
 import './ProjectCreationWizard.css';
 
 const ProjectCreationWizard = ({ company, onComplete, onCancel }) => {

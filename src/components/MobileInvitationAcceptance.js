@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { supabase } from '../supabase';
-import { multitenant } from '../api/multitenant-api';
+import { supabase } from '../lib/supabase';
+import { multitenant } from '../lib/multitenant-api';
 import PrivacyPolicyModal from './PrivacyPolicyModal';
 import './MobileInvitationAcceptance.css';
 

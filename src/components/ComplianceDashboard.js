@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { gdprAPI } from '../api/gdpr-api';
-import { supabase } from '../supabase';
+import { supabase } from '../lib/supabase';
 import GDPRConsentManager from './GDPRConsentManager';
 import DataExportTool from './DataExportTool';
 import './ComplianceDashboard.css';
