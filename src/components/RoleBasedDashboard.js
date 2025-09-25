@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSmartAuth } from '../hooks/useSmartAuth';
 import { supabase } from '../lib/supabase';
 import NavigationBar from './NavigationBar';
-import SuperAdminDashboard from './analytics/SuperAdminDashboard';
-import CompanyAdminDashboard from './analytics/CompanyAdminDashboard';
+import CompanyOverviewDashboard from './analytics/CompanyOverviewDashboard';
 import CompanyUserDashboard from './analytics/CompanyUserDashboard';
 import SubcontractorDashboard from './analytics/SubcontractorDashboard';
 import SubcontractorManagementDashboard from './analytics/SubcontractorManagementDashboard';
@@ -97,11 +96,11 @@ const RoleBasedDashboard = () => {
   const renderDashboard = () => {
     switch (userRole) {
       case 'super_admin':
-        return <SuperAdminDashboard />;
+        return <CompanyOverviewDashboard />;
 
       case 'company_owner':
       case 'company_admin':
-        return <CompanyAdminDashboard companyId={companyId} />;
+        return <CompanyOverviewDashboard companyId={companyId} />;
 
       case 'main_contractor':
       case 'project_manager':

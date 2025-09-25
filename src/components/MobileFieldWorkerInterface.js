@@ -1005,7 +1005,7 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
   );
 
   const renderFloorPlanTab = () => (
-    <div className="flex-1">
+    <div className="flex-1 overflow-y-auto">
       <FloorPlanViewer
         floorPlan={project?.floorPlan}
         markers={project?.blockerMarkers || []}
@@ -1135,7 +1135,7 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
   return (
     <div className="mobile-viewport bg-slate-50 flex flex-col touch-manipulation no-zoom">
       {/* Main Content */}
-      <main className="flex-1 overflow-hidden relative">
+      <main className="flex-1 overflow-y-auto relative">
         {activeTab === 'home' && renderHomeTab()}
         {activeTab === 'create' && renderCreateTab()}
         {activeTab === 'blockers' && renderBlockersTab()}

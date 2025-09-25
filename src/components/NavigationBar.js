@@ -69,10 +69,10 @@ const NavigationBar = () => {
       case 'super_admin':
         roleSpecificItems.push(
           {
-            name: 'Platform Admin',
+            name: 'Platform Overview',
             path: '/super-admin',
             icon: CogIcon,
-            description: 'Manage platform and companies'
+            description: 'Manage platform companies and statistics'
           }
         );
         break;
@@ -81,10 +81,10 @@ const NavigationBar = () => {
       case 'company_admin':
         roleSpecificItems.push(
           {
-            name: 'Company Management',
+            name: 'Company Overview',
             path: '/company-admin',
             icon: BuildingOfficeIcon,
-            description: 'Manage company and users'
+            description: 'Manage company statistics and team'
           }
         );
         break;
