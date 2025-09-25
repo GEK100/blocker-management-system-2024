@@ -53,15 +53,18 @@ const NavigationBar = () => {
   };
 
   const getNavigationItems = () => {
-    const baseItems = [
-      {
+    const baseItems = [];
+
+    // Add Analytics for all users except super_admin (they have Business Analytics)
+    if (userRole !== 'super_admin') {
+      baseItems.push({
         name: 'Analytics',
         path: '/analytics',
         icon: ChartBarIcon,
         description: 'View performance metrics and reports',
-        allowedRoles: 'all' // All authenticated users can access analytics
-      }
-    ];
+        allowedRoles: 'all'
+      });
+    }
 
     const roleSpecificItems = [];
 
@@ -69,10 +72,10 @@ const NavigationBar = () => {
       case 'super_admin':
         roleSpecificItems.push(
           {
-            name: 'Platform Overview',
+            name: 'Business Analytics',
             path: '/super-admin',
             icon: CogIcon,
-            description: 'Manage platform companies and statistics'
+            description: 'View company metrics and system usage'
           }
         );
         break;

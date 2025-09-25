@@ -3,6 +3,7 @@ import { useSmartAuth } from '../hooks/useSmartAuth';
 import { supabase } from '../lib/supabase';
 import NavigationBar from './NavigationBar';
 import CompanyOverviewDashboard from './analytics/CompanyOverviewDashboard';
+import SuperAdminBusinessDashboard from './analytics/SuperAdminBusinessDashboard';
 import CompanyUserDashboard from './analytics/CompanyUserDashboard';
 import SubcontractorDashboard from './analytics/SubcontractorDashboard';
 import SubcontractorManagementDashboard from './analytics/SubcontractorManagementDashboard';
@@ -96,7 +97,7 @@ const RoleBasedDashboard = () => {
   const renderDashboard = () => {
     switch (userRole) {
       case 'super_admin':
-        return <CompanyOverviewDashboard />;
+        return <SuperAdminBusinessDashboard />;
 
       case 'company_owner':
       case 'company_admin':

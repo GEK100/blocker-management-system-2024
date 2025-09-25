@@ -1,7 +1,7 @@
 import React from 'react';
 import NavigationBar from './NavigationBar';
 import { useSmartAuth } from '../hooks/useSmartAuth';
-import CompanyOverviewDashboard from './analytics/CompanyOverviewDashboard';
+import SuperAdminBusinessDashboard from './analytics/SuperAdminBusinessDashboard';
 
 const SuperAdminInterface = () => {
   const { user, userRole } = useSmartAuth();
@@ -10,7 +10,7 @@ const SuperAdminInterface = () => {
     <div className="min-h-screen bg-slate-50">
       <NavigationBar />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <CompanyOverviewDashboard />
+        <SuperAdminBusinessDashboard />
       </div>
     </div>
   );
