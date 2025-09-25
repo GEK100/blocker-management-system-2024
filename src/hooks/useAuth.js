@@ -90,19 +90,85 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (email, password, userData) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
+      // First, sign up the user with Supabase Auth
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: userData
+          data: {
+            first_name: userData.first_name,
+            last_name: userData.last_name,
+            role: userData.role
+          }
         }
       });
 
-      if (error) throw error;
-      return { data, error: null };
+      if (authError) throw authError;
+
+      // If user is created successfully, create their profile and company
+      if (authData.user && !authData.user.email_confirmed_at) {
+        // For demo purposes, we'll create the profile immediately
+        // In production, you'd typically wait for email confirmation
+        await createUserProfileAndCompany(authData.user, userData);
+      } else if (authData.user && authData.user.email_confirmed_at) {
+        // User is already confirmed, create profile
+        await createUserProfileAndCompany(authData.user, userData);
+      }
+
+      return { data: authData, error: null };
     } catch (error) {
       console.error('Registration error:', error);
       return { data: null, error };
+    }
+  };
+
+  const createUserProfileAndCompany = async (user, userData) => {
+    try {
+      // First, create or find the company
+      let companyId;
+
+      if (userData.role === 'company_admin' || userData.role === 'company_owner') {
+        // Create a new company
+        const { data: company, error: companyError } = await supabase
+          .from('companies')
+          .insert([{
+            name: userData.company_name,
+            created_by: user.id,
+            status: 'active'
+          }])
+          .select()
+          .single();
+
+        if (companyError) throw companyError;
+        companyId = company.id;
+      } else {
+        // For other roles, we'll need to assign them to a company later
+        companyId = null;
+      }
+
+      // Create user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('users')
+        .insert([{
+          id: user.id,
+          email: user.email,
+          first_name: userData.first_name,
+          last_name: userData.last_name,
+          role: userData.role,
+          company_id: companyId,
+          status: 'active',
+          created_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      if (profileError) throw profileError;
+
+      console.log('User profile created successfully:', profile);
+      return profile;
+    } catch (error) {
+      console.error('Error creating user profile and company:', error);
+      throw error;
     }
   };
 
@@ -121,6 +187,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Demo login function for development
+  const loginAsDemo = async (role = 'company_admin') => {
+    const demoAccounts = {
+      super_admin: { email: 'admin@example.com', password: 'password' },
+      company_admin: { email: 'company@example.com', password: 'password' },
+      field_worker: { email: 'worker@example.com', password: 'password' }
+    };
+
+    const account = demoAccounts[role];
+    if (account) {
+      return await login(account.email, account.password);
+    }
+    return { data: null, error: { message: 'Demo account not found' } };
+  };
+
   const value = {
     user,
     userProfile,
@@ -130,7 +211,9 @@ export const AuthProvider = ({ children }) => {
     login,
     register,
     logout,
-    fetchUserProfile
+    fetchUserProfile,
+    loginAsDemo,
+    createUserProfileAndCompany
   };
 
   return (

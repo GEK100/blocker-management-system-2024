@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useSmartAuth } from '../hooks/useSmartAuth';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { brandConfig } from '../design-system/brand';
 import Button from '../design-system/components/Button';
@@ -18,7 +18,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 const NavigationBar = () => {
-  const { user, userRole, logout } = useAuth();
+  const { user, userRole, logout } = useSmartAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);

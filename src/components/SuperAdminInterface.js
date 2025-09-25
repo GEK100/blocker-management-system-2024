@@ -1,10 +1,10 @@
 import React from 'react';
 import NavigationBar from './NavigationBar';
-import { useAuth } from '../hooks/useAuth';
+import { useSmartAuth } from '../hooks/useSmartAuth';
 import SuperAdminDashboard from './analytics/SuperAdminDashboard';
 
 const SuperAdminInterface = () => {
-  const { user, userRole } = useAuth();
+  const { user, userRole } = useSmartAuth();
 
   return (
     <div className="min-h-screen bg-slate-50">

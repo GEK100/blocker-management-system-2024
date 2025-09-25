@@ -1,6 +1,6 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from '../hooks/useAuth';
+import { SmartAuthProvider, useSmartAuth } from '../hooks/useSmartAuth';
 import LandingPage from './LandingPage';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
@@ -14,7 +14,7 @@ import RoleBasedDashboard from './RoleBasedDashboard';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
-  const { user, userRole, loading } = useAuth();
+  const { user, userRole, loading } = useSmartAuth();
 
   if (loading) {
     return (
@@ -38,7 +38,7 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
 // Main Router Component
 const AppRouter = () => {
   return (
-    <AuthProvider>
+    <SmartAuthProvider>
       <Router>
         <Routes>
           {/* Public Routes */}
@@ -100,13 +100,13 @@ const AppRouter = () => {
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>
       </Router>
-    </AuthProvider>
+    </SmartAuthProvider>
   );
 };
 
 // Dashboard Router - redirects based on user role
 const DashboardRouter = () => {
-  const { user, userRole, loading } = useAuth();
+  const { user, userRole, loading } = useSmartAuth();
 
   if (loading) {
     return (

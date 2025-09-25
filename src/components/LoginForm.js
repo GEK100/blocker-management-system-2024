@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useSmartAuth } from '../hooks/useSmartAuth';
 import { brandConfig } from '../design-system/brand';
 import Button from '../design-system/components/Button';
 import Card from '../design-system/components/Card';
@@ -12,7 +12,7 @@ import {
 
 const LoginForm = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login } = useSmartAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: ''

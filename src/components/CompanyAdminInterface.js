@@ -1,10 +1,10 @@
 import React from 'react';
 import NavigationBar from './NavigationBar';
-import { useAuth } from '../hooks/useAuth';
+import { useSmartAuth } from '../hooks/useSmartAuth';
 import CompanyAdminDashboard from './analytics/CompanyAdminDashboard';
 
 const CompanyAdminInterface = () => {
-  const { user, userRole, companyId } = useAuth();
+  const { user, userRole, companyId } = useSmartAuth();
 
   return (
     <div className="min-h-screen bg-slate-50">

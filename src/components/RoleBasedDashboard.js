@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useSmartAuth } from '../hooks/useSmartAuth';
 import { supabase } from '../lib/supabase';
 import NavigationBar from './NavigationBar';
 import SuperAdminDashboard from './analytics/SuperAdminDashboard';
@@ -12,7 +12,7 @@ import Card from '../design-system/components/Card';
 import { ClockIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 
 const RoleBasedDashboard = () => {
-  const { user, userRole, companyId } = useAuth();
+  const { user, userRole, companyId } = useSmartAuth();
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState(null);
   const [showPrintOptions, setShowPrintOptions] = useState(false);

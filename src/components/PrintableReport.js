@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { useSmartAuth } from '../hooks/useSmartAuth';
 import { supabase } from '../lib/supabase';
 import { brandConfig } from '../design-system/brand';
 import {
@@ -13,7 +13,7 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
 const PrintableReport = ({ reportType = 'summary', onClose }) => {
-  const { user, userRole, companyId } = useAuth();
+  const { user, userRole, companyId } = useSmartAuth();
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
