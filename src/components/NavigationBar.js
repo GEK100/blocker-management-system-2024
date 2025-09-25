@@ -188,7 +188,7 @@ const NavigationBar = () => {
           {/* User Menu */}
           <div className="flex items-center space-x-4">
             {/* Notifications */}
-            <button className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100">
+            <button className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 touch-manipulation">
               <BellIcon className="h-5 w-5" />
             </button>
 
@@ -196,7 +196,7 @@ const NavigationBar = () => {
             <div className="relative" ref={userMenuRef}>
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-slate-100 transition-colors duration-200"
+                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-slate-100 transition-colors duration-200 touch-manipulation"
               >
                 <div className="hidden md:block text-right">
                   <div className="text-sm font-medium text-slate-900">
@@ -278,7 +278,7 @@ const NavigationBar = () => {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100"
+              className="md:hidden p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 touch-manipulation"
             >
               {isMobileMenuOpen ? (
                 <XMarkIcon className="h-6 w-6" />

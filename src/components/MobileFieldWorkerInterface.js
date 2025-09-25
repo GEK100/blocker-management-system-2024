@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { subcontractorAPI } from '../lib/subcontractorAPI';
 import {
   CameraIcon,
   MapPinIcon,
@@ -27,25 +28,25 @@ import {
 const MobileTab = ({ icon: Icon, iconSolid: IconSolid, label, active, onClick, badge }) => (
   <button
     onClick={onClick}
-    className={`flex flex-col items-center justify-center py-2 px-1 min-h-[60px] transition-all duration-200 ${
+    className={`flex flex-col items-center justify-center py-2 px-1 mobile-tap-target transition-all duration-200 touch-manipulation ${
       active
         ? 'text-construction-600 bg-construction-50'
-        : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+        : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 active:bg-slate-100'
     }`}
   >
     <div className="relative">
       {active && IconSolid ? (
-        <IconSolid className="h-6 w-6" />
+        <IconSolid className="h-5 w-5 sm:h-6 sm:w-6" />
       ) : (
-        <Icon className="h-6 w-6" />
+        <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
       )}
       {badge && (
-        <span className="absolute -top-1 -right-1 h-5 w-5 bg-construction-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-          {badge}
+        <span className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 bg-construction-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+          {badge > 9 ? '9+' : badge}
         </span>
       )}
     </div>
-    <span className="text-xs font-medium mt-1 leading-tight">{label}</span>
+    <span className="text-xs font-medium mt-1 leading-tight text-center">{label}</span>
   </button>
 );
 
@@ -329,6 +330,7 @@ const FloorPlanViewer = ({ floorPlan, markers = [], onMarkerAdd, onMarkerSelect 
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [showControls, setShowControls] = useState(true);
+  const [isAddingMarker, setIsAddingMarker] = useState(false);
   const containerRef = useRef(null);
 
   const handleTouchStart = (e) => {
@@ -370,21 +372,34 @@ const FloorPlanViewer = ({ floorPlan, markers = [], onMarkerAdd, onMarkerSelect 
   };
 
   const handleFloorPlanTap = (e) => {
-    if (isDragging) return;
+    if (isDragging || !isAddingMarker) return;
 
     const rect = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX || e.touches[0].clientX) - rect.left - offset.x) / scale;
     const y = ((e.clientY || e.touches[0].clientY) - rect.top - offset.y) / scale;
 
     onMarkerAdd({ x, y });
+    setIsAddingMarker(false);
   };
 
   return (
     <div className="relative h-full bg-slate-100 overflow-hidden touch-manipulation">
+      {/* Add Marker Toggle */}
+      <div className="absolute top-4 left-4 z-30">
+        <TouchButton
+          onClick={() => setIsAddingMarker(!isAddingMarker)}
+          variant={isAddingMarker ? "primary" : "outline"}
+          size="md"
+          className="bg-white/90 backdrop-blur-sm rounded-full"
+        >
+          <PlusIcon className="h-5 w-5" />
+        </TouchButton>
+      </div>
+
       {/* Floor Plan Container */}
       <div
         ref={containerRef}
-        className="w-full h-full relative"
+        className="w-full h-full relative mobile-scroll"
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -466,12 +481,24 @@ const FloorPlanViewer = ({ floorPlan, markers = [], onMarkerAdd, onMarkerSelect 
       </div>
 
       {/* Instructions */}
-      {markers.length === 0 && (
+      {markers.length === 0 && !floorPlan && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 mx-4 text-center">
+            <DocumentIcon className="h-12 w-12 text-slate-400 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-slate-900 mb-2">No Floor Plan</h3>
+            <p className="text-sm text-slate-600">
+              Upload a floor plan to start marking blocker locations
+            </p>
+          </div>
+        </div>
+      )}
+
+      {markers.length === 0 && floorPlan && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 mx-4 text-center">
             <MapPinIcon className="h-8 w-8 text-construction-500 mx-auto mb-2" />
             <p className="text-sm font-medium text-slate-700">
-              Tap on the floor plan to add blocker locations
+              {isAddingMarker ? "Tap on the floor plan to add a marker" : "Toggle marker mode to add blocker locations"}
             </p>
           </div>
         </div>
@@ -485,6 +512,16 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
   const [showPhotoCapture, setShowPhotoCapture] = useState(false);
   const [showVoiceRecording, setShowVoiceRecording] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [selectedBlocker, setSelectedBlocker] = useState(null);
+  const [assignmentData, setAssignmentData] = useState({
+    assignedTo: '',
+    priority: 'medium',
+    dueDate: '',
+    notes: ''
+  });
+  const [subcontractors, setSubcontractors] = useState([]);
+  const [loadingSubcontractors, setLoadingSubcontractors] = useState(true);
 
   // New blocker state
   const [newBlocker, setNewBlocker] = useState({
@@ -497,6 +534,32 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
   });
 
   const pendingBlockers = blockers.filter(b => b.status === 'pending_review').length;
+
+  // Load subcontractors on component mount
+  useEffect(() => {
+    const loadSubcontractors = async () => {
+      if (!user?.companyId) return;
+
+      setLoadingSubcontractors(true);
+      try {
+        const result = await subcontractorAPI.getSubcontractors(user.companyId);
+        if (result.success) {
+          // Filter subcontractors who have access to this project or all active ones if no specific project
+          const availableSubcontractors = result.subcontractors.filter(sub =>
+            sub.status === 'active' &&
+            (!project?.id || sub.project_access.includes(project.id) || sub.project_access.length === 0)
+          );
+          setSubcontractors(availableSubcontractors);
+        }
+      } catch (error) {
+        console.error('Error loading subcontractors:', error);
+      } finally {
+        setLoadingSubcontractors(false);
+      }
+    };
+
+    loadSubcontractors();
+  }, [user?.companyId, project?.id]);
 
   const handlePhotoCapture = (file) => {
     const url = URL.createObjectURL(file);
@@ -542,18 +605,56 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
     setActiveTab('home');
   };
 
+  const handleAssignBlocker = (blocker) => {
+    setSelectedBlocker(blocker);
+    setAssignmentData({
+      assignedTo: '',
+      priority: blocker.priority || 'medium',
+      dueDate: '',
+      notes: ''
+    });
+    setShowAssignModal(true);
+  };
+
+  const handleSubmitAssignment = () => {
+    if (!assignmentData.assignedTo) {
+      alert('Please select a subcontractor');
+      return;
+    }
+
+    const updatedBlocker = {
+      ...selectedBlocker,
+      status: 'assigned',
+      assignedTo: assignmentData.assignedTo,
+      assignedAt: new Date().toISOString(),
+      dueDate: assignmentData.dueDate,
+      assignmentNotes: assignmentData.notes,
+      priority: assignmentData.priority
+    };
+
+    onUpdateBlocker(updatedBlocker);
+    setShowAssignModal(false);
+    setSelectedBlocker(null);
+    setAssignmentData({
+      assignedTo: '',
+      priority: 'medium',
+      dueDate: '',
+      notes: ''
+    });
+  };
+
   const renderHomeTab = () => (
     <div className="flex-1 overflow-y-auto pb-20">
       {/* Header */}
-      <div className="bg-gradient-construction p-6 text-white">
-        <h1 className="text-2xl font-bold mb-1">Field Worker</h1>
-        <p className="text-construction-100">
+      <div className="bg-gradient-construction p-4 sm:p-6 text-white flex-shrink-0">
+        <h1 className="text-xl sm:text-2xl font-bold mb-1">Field Worker</h1>
+        <p className="text-construction-100 text-sm sm:text-base">
           {project?.name || 'Construction Site'}
         </p>
       </div>
 
       {/* Quick Actions */}
-      <div className="p-6 space-y-4">
+      <div className="p-4 sm:p-6 space-y-4 flex-shrink-0">
         <h2 className="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h2>
 
         <TouchButton
@@ -566,39 +667,39 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
           Report New Blocker
         </TouchButton>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <TouchButton
             onClick={() => setShowPhotoCapture(true)}
             variant="outline"
             size="lg"
-            className="flex-col py-6"
+            className="flex-col py-4 sm:py-6"
           >
-            <CameraIcon className="h-8 w-8 mb-2" />
-            Take Photo
+            <CameraIcon className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />
+            <span className="text-sm sm:text-base">Take Photo</span>
           </TouchButton>
 
           <TouchButton
             onClick={() => setActiveTab('floor-plan')}
             variant="outline"
             size="lg"
-            className="flex-col py-6"
+            className="flex-col py-4 sm:py-6"
           >
-            <DocumentIcon className="h-8 w-8 mb-2" />
-            Floor Plan
+            <DocumentIcon className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />
+            <span className="text-sm sm:text-base">Floor Plan</span>
           </TouchButton>
         </div>
       </div>
 
       {/* Recent Blockers */}
-      <div className="px-6 pb-6">
+      <div className="px-4 sm:px-6 pb-6 flex-1 min-h-0">
         <h2 className="text-lg font-semibold text-slate-900 mb-4">Recent Reports</h2>
         {blockers.length > 0 ? (
           <div className="space-y-3">
             {blockers.slice(0, 3).map(blocker => (
-              <div key={blocker.id} className="card p-4">
+              <div key={blocker.id} className="card p-4 relative">
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="font-semibold text-slate-900 flex-1">{blocker.title}</h3>
-                  <span className={`status-badge ml-2 ${
+                  <h3 className="font-semibold text-slate-900 flex-1 text-sm sm:text-base pr-2">{blocker.title}</h3>
+                  <span className={`status-badge ml-2 text-xs ${
                     blocker.status === 'pending_review' ? 'status-pending' :
                     blocker.status === 'assigned' ? 'status-assigned' :
                     blocker.status === 'completed' ? 'status-completed' :
@@ -607,10 +708,22 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
                     {blocker.status.replace('_', ' ')}
                   </span>
                 </div>
-                <p className="text-slate-600 text-sm line-clamp-2">{blocker.description}</p>
-                <div className="flex items-center mt-2 text-sm text-slate-500">
-                  <MapPinIcon className="h-4 w-4 mr-1" />
-                  {blocker.location || 'No location'}
+                <p className="text-slate-600 text-xs sm:text-sm line-clamp-2 mb-3">{blocker.description}</p>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center text-xs sm:text-sm text-slate-500">
+                    <MapPinIcon className="h-4 w-4 mr-1 flex-shrink-0" />
+                    <span className="truncate">{blocker.location || 'No location'}</span>
+                  </div>
+                  {blocker.status === 'pending_review' && (
+                    <TouchButton
+                      onClick={() => handleAssignBlocker(blocker)}
+                      variant="outline"
+                      size="sm"
+                      className="ml-2 px-3 py-1 text-xs"
+                    >
+                      Assign
+                    </TouchButton>
+                  )}
                 </div>
               </div>
             ))}
@@ -627,15 +740,16 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
 
   const renderCreateTab = () => (
     <div className="flex-1 overflow-y-auto pb-20">
-      <div className="p-6 space-y-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-slate-900">New Blocker</h1>
+      <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <div className="flex items-center justify-between sticky top-0 bg-slate-50 py-2 -mx-4 sm:-mx-6 px-4 sm:px-6 z-10">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900">New Blocker</h1>
           <TouchButton
             onClick={() => setActiveTab('home')}
             variant="ghost"
             size="md"
+            className="p-2"
           >
-            <XMarkIcon className="h-6 w-6" />
+            <XMarkIcon className="h-5 w-5 sm:h-6 sm:w-6" />
           </TouchButton>
         </div>
 
@@ -649,7 +763,7 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
             value={newBlocker.title}
             onChange={(e) => setNewBlocker(prev => ({ ...prev, title: e.target.value }))}
             placeholder="Brief description of the issue"
-            className="form-input text-base py-4"
+            className="form-input text-sm sm:text-base py-3 sm:py-4"
           />
         </div>
 
@@ -662,8 +776,8 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
             value={newBlocker.description}
             onChange={(e) => setNewBlocker(prev => ({ ...prev, description: e.target.value }))}
             placeholder="Detailed description of the blocker..."
-            rows={4}
-            className="form-textarea text-base py-4"
+            rows={3}
+            className="form-textarea text-sm sm:text-base py-3 sm:py-4 resize-none"
           />
         </div>
 
@@ -677,7 +791,7 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
             value={newBlocker.location}
             onChange={(e) => setNewBlocker(prev => ({ ...prev, location: e.target.value }))}
             placeholder="Room, area, or specific location"
-            className="form-input text-base py-4"
+            className="form-input text-sm sm:text-base py-3 sm:py-4"
           />
         </div>
 
@@ -686,14 +800,14 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
           <label className="block text-sm font-semibold text-slate-700 mb-2">
             Priority Level
           </label>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
             {['low', 'medium', 'high'].map(priority => (
               <TouchButton
                 key={priority}
                 onClick={() => setNewBlocker(prev => ({ ...prev, priority }))}
                 variant={newBlocker.priority === priority ? 'primary' : 'outline'}
                 size="md"
-                className="capitalize"
+                className="capitalize text-sm py-3"
               >
                 {priority}
               </TouchButton>
@@ -706,14 +820,14 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
           <label className="block text-sm font-semibold text-slate-700 mb-2">
             Photos ({newBlocker.photos.length})
           </label>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
             <TouchButton
               onClick={() => setShowPhotoCapture(true)}
               variant="outline"
               size="lg"
-              className="aspect-square flex-col"
+              className="aspect-square flex-col py-4"
             >
-              <CameraIcon className="h-8 w-8 mb-1" />
+              <CameraIcon className="h-6 w-6 sm:h-8 sm:w-8 mb-1" />
               <span className="text-xs">Add Photo</span>
             </TouchButton>
 
@@ -731,9 +845,9 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
                   }))}
                   variant="danger"
                   size="sm"
-                  className="absolute top-1 right-1 w-6 h-6 rounded-full p-0"
+                  className="absolute top-1 right-1 w-5 h-5 sm:w-6 sm:h-6 rounded-full p-0"
                 >
-                  <XMarkIcon className="h-4 w-4" />
+                  <XMarkIcon className="h-3 w-3 sm:h-4 sm:w-4" />
                 </TouchButton>
               </div>
             ))}
@@ -749,10 +863,10 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
             onClick={() => setShowVoiceRecording(true)}
             variant="outline"
             size="lg"
-            className="w-full"
+            className="w-full py-3 sm:py-4"
           >
-            <MicrophoneIcon className="h-5 w-5 mr-2" />
-            Add Voice Note
+            <MicrophoneIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+            <span className="text-sm sm:text-base">Add Voice Note</span>
           </TouchButton>
 
           {newBlocker.voiceNotes.map((note, index) => (
@@ -776,33 +890,35 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
         </div>
 
         {/* Submit Button */}
-        <TouchButton
-          onClick={handleSubmitBlocker}
-          variant="primary"
-          size="xl"
-          className="w-full mt-8"
-        >
-          <CheckCircleIcon className="h-6 w-6 mr-2" />
-          Submit Blocker Report
-        </TouchButton>
+        <div className="pt-4">
+          <TouchButton
+            onClick={handleSubmitBlocker}
+            variant="primary"
+            size="xl"
+            className="w-full"
+          >
+            <CheckCircleIcon className="h-5 w-5 sm:h-6 sm:w-6 mr-2" />
+            <span className="text-sm sm:text-base">Submit Blocker Report</span>
+          </TouchButton>
+        </div>
       </div>
     </div>
   );
 
   const renderBlockersTab = () => (
     <div className="flex-1 overflow-y-auto pb-20">
-      <div className="p-6">
-        <h1 className="text-2xl font-bold text-slate-900 mb-6">My Blockers</h1>
+      <div className="p-4 sm:p-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4 sm:mb-6">My Blockers</h1>
 
         {/* Search */}
-        <div className="relative mb-6">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-slate-400" />
+        <div className="relative mb-4 sm:mb-6">
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-slate-400" />
           <input
             type="text"
             placeholder="Search blockers..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="form-input pl-10 text-base py-4"
+            className="form-input pl-9 sm:pl-10 text-sm sm:text-base py-3 sm:py-4"
           />
         </div>
 
@@ -816,8 +932,8 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
             .map(blocker => (
               <div key={blocker.id} className="card p-4">
                 <div className="flex justify-between items-start mb-3">
-                  <h3 className="font-semibold text-slate-900 flex-1 text-lg">{blocker.title}</h3>
-                  <span className={`status-badge ml-2 ${
+                  <h3 className="font-semibold text-slate-900 flex-1 text-sm sm:text-lg pr-2">{blocker.title}</h3>
+                  <span className={`status-badge ml-2 text-xs ${
                     blocker.status === 'pending_review' ? 'status-pending' :
                     blocker.status === 'assigned' ? 'status-assigned' :
                     blocker.status === 'completed' ? 'status-completed' :
@@ -828,23 +944,42 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
                 </div>
 
                 {blocker.description && (
-                  <p className="text-slate-600 mb-3 leading-relaxed">{blocker.description}</p>
+                  <p className="text-slate-600 mb-3 leading-relaxed text-sm">{blocker.description}</p>
                 )}
 
-                <div className="flex items-center justify-between text-sm text-slate-500">
-                  <div className="flex items-center">
-                    <MapPinIcon className="h-4 w-4 mr-1" />
-                    {blocker.location || 'No location'}
+                <div className="flex items-center justify-between text-xs sm:text-sm text-slate-500 mb-3">
+                  <div className="flex items-center flex-1 mr-2">
+                    <MapPinIcon className="h-4 w-4 mr-1 flex-shrink-0" />
+                    <span className="truncate">{blocker.location || 'No location'}</span>
                   </div>
-                  <span>{new Date(blocker.created_at).toLocaleDateString()}</span>
+                  <span className="flex-shrink-0">{new Date(blocker.created_at).toLocaleDateString()}</span>
                 </div>
 
-                {blocker.photos && blocker.photos.length > 0 && (
-                  <div className="flex items-center mt-3 text-sm text-success-600">
-                    <PhotoIcon className="h-4 w-4 mr-1" />
-                    {blocker.photos.length} photo{blocker.photos.length !== 1 ? 's' : ''}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    {blocker.photos && blocker.photos.length > 0 && (
+                      <div className="flex items-center text-xs sm:text-sm text-success-600">
+                        <PhotoIcon className="h-4 w-4 mr-1" />
+                        {blocker.photos.length} photo{blocker.photos.length !== 1 ? 's' : ''}
+                      </div>
+                    )}
+                    {blocker.assignedTo && (
+                      <div className="text-xs text-construction-600">
+                        Assigned: {subcontractors.find(s => s.id === blocker.assignedTo)?.name || 'Unknown'}
+                      </div>
+                    )}
                   </div>
-                )}
+                  {blocker.status === 'pending_review' && (
+                    <TouchButton
+                      onClick={() => handleAssignBlocker(blocker)}
+                      variant="primary"
+                      size="sm"
+                      className="px-3 py-1 text-xs"
+                    >
+                      Assign
+                    </TouchButton>
+                  )}
+                </div>
               </div>
             ))
           }
@@ -884,10 +1019,123 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
     </div>
   );
 
+  const AssignmentModal = ({ isOpen, onClose, blocker, onSubmit }) => {
+    if (!isOpen || !blocker) return null;
+
+    return (
+      <div className="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-6">
+        <div className="bg-white w-full sm:w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-slate-900">Assign Blocker</h3>
+            <TouchButton
+              onClick={onClose}
+              variant="ghost"
+              size="md"
+              className="p-2"
+            >
+              <XMarkIcon className="h-5 w-5" />
+            </TouchButton>
+          </div>
+
+          <div className="space-y-4">
+            <div className="p-3 bg-slate-50 rounded-lg">
+              <h4 className="font-medium text-slate-900 text-sm">{blocker.title}</h4>
+              <p className="text-xs text-slate-600 mt-1">{blocker.description}</p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Assign to Subcontractor *
+              </label>
+              <select
+                value={assignmentData.assignedTo}
+                onChange={(e) => setAssignmentData(prev => ({ ...prev, assignedTo: e.target.value }))}
+                className="form-select w-full py-3 text-sm"
+                disabled={loadingSubcontractors}
+              >
+                <option value="">
+                  {loadingSubcontractors ? 'Loading subcontractors...' : 'Select a subcontractor...'}
+                </option>
+                {subcontractors.map(sub => (
+                  <option key={sub.id} value={sub.id}>
+                    {sub.name} ({sub.company_name}) - {sub.trade_type}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Priority Level
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {['low', 'medium', 'high'].map(priority => (
+                  <TouchButton
+                    key={priority}
+                    onClick={() => setAssignmentData(prev => ({ ...prev, priority }))}
+                    variant={assignmentData.priority === priority ? 'primary' : 'outline'}
+                    size="md"
+                    className="capitalize text-sm py-2"
+                  >
+                    {priority}
+                  </TouchButton>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Due Date
+              </label>
+              <input
+                type="date"
+                value={assignmentData.dueDate}
+                onChange={(e) => setAssignmentData(prev => ({ ...prev, dueDate: e.target.value }))}
+                className="form-input w-full py-3 text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Assignment Notes
+              </label>
+              <textarea
+                value={assignmentData.notes}
+                onChange={(e) => setAssignmentData(prev => ({ ...prev, notes: e.target.value }))}
+                placeholder="Additional instructions or notes..."
+                rows={3}
+                className="form-textarea w-full py-3 text-sm resize-none"
+              />
+            </div>
+
+            <div className="flex space-x-3 pt-4">
+              <TouchButton
+                onClick={onClose}
+                variant="outline"
+                size="lg"
+                className="flex-1"
+              >
+                Cancel
+              </TouchButton>
+              <TouchButton
+                onClick={onSubmit}
+                variant="primary"
+                size="lg"
+                className="flex-1"
+              >
+                Assign Blocker
+              </TouchButton>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className="h-screen bg-slate-50 flex flex-col">
+    <div className="mobile-viewport bg-slate-50 flex flex-col touch-manipulation no-zoom">
       {/* Main Content */}
-      <main className="flex-1 overflow-hidden">
+      <main className="flex-1 overflow-hidden relative">
         {activeTab === 'home' && renderHomeTab()}
         {activeTab === 'create' && renderCreateTab()}
         {activeTab === 'blockers' && renderBlockersTab()}
@@ -895,7 +1143,7 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
       </main>
 
       {/* Bottom Navigation */}
-      <nav className="bg-white border-t border-slate-200 safe-area-bottom">
+      <nav className="bg-white border-t border-slate-200 safe-area-bottom flex-shrink-0">
         <div className="grid grid-cols-4">
           <MobileTab
             icon={HomeIcon}
@@ -937,6 +1185,13 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
         isOpen={showVoiceRecording}
         onClose={() => setShowVoiceRecording(false)}
         onRecordingComplete={handleVoiceRecording}
+      />
+
+      <AssignmentModal
+        isOpen={showAssignModal}
+        onClose={() => setShowAssignModal(false)}
+        blocker={selectedBlocker}
+        onSubmit={handleSubmitAssignment}
       />
     </div>
   );

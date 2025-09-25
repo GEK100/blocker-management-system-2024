@@ -11,6 +11,7 @@ import GDPRConsentForm from './GDPRConsentForm';
 import BlockerWorkflowManager from './BlockerWorkflowManager';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import RoleBasedDashboard from './RoleBasedDashboard';
+import CompanyOnboarding from './onboarding/CompanyOnboarding';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
@@ -45,6 +46,9 @@ const AppRouter = () => {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
+
+          {/* Company Onboarding - Public route with token validation */}
+          <Route path="/company-onboarding" element={<CompanyOnboarding />} />
 
           {/* GDPR Consent */}
           <Route path="/consent" element={

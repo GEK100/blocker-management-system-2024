@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { inviteAPI } from '../../lib/inviteAPI';
 import Card, { StatCard, CardGrid } from '../../design-system/components/Card';
 import Badge from '../../design-system/components/Badge';
 import Button from '../../design-system/components/Button';
@@ -33,6 +34,12 @@ const SuperAdminDashboard = () => {
   const [showCreateCompany, setShowCreateCompany] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [selectedCompany, setSelectedCompany] = useState(null);
+  const [createCompanyData, setCreateCompanyData] = useState({
+    companyName: '',
+    adminEmail: '',
+    subscriptionPlan: 'trial'
+  });
+  const [inviteGenerated, setInviteGenerated] = useState(null);
 
   useEffect(() => {
     fetchSystemData();
@@ -125,11 +132,53 @@ const SuperAdminDashboard = () => {
 
   const handleCreateCompany = () => {
     setShowCreateCompany(true);
+    setInviteGenerated(null);
   };
 
   const handleGenerateInvite = (company) => {
     setSelectedCompany(company);
     setShowInviteModal(true);
+  };
+
+  const handleCreateCompanySubmit = async (e) => {
+    e.preventDefault();
+
+    if (!createCompanyData.companyName || !createCompanyData.adminEmail) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    try {
+      // Create company invitation
+      const result = await inviteAPI.createCompanyInvitation({
+        companyName: createCompanyData.companyName,
+        adminEmail: createCompanyData.adminEmail,
+        subscriptionPlan: createCompanyData.subscriptionPlan,
+        invitedBy: 'super_admin',
+        expiresInDays: 7
+      });
+
+      if (result.success) {
+        setInviteGenerated(result);
+        // Reset form
+        setCreateCompanyData({
+          companyName: '',
+          adminEmail: '',
+          subscriptionPlan: 'trial'
+        });
+      } else {
+        alert('Failed to create invitation: ' + result.error);
+      }
+    } catch (error) {
+      alert('Error creating company invitation: ' + error.message);
+    }
+  };
+
+  const copyInviteLink = () => {
+    if (inviteGenerated) {
+      navigator.clipboard.writeText(inviteGenerated.inviteUrl);
+      alert('Invitation link copied to clipboard!');
+    }
   };
 
   if (loading) {
@@ -141,21 +190,23 @@ const SuperAdminDashboard = () => {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">System Administration</h1>
-          <p className="text-slate-600">Manage companies, subscriptions, and platform-wide settings</p>
+    <div className="min-h-screen bg-slate-50">
+      <div className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+          <div>
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">System Administration</h1>
+            <p className="text-sm sm:text-base text-slate-600">Manage companies, subscriptions, and platform-wide settings</p>
+          </div>
+          <Button
+            onClick={handleCreateCompany}
+            className="flex items-center space-x-2 self-start sm:self-auto"
+          >
+            <PlusIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+            <span className="hidden sm:inline">Create Company</span>
+            <span className="sm:hidden">Create</span>
+          </Button>
         </div>
-        <Button
-          onClick={handleCreateCompany}
-          className="flex items-center space-x-2"
-        >
-          <PlusIcon className="h-5 w-5" />
-          <span>Create Company</span>
-        </Button>
-      </div>
 
       {/* Key Metrics */}
       <CardGrid>
@@ -341,62 +392,129 @@ const SuperAdminDashboard = () => {
 
       {/* Create Company Modal */}
       {showCreateCompany && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <Card className="p-6 w-full max-w-md">
-            <h3 className="text-lg font-semibold text-slate-900 mb-4">Create New Company</h3>
-            <form className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Company Name
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500"
-                  placeholder="Enter company name"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Admin Email
-                </label>
-                <input
-                  type="email"
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500"
-                  placeholder="admin@company.com"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  Subscription Plan
-                </label>
-                <select className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500">
-                  <option value="trial">Trial (30 days)</option>
-                  <option value="pro">Pro ($199/month)</option>
-                  <option value="enterprise">Enterprise ($499/month)</option>
-                </select>
-              </div>
-              <div className="flex space-x-3 pt-4">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => setShowCreateCompany(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" className="flex-1">
-                  Create & Send Invite
-                </Button>
-              </div>
-            </form>
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-4">
+          <Card className="p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+            {!inviteGenerated ? (
+              <>
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Create New Company</h3>
+                <form onSubmit={handleCreateCompanySubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Company Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={createCompanyData.companyName}
+                      onChange={(e) => setCreateCompanyData(prev => ({ ...prev, companyName: e.target.value }))}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500"
+                      placeholder="Enter company name"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Admin Email *
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      value={createCompanyData.adminEmail}
+                      onChange={(e) => setCreateCompanyData(prev => ({ ...prev, adminEmail: e.target.value }))}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500"
+                      placeholder="admin@company.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Subscription Plan
+                    </label>
+                    <select
+                      value={createCompanyData.subscriptionPlan}
+                      onChange={(e) => setCreateCompanyData(prev => ({ ...prev, subscriptionPlan: e.target.value }))}
+                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500"
+                    >
+                      <option value="trial">Trial (30 days)</option>
+                      <option value="pro">Pro ($199/month)</option>
+                      <option value="enterprise">Enterprise ($499/month)</option>
+                    </select>
+                  </div>
+                  <div className="flex space-x-3 pt-4">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => setShowCreateCompany(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type="submit" className="flex-1">
+                      Create & Send Invite
+                    </Button>
+                  </div>
+                </form>
+              </>
+            ) : (
+              <>
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Invitation Created!</h3>
+                <div className="space-y-4">
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex">
+                      <CheckCircleIcon className="h-5 w-5 text-green-400 mr-2 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm text-green-700 font-medium">
+                          Company invitation created successfully!
+                        </p>
+                        <p className="text-sm text-green-600 mt-1">
+                          Invitation sent to {inviteGenerated.invitation.adminEmail}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      Invitation Link
+                    </label>
+                    <div className="flex space-x-2">
+                      <input
+                        type="text"
+                        value={inviteGenerated.inviteUrl}
+                        readOnly
+                        className="flex-1 px-3 py-2 border border-slate-300 rounded-lg bg-slate-50 text-sm"
+                      />
+                      <Button
+                        type="button"
+                        size="sm"
+                        onClick={copyInviteLink}
+                      >
+                        Copy
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="text-xs text-slate-500 space-y-1">
+                    <p><strong>Company:</strong> {inviteGenerated.invitation.companyName}</p>
+                    <p><strong>Plan:</strong> {inviteGenerated.invitation.subscriptionPlan}</p>
+                    <p><strong>Expires:</strong> {new Date(inviteGenerated.invitation.expiresAt).toLocaleDateString()}</p>
+                  </div>
+
+                  <Button
+                    onClick={() => setShowCreateCompany(false)}
+                    className="w-full"
+                  >
+                    Close
+                  </Button>
+                </div>
+              </>
+            )}
           </Card>
         </div>
       )}
 
       {/* Invite Modal */}
       {showInviteModal && selectedCompany && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <Card className="p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-4">
+          <Card className="p-4 sm:p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold text-slate-900 mb-4">
               Generate Invitation Link
             </h3>
@@ -442,6 +560,7 @@ const SuperAdminDashboard = () => {
           </Card>
         </div>
       )}
+      </div>
     </div>
   );
 };

@@ -153,7 +153,7 @@ const RegisterForm = () => {
                       required
                       value={formData.firstName}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500 transition-colors duration-200"
+                      className="w-full px-3 py-3 sm:py-2 text-base sm:text-sm border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500 transition-colors duration-200 touch-manipulation"
                       placeholder="John"
                     />
                   </div>
@@ -168,7 +168,7 @@ const RegisterForm = () => {
                       required
                       value={formData.lastName}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500 transition-colors duration-200"
+                      className="w-full px-3 py-3 sm:py-2 text-base sm:text-sm border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500 transition-colors duration-200 touch-manipulation"
                       placeholder="Smith"
                     />
                   </div>
@@ -185,7 +185,7 @@ const RegisterForm = () => {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500 transition-colors duration-200"
+                    className="w-full px-3 py-3 sm:py-2 text-base sm:text-sm border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500 transition-colors duration-200 touch-manipulation"
                     placeholder="john@company.com"
                   />
                 </div>
@@ -210,7 +210,7 @@ const RegisterForm = () => {
                       required
                       value={formData.password}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 pr-10 border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500 transition-colors duration-200"
+                      className="w-full px-3 py-3 sm:py-2 pr-10 text-base sm:text-sm border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500 transition-colors duration-200 touch-manipulation"
                       placeholder="Create a secure password"
                     />
                     <button
@@ -239,7 +239,7 @@ const RegisterForm = () => {
                       required
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      className="w-full px-3 py-2 pr-10 border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500 transition-colors duration-200"
+                      className="w-full px-3 py-3 sm:py-2 pr-10 text-base sm:text-sm border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500 transition-colors duration-200 touch-manipulation"
                       placeholder="Confirm your password"
                     />
                     <button
@@ -267,7 +267,7 @@ const RegisterForm = () => {
                     required
                     value={formData.companyName}
                     onChange={handleChange}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500 transition-colors duration-200"
+                    className="w-full px-3 py-3 sm:py-2 text-base sm:text-sm border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500 transition-colors duration-200 touch-manipulation"
                     placeholder="Your Construction Company"
                   />
                 </div>
