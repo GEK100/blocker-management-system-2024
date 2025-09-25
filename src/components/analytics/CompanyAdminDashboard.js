@@ -5,93 +5,97 @@ import Badge from '../../design-system/components/Badge';
 import Button from '../../design-system/components/Button';
 import {
   UserGroupIcon,
-  ExclamationTriangleIcon,
+  FolderIcon,
+  DocumentTextIcon,
+  PlusIcon,
+  PhotoIcon,
+  Cog6ToothIcon,
+  UserPlusIcon,
+  BuildingOfficeIcon,
   ChartBarIcon,
   ClockIcon,
   CheckCircleIcon,
-  DocumentTextIcon,
-  BuildingOffice2Icon
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
 
 const CompanyAdminDashboard = ({ companyId }) => {
   const [data, setData] = useState({
     totalUsers: 0,
     activeProjects: 0,
-    totalBlockers: 0,
-    resolvedBlockers: 0,
-    avgResolutionTime: 0,
-    responseTime: 0,
-    rejectionRate: 0,
-    complianceRate: 0,
+    totalDrawings: 0,
+    activeBlockers: 0,
+    projectProgress: [],
     userActivity: [],
-    blockerTrends: [],
-    contractorPerformance: [],
-    priorityDistribution: [],
-    statusDistribution: [],
-    resolutionTrends: [],
-    projects: []
+    blockersByProject: []
   });
+  const [users, setUsers] = useState([]);
+  const [projects, setProjects] = useState([]);
+  const [drawings, setDrawings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [dateRange, setDateRange] = useState('30');
-  const [selectedProject, setSelectedProject] = useState('all');
+  const [activeTab, setActiveTab] = useState('overview');
+  const [showAddUser, setShowAddUser] = useState(false);
+  const [showCreateProject, setShowCreateProject] = useState(false);
+  const [showUploadDrawing, setShowUploadDrawing] = useState(false);
 
   useEffect(() => {
     fetchCompanyData();
-  }, [dateRange, selectedProject, companyId]);
+  }, [companyId]);
 
   const fetchCompanyData = async () => {
-    if (!companyId) return;
-
     try {
       setLoading(true);
 
-      const endDate = new Date();
-      const startDate = new Date();
-      startDate.setDate(endDate.getDate() - parseInt(dateRange));
+      // Mock company-specific data
+      const mockCompanyData = {
+        totalUsers: 12,
+        activeProjects: 8,
+        totalDrawings: 24,
+        activeBlockers: 15,
+        projectProgress: [
+          { project: 'Tower A', completion: 85, blockers: 2 },
+          { project: 'Tower B', completion: 72, blockers: 4 },
+          { project: 'Parking Garage', completion: 91, blockers: 1 },
+          { project: 'Retail Space', completion: 45, blockers: 8 }
+        ],
+        userActivity: [
+          { week: 'Week 1', active: 10 },
+          { week: 'Week 2', active: 11 },
+          { week: 'Week 3', active: 12 },
+          { week: 'Week 4', active: 12 }
+        ],
+        blockersByProject: [
+          { name: 'Resolved', value: 42, color: '#10b981' },
+          { name: 'In Progress', value: 15, color: '#f59e0b' },
+          { name: 'Overdue', value: 8, color: '#ef4444' }
+        ]
+      };
 
-      // Fetch company users
-      const { data: users } = await supabase
-        .from('users')
-        .select('*')
-        .eq('company_id', companyId);
+      const mockUsers = [
+        { id: 1, name: 'John Smith', email: 'john@company.com', role: 'project_manager', status: 'active', lastActive: '2024-01-15' },
+        { id: 2, name: 'Sarah Johnson', email: 'sarah@company.com', role: 'field_worker', status: 'active', lastActive: '2024-01-15' },
+        { id: 3, name: 'Mike Wilson', email: 'mike@company.com', role: 'subcontractor', status: 'active', lastActive: '2024-01-14' },
+        { id: 4, name: 'Lisa Brown', email: 'lisa@company.com', role: 'field_worker', status: 'inactive', lastActive: '2024-01-12' }
+      ];
 
-      // Fetch company projects
-      const { data: projects } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('company_id', companyId);
+      const mockProjects = [
+        { id: 1, name: 'Tower A Construction', status: 'active', manager: 'John Smith', completion: 85, drawings: 8, users: 6 },
+        { id: 2, name: 'Tower B Construction', status: 'active', manager: 'Sarah Johnson', completion: 72, drawings: 6, users: 5 },
+        { id: 3, name: 'Parking Garage', status: 'active', manager: 'John Smith', completion: 91, drawings: 4, users: 3 },
+        { id: 4, name: 'Retail Space Fit-out', status: 'planning', manager: 'Lisa Brown', completion: 45, drawings: 6, users: 4 }
+      ];
 
-      // Fetch blockers with filters
-      let blockersQuery = supabase
-        .from('blockers')
-        .select(`
-          *,
-          assigned_user:users!assigned_to(first_name, last_name, role),
-          project:projects(name),
-          status_history(*)
-        `)
-        .eq('company_id', companyId)
-        .gte('created_at', startDate.toISOString());
+      const mockDrawings = [
+        { id: 1, name: 'Tower A - Floor Plans', project: 'Tower A', uploadedBy: 'John Smith', uploadDate: '2024-01-15', size: '2.4 MB' },
+        { id: 2, name: 'Electrical Schematics', project: 'Tower B', uploadedBy: 'Sarah Johnson', uploadDate: '2024-01-14', size: '1.8 MB' },
+        { id: 3, name: 'Plumbing Layout', project: 'Tower A', uploadedBy: 'Mike Wilson', uploadDate: '2024-01-13', size: '3.1 MB' },
+        { id: 4, name: 'Site Survey', project: 'Parking Garage', uploadedBy: 'John Smith', uploadDate: '2024-01-12', size: '5.2 MB' }
+      ];
 
-      if (selectedProject !== 'all') {
-        blockersQuery = blockersQuery.eq('project_id', selectedProject);
-      }
-
-      const { data: blockers } = await blockersQuery;
-
-      // Fetch user activity from audit logs
-      const { data: auditLogs } = await supabase
-        .from('audit_logs')
-        .select('*')
-        .eq('company_id', companyId)
-        .gte('created_at', startDate.toISOString())
-        .order('created_at');
-
-      // Process data
-      const processedData = processCompanyAnalytics(users, projects, blockers, auditLogs);
-      setData({ ...processedData, projects: projects || [] });
-
+      setData(mockCompanyData);
+      setUsers(mockUsers);
+      setProjects(mockProjects);
+      setDrawings(mockDrawings);
     } catch (error) {
       console.error('Error fetching company data:', error);
     } finally {
@@ -99,389 +103,143 @@ const CompanyAdminDashboard = ({ companyId }) => {
     }
   };
 
-  const processCompanyAnalytics = (users, projects, blockers, auditLogs) => {
-    const resolvedBlockers = blockers?.filter(b => b.status === 'verified_complete') || [];
-    const rejectedBlockers = blockers?.filter(b => b.status === 'rejected') || [];
-    const blockersWithPhotos = blockers?.filter(b => b.photo_urls && b.photo_urls.length > 0) || [];
-
-    // Calculate resolution times
-    const resolutionTimes = resolvedBlockers.map(blocker => {
-      const created = new Date(blocker.created_at);
-      const resolved = new Date(blocker.updated_at);
-      return (resolved - created) / (1000 * 60 * 60); // hours
-    });
-
-    const avgResolutionTime = resolutionTimes.length > 0
-      ? resolutionTimes.reduce((a, b) => a + b, 0) / resolutionTimes.length
-      : 0;
-
-    // Calculate response times (time to first assignment)
-    const responseTimes = blockers?.map(blocker => {
-      const statusHistory = blocker.status_history?.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-      const firstAssignment = statusHistory?.find(h => h.status === 'assigned');
-      if (firstAssignment) {
-        const created = new Date(blocker.created_at);
-        const assigned = new Date(firstAssignment.created_at);
-        return (assigned - created) / (1000 * 60 * 60); // hours
-      }
-      return null;
-    }).filter(Boolean) || [];
-
-    const avgResponseTime = responseTimes.length > 0
-      ? responseTimes.reduce((a, b) => a + b, 0) / responseTimes.length
-      : 0;
-
-    // Process trends data
-    const blockerTrends = processTimeSeriesData(blockers || [], 'created_at', 'Blockers');
-    const userActivity = processTimeSeriesData(auditLogs || [], 'created_at', 'Actions');
-    const resolutionTrends = processTimeSeriesData(resolvedBlockers, 'updated_at', 'Resolved');
-
-    // Contractor performance
-    const contractorPerformance = processContractorPerformance(blockers || []);
-
-    // Priority and status distribution
-    const priorityDistribution = processCategoricalData(blockers || [], 'priority');
-    const statusDistribution = processCategoricalData(blockers || [], 'status');
-
-    return {
-      totalUsers: users?.length || 0,
-      activeProjects: projects?.filter(p => p.status === 'active').length || 0,
-      totalBlockers: blockers?.length || 0,
-      resolvedBlockers: resolvedBlockers.length,
-      avgResolutionTime: Math.round(avgResolutionTime),
-      responseTime: Math.round(avgResponseTime),
-      rejectionRate: blockers?.length > 0 ? Math.round((rejectedBlockers.length / blockers.length) * 100) : 0,
-      complianceRate: blockers?.length > 0 ? Math.round((blockersWithPhotos.length / blockers.length) * 100) : 0,
-      userActivity,
-      blockerTrends,
-      contractorPerformance,
-      priorityDistribution,
-      statusDistribution,
-      resolutionTrends
-    };
-  };
-
-  const processTimeSeriesData = (data, dateField, label) => {
-    const groupedData = {};
-    data.forEach(item => {
-      const date = new Date(item[dateField]).toLocaleDateString();
-      groupedData[date] = (groupedData[date] || 0) + 1;
-    });
-
-    return Object.entries(groupedData).map(([date, count]) => ({
-      date,
-      [label]: count
-    }));
-  };
-
-  const processCategoricalData = (data, field) => {
-    const counts = {};
-    data.forEach(item => {
-      const value = item[field] || 'Unknown';
-      counts[value] = (counts[value] || 0) + 1;
-    });
-
-    return Object.entries(counts).map(([name, value]) => ({
-      name: name.replace('_', ' ').toUpperCase(),
-      value
-    }));
-  };
-
-  const processContractorPerformance = (blockers) => {
-    const contractors = {};
-
-    blockers.forEach(blocker => {
-      if (blocker.assigned_user) {
-        const name = `${blocker.assigned_user.first_name} ${blocker.assigned_user.last_name}`;
-        if (!contractors[name]) {
-          contractors[name] = {
-            name,
-            role: blocker.assigned_user.role,
-            assigned: 0,
-            completed: 0,
-            avgTime: 0
-          };
-        }
-
-        contractors[name].assigned++;
-        if (blocker.status === 'verified_complete') {
-          contractors[name].completed++;
-        }
-      }
-    });
-
-    return Object.values(contractors).map(contractor => ({
-      ...contractor,
-      completionRate: contractor.assigned > 0 ? Math.round((contractor.completed / contractor.assigned) * 100) : 0
-    }));
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  const COLORS = ['#ed7611', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
-
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-              <div className="animate-pulse">
-                <div className="h-4 bg-slate-200 rounded mb-2"></div>
-                <div className="h-8 bg-slate-200 rounded"></div>
-              </div>
-            </div>
-          ))}
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-construction-600"></div>
       </div>
     );
   }
 
-  return (
+  const renderOverviewTab = () => (
     <div className="space-y-6">
-      {/* Controls */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h2 className="text-xl font-semibold text-slate-900">Company Analytics</h2>
-        <div className="flex flex-wrap gap-2">
-          <select
-            value={selectedProject}
-            onChange={(e) => setSelectedProject(e.target.value)}
-            className="px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-construction-500 focus:border-construction-500"
-          >
-            <option value="all">All Projects</option>
-            {data.projects.map(project => (
-              <option key={project.id} value={project.id}>{project.name}</option>
-            ))}
-          </select>
-
-          {['7', '30', '90'].map((days) => (
-            <Button
-              key={days}
-              variant={dateRange === days ? 'primary' : 'outline'}
-              size="sm"
-              onClick={() => setDateRange(days)}
-            >
-              {days} days
-            </Button>
-          ))}
-
-          <Button variant="ghost" size="sm" onClick={handlePrint} icon={DocumentTextIcon}>
-            Print Report
-          </Button>
-        </div>
-      </div>
-
       {/* Key Metrics */}
-      <CardGrid columns={4}>
+      <CardGrid>
         <StatCard
           title="Team Members"
-          value={data.totalUsers.toLocaleString()}
+          value={data.totalUsers}
           icon={UserGroupIcon}
-          color="construction"
+          trend={{ value: 2, isPositive: true }}
+          subtitle="Active users"
         />
         <StatCard
           title="Active Projects"
-          value={data.activeProjects.toLocaleString()}
-          icon={BuildingOffice2Icon}
-          color="blue"
+          value={data.activeProjects}
+          icon={FolderIcon}
+          trend={{ value: 1, isPositive: true }}
+          subtitle="In progress"
         />
         <StatCard
-          title="Total Blockers"
-          value={data.totalBlockers.toLocaleString()}
-          icon={ExclamationTriangleIcon}
-          color="warning"
-          change={`${data.resolvedBlockers} resolved`}
-        />
-        <StatCard
-          title="Avg Resolution"
-          value={`${data.avgResolutionTime}h`}
-          icon={ClockIcon}
-          color="success"
-          change={`${data.responseTime}h response`}
-        />
-      </CardGrid>
-
-      {/* Performance Metrics */}
-      <CardGrid columns={4}>
-        <StatCard
-          title="Completion Rate"
-          value={`${data.totalBlockers > 0 ? Math.round((data.resolvedBlockers / data.totalBlockers) * 100) : 0}%`}
-          icon={CheckCircleIcon}
-          color="success"
-        />
-        <StatCard
-          title="Rejection Rate"
-          value={`${data.rejectionRate}%`}
-          icon={ExclamationTriangleIcon}
-          color="safety"
-        />
-        <StatCard
-          title="Documentation"
-          value={`${data.complianceRate}%`}
+          title="Site Drawings"
+          value={data.totalDrawings}
           icon={DocumentTextIcon}
-          color="blue"
+          trend={{ value: 4, isPositive: true }}
+          subtitle="Uploaded files"
         />
         <StatCard
-          title="Response Time"
-          value={`${data.responseTime}h`}
-          icon={ClockIcon}
-          color="warning"
+          title="Open Blockers"
+          value={data.activeBlockers}
+          icon={ExclamationTriangleIcon}
+          trend={{ value: -3, isPositive: true }}
+          subtitle="Awaiting resolution"
         />
       </CardGrid>
 
-      {/* Charts Grid */}
+      {/* Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Blocker Trends */}
-        <Card>
-          <div className="p-6 border-b border-slate-200">
-            <h3 className="text-lg font-semibold text-slate-900">Blocker Trends</h3>
-            <p className="text-sm text-slate-600">Daily blocker submissions</p>
-          </div>
-          <div className="p-6">
-            <div style={{ width: '100%', height: 300 }}>
-              <ResponsiveContainer>
-                <AreaChart data={data.blockerTrends}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Area type="monotone" dataKey="Blockers" stackId="1" stroke="#ed7611" fill="#ed7611" />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
+        {/* Project Progress */}
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4">Project Progress</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={data.projectProgress}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="project" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="completion" fill="#10b981" />
+            </BarChart>
+          </ResponsiveContainer>
         </Card>
 
-        {/* Resolution Trends */}
-        <Card>
-          <div className="p-6 border-b border-slate-200">
-            <h3 className="text-lg font-semibold text-slate-900">Resolution Trends</h3>
-            <p className="text-sm text-slate-600">Daily resolutions</p>
-          </div>
-          <div className="p-6">
-            <div style={{ width: '100%', height: 300 }}>
-              <ResponsiveContainer>
-                <LineChart data={data.resolutionTrends}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="Resolved" stroke="#10b981" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </Card>
-
-        {/* Priority Distribution */}
-        <Card>
-          <div className="p-6 border-b border-slate-200">
-            <h3 className="text-lg font-semibold text-slate-900">Priority Distribution</h3>
-            <p className="text-sm text-slate-600">Blockers by priority level</p>
-          </div>
-          <div className="p-6">
-            <div style={{ width: '100%', height: 300 }}>
-              <ResponsiveContainer>
-                <PieChart>
-                  <Pie
-                    data={data.priorityDistribution}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {data.priorityDistribution.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </Card>
-
-        {/* Status Distribution */}
-        <Card>
-          <div className="p-6 border-b border-slate-200">
-            <h3 className="text-lg font-semibold text-slate-900">Status Distribution</h3>
-            <p className="text-sm text-slate-600">Current blocker statuses</p>
-          </div>
-          <div className="p-6">
-            <div style={{ width: '100%', height: 300 }}>
-              <ResponsiveContainer>
-                <BarChart data={data.statusDistribution} layout="horizontal">
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis type="number" />
-                  <YAxis dataKey="name" type="category" />
-                  <Tooltip />
-                  <Bar dataKey="value" fill="#ed7611" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+        {/* Blocker Status */}
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4">Blocker Status</h3>
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie
+                data={data.blockersByProject}
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={120}
+                dataKey="value"
+              >
+                {data.blockersByProject.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+          <div className="flex justify-center space-x-6 mt-4">
+            {data.blockersByProject.map((item, index) => (
+              <div key={index} className="flex items-center space-x-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }}></div>
+                <span className="text-sm text-slate-600">{item.name}: {item.value}</span>
+              </div>
+            ))}
           </div>
         </Card>
       </div>
+    </div>
+  );
 
-      {/* Contractor Performance Table */}
-      <Card>
-        <div className="p-6 border-b border-slate-200">
-          <h3 className="text-lg font-semibold text-slate-900">Team Performance</h3>
-          <p className="text-sm text-slate-600">Individual performance metrics</p>
-        </div>
+  const renderUsersTab = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold text-slate-900">Team Management</h3>
+        <Button onClick={() => setShowAddUser(true)}>
+          <UserPlusIcon className="h-5 w-5 mr-2" />
+          Add User
+        </Button>
+      </div>
+
+      <Card className="p-6">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-slate-200">
             <thead className="bg-slate-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  Team Member
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  Role
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  Assigned
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  Completed
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">
-                  Completion Rate
-                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">User</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Role</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Last Active</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-slate-200">
-              {data.contractorPerformance.map((contractor, index) => (
-                <tr key={index}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-slate-900">{contractor.name}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <Badge variant="secondary" size="sm">
-                      {contractor.role?.replace('_', ' ').toUpperCase()}
-                    </Badge>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                    {contractor.assigned}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">
-                    {contractor.completed}
-                  </td>
+              {users.map((user) => (
+                <tr key={user.id} className="hover:bg-slate-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="flex-1 bg-slate-200 rounded-full h-2 mr-2">
-                        <div
-                          className="bg-construction-600 h-2 rounded-full"
-                          style={{ width: `${contractor.completionRate}%` }}
-                        ></div>
+                      <UserGroupIcon className="h-8 w-8 text-slate-400 mr-3" />
+                      <div>
+                        <div className="text-sm font-medium text-slate-900">{user.name}</div>
+                        <div className="text-sm text-slate-500">{user.email}</div>
                       </div>
-                      <span className="text-sm text-slate-900">{contractor.completionRate}%</span>
                     </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Badge variant="primary">{user.role.replace('_', ' ')}</Badge>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Badge variant={user.status === 'active' ? 'success' : 'warning'}>
+                      {user.status}
+                    </Badge>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{user.lastActive}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                    <Button variant="outline" size="sm">Edit</Button>
+                    <Button variant="outline" size="sm">Remove</Button>
                   </td>
                 </tr>
               ))}
@@ -489,15 +247,261 @@ const CompanyAdminDashboard = ({ companyId }) => {
           </table>
         </div>
       </Card>
+    </div>
+  );
 
-      {/* Print Styles */}
-      <style jsx>{`
-        @media print {
-          .no-print { display: none !important; }
-          body { background: white !important; }
-          .space-y-6 > * { page-break-inside: avoid; }
-        }
-      `}</style>
+  const renderProjectsTab = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold text-slate-900">Project Management</h3>
+        <Button onClick={() => setShowCreateProject(true)}>
+          <PlusIcon className="h-5 w-5 mr-2" />
+          Create Project
+        </Button>
+      </div>
+
+      <Card className="p-6">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-200">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Project</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Manager</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Progress</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Resources</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-slate-200">
+              {projects.map((project) => (
+                <tr key={project.id} className="hover:bg-slate-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <FolderIcon className="h-8 w-8 text-slate-400 mr-3" />
+                      <div className="text-sm font-medium text-slate-900">{project.name}</div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{project.manager}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <div className="w-16 bg-slate-200 rounded-full h-2 mr-2">
+                        <div
+                          className="bg-construction-600 h-2 rounded-full"
+                          style={{ width: `${project.completion}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-sm text-slate-600">{project.completion}%</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
+                    <div>{project.drawings} drawings</div>
+                    <div>{project.users} team members</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <Badge variant={project.status === 'active' ? 'success' : 'warning'}>
+                      {project.status}
+                    </Badge>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                    <Button variant="outline" size="sm">Edit</Button>
+                    <Button variant="outline" size="sm">View</Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+    </div>
+  );
+
+  const renderDrawingsTab = () => (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h3 className="text-lg font-semibold text-slate-900">Site Drawings</h3>
+        <Button onClick={() => setShowUploadDrawing(true)}>
+          <PhotoIcon className="h-5 w-5 mr-2" />
+          Upload Drawing
+        </Button>
+      </div>
+
+      <Card className="p-6">
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-200">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Drawing</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Project</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Uploaded By</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Date</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Size</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-slate-200">
+              {drawings.map((drawing) => (
+                <tr key={drawing.id} className="hover:bg-slate-50">
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className="flex items-center">
+                      <DocumentTextIcon className="h-8 w-8 text-slate-400 mr-3" />
+                      <div className="text-sm font-medium text-slate-900">{drawing.name}</div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900">{drawing.project}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{drawing.uploadedBy}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{drawing.uploadDate}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">{drawing.size}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                    <Button variant="outline" size="sm">Download</Button>
+                    <Button variant="outline" size="sm">View</Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+    </div>
+  );
+
+  return (
+    <div className="space-y-6 p-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Company Management</h1>
+          <p className="text-slate-600">Manage your team, projects, and site drawings</p>
+        </div>
+        <Button variant="outline">
+          <Cog6ToothIcon className="h-5 w-5 mr-2" />
+          Company Settings
+        </Button>
+      </div>
+
+      {/* Navigation Tabs */}
+      <div className="border-b border-slate-200">
+        <nav className="-mb-px flex space-x-8">
+          {[
+            { id: 'overview', name: 'Overview', icon: ChartBarIcon },
+            { id: 'users', name: 'Team Members', icon: UserGroupIcon },
+            { id: 'projects', name: 'Projects', icon: FolderIcon },
+            { id: 'drawings', name: 'Site Drawings', icon: DocumentTextIcon }
+          ].map((tab) => {
+            const Icon = tab.icon;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === tab.id
+                    ? 'border-construction-500 text-construction-600'
+                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                }`}
+              >
+                <Icon className="h-5 w-5 mr-2" />
+                {tab.name}
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+
+      {/* Tab Content */}
+      {activeTab === 'overview' && renderOverviewTab()}
+      {activeTab === 'users' && renderUsersTab()}
+      {activeTab === 'projects' && renderProjectsTab()}
+      {activeTab === 'drawings' && renderDrawingsTab()}
+
+      {/* Modals */}
+      {showAddUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Card className="p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">Add Team Member</h3>
+            <form className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Name</label>
+                <input type="text" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                <input type="email" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Role</label>
+                <select className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500">
+                  <option>Project Manager</option>
+                  <option>Field Worker</option>
+                  <option>Subcontractor</option>
+                </select>
+              </div>
+              <div className="flex space-x-3 pt-4">
+                <Button type="button" variant="outline" className="flex-1" onClick={() => setShowAddUser(false)}>Cancel</Button>
+                <Button type="submit" className="flex-1">Add User</Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
+
+      {showCreateProject && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Card className="p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">Create Project</h3>
+            <form className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Project Name</label>
+                <input type="text" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Project Manager</label>
+                <select className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500">
+                  <option>John Smith</option>
+                  <option>Sarah Johnson</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Description</label>
+                <textarea className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500" rows="3"></textarea>
+              </div>
+              <div className="flex space-x-3 pt-4">
+                <Button type="button" variant="outline" className="flex-1" onClick={() => setShowCreateProject(false)}>Cancel</Button>
+                <Button type="submit" className="flex-1">Create Project</Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
+
+      {showUploadDrawing && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <Card className="p-6 w-full max-w-md">
+            <h3 className="text-lg font-semibold text-slate-900 mb-4">Upload Site Drawing</h3>
+            <form className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Drawing Name</label>
+                <input type="text" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Project</label>
+                <select className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500">
+                  <option>Tower A</option>
+                  <option>Tower B</option>
+                  <option>Parking Garage</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">File</label>
+                <input type="file" accept=".pdf,.dwg,.jpg,.png" className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500" />
+              </div>
+              <div className="flex space-x-3 pt-4">
+                <Button type="button" variant="outline" className="flex-1" onClick={() => setShowUploadDrawing(false)}>Cancel</Button>
+                <Button type="submit" className="flex-1">Upload Drawing</Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
