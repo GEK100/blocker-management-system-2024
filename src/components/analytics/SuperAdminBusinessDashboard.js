@@ -6,8 +6,8 @@ import {
   BuildingOfficeIcon,
   UserGroupIcon,
   ChartBarIcon,
-  TrendingUpIcon,
-  TrendingDownIcon,
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   FolderOpenIcon,
@@ -376,7 +376,7 @@ const SuperAdminBusinessDashboard = () => {
               <p className="text-sm font-medium text-slate-600">Monthly Revenue</p>
               <p className="text-2xl font-bold text-slate-900">{formatCurrency(businessStats.monthlyRevenue)}</p>
               <p className="text-sm text-green-600 flex items-center mt-1">
-                <TrendingUpIcon className="h-4 w-4 mr-1" />
+                <ArrowTrendingUpIcon className="h-4 w-4 mr-1" />
                 {businessStats.growthRate}% growth
               </p>
             </div>
