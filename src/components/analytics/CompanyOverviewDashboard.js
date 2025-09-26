@@ -931,6 +931,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
           </Card>
         ))}
       </div>
+      </Card>
     </div>
   );
 
