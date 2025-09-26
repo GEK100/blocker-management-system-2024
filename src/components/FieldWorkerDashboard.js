@@ -5,6 +5,7 @@ import {
   ChevronRight, ChevronDown, Star, Zap, Tool, FileText,
   Phone, Mail, Calendar, Navigation, Maximize2
 } from 'lucide-react';
+import { subcontractorAPI } from '../lib/subcontractorAPI';
 
 const FieldWorkerDashboard = ({ user, currentProject }) => {
   const [activeTab, setActiveTab] = useState('home');
@@ -13,6 +14,7 @@ const FieldWorkerDashboard = ({ user, currentProject }) => {
   const [myBlockers, setMyBlockers] = useState([]);
   const [assignedBlockers, setAssignedBlockers] = useState([]);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [availableSubcontractors, setAvailableSubcontractors] = useState([]);
 
   // Create blocker form state
   const [newBlocker, setNewBlocker] = useState({
@@ -21,7 +23,9 @@ const FieldWorkerDashboard = ({ user, currentProject }) => {
     priority: 'medium',
     location: null,
     photos: [],
-    floor: ''
+    floor: '',
+    assignedSubcontractor: '',
+    tradeType: ''
   });
 
   const [selectedDrawing, setSelectedDrawing] = useState(null);
@@ -38,6 +42,26 @@ const FieldWorkerDashboard = ({ user, currentProject }) => {
   const loadWorkerData = async () => {
     // Load blockers created by this worker and assigned to them
     // Connect to Supabase API
+
+    // Load available subcontractors
+    try {
+      const companyId = user?.companyId || currentProject?.companyId || 'demo_company';
+
+      // Initialize demo data if none exists
+      const result = await subcontractorAPI.getSubcontractors(companyId);
+      if (result.success && result.subcontractors.length === 0) {
+        // Create some demo subcontractors
+        await subcontractorAPI.createDemoData(companyId);
+        const updatedResult = await subcontractorAPI.getSubcontractors(companyId);
+        if (updatedResult.success) {
+          setAvailableSubcontractors(updatedResult.subcontractors.filter(sub => sub.status === 'active'));
+        }
+      } else if (result.success) {
+        setAvailableSubcontractors(result.subcontractors.filter(sub => sub.status === 'active'));
+      }
+    } catch (error) {
+      console.error('Error loading subcontractors:', error);
+    }
   };
 
   const siteDrawings = [
@@ -90,9 +114,30 @@ const FieldWorkerDashboard = ({ user, currentProject }) => {
       return;
     }
 
+    if (!newBlocker.assignedSubcontractor) {
+      alert('Please select a subcontractor to assign this blocker to');
+      return;
+    }
+
     try {
-      // Submit blocker to API
-      console.log('Submitting blocker:', newBlocker);
+      // Create blocker with subcontractor assignment
+      const blockerData = {
+        ...newBlocker,
+        id: `blocker_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        status: 'pending_review',
+        createdBy: user?.id || 'field_worker',
+        createdAt: new Date().toISOString(),
+        projectId: currentProject?.id,
+        companyId: user?.companyId || currentProject?.companyId
+      };
+
+      console.log('Submitting blocker to subcontractor:', blockerData);
+
+      // In a real app, this would be submitted to the API
+      // For now, just store in localStorage for demo purposes
+      const existingBlockers = JSON.parse(localStorage.getItem('blockers') || '[]');
+      existingBlockers.push(blockerData);
+      localStorage.setItem('blockers', JSON.stringify(existingBlockers));
 
       // Reset form
       setNewBlocker({
@@ -101,11 +146,13 @@ const FieldWorkerDashboard = ({ user, currentProject }) => {
         priority: 'medium',
         location: null,
         photos: [],
-        floor: ''
+        floor: '',
+        assignedSubcontractor: '',
+        tradeType: ''
       });
       setShowCreateModal(false);
 
-      alert('Blocker submitted successfully!');
+      alert(`Blocker submitted successfully and assigned to ${availableSubcontractors.find(s => s.id === newBlocker.assignedSubcontractor)?.name}!`);
       loadWorkerData(); // Refresh data
     } catch (error) {
       console.error('Error submitting blocker:', error);
@@ -243,10 +290,10 @@ const FieldWorkerDashboard = ({ user, currentProject }) => {
       {/* Blockers List */}
       <div className="space-y-3">
         {[
-          { id: 1, title: 'Electrical panel access blocked', priority: 'high', status: 'open', floor: '2nd Floor', created: '2 hours ago' },
-          { id: 2, title: 'Water leak near main entrance', priority: 'critical', status: 'assigned', floor: 'Ground Floor', created: '1 day ago' },
-          { id: 3, title: 'Scaffolding blocking emergency exit', priority: 'medium', status: 'in_progress', floor: '1st Floor', created: '2 days ago' },
-          { id: 4, title: 'HVAC unit making loud noise', priority: 'low', status: 'resolved', floor: 'Basement', created: '3 days ago' }
+          { id: 1, title: 'Electrical panel access blocked', priority: 'high', status: 'pending_review', floor: '2nd Floor', created: '2 hours ago', assignedTo: 'Waiting for assignment' },
+          { id: 2, title: 'Water leak near main entrance', priority: 'critical', status: 'assigned', floor: 'Ground Floor', created: '1 day ago', assignedTo: 'Mike Johnson - Elite Plumbing' },
+          { id: 3, title: 'Scaffolding blocking emergency exit', priority: 'medium', status: 'in_progress', floor: '1st Floor', created: '2 days ago', assignedTo: 'Sarah Davis - ProFraming LLC' },
+          { id: 4, title: 'HVAC unit making loud noise', priority: 'low', status: 'resolved', floor: 'Basement', created: '3 days ago', assignedTo: 'Tom Wilson - TechFlow HVAC' }
         ].map((blocker) => (
           <div key={blocker.id} className="bg-white rounded-lg shadow-sm border p-4">
             <div className="flex justify-between items-start mb-2">
@@ -261,25 +308,32 @@ const FieldWorkerDashboard = ({ user, currentProject }) => {
               </span>
             </div>
 
-            <div className="flex justify-between items-center text-sm text-gray-600">
-              <div className="flex items-center space-x-4">
-                <span className="flex items-center">
-                  <MapPin className="h-4 w-4 mr-1" />
-                  {blocker.floor}
-                </span>
-                <span className="flex items-center">
-                  <Clock className="h-4 w-4 mr-1" />
-                  {blocker.created}
+            <div className="space-y-2 text-sm text-gray-600">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <span className="flex items-center">
+                    <MapPin className="h-4 w-4 mr-1" />
+                    {blocker.floor}
+                  </span>
+                  <span className="flex items-center">
+                    <Clock className="h-4 w-4 mr-1" />
+                    {blocker.created}
+                  </span>
+                </div>
+                <span className={`px-2 py-1 rounded-full text-xs ${
+                  blocker.status === 'resolved' ? 'bg-green-100 text-green-800' :
+                  blocker.status === 'assigned' ? 'bg-blue-100 text-blue-800' :
+                  blocker.status === 'in_progress' ? 'bg-orange-100 text-orange-800' :
+                  blocker.status === 'pending_review' ? 'bg-yellow-100 text-yellow-800' :
+                  'bg-gray-100 text-gray-800'
+                }`}>
+                  {blocker.status.replace('_', ' ')}
                 </span>
               </div>
-              <span className={`px-2 py-1 rounded-full text-xs ${
-                blocker.status === 'resolved' ? 'bg-green-100 text-green-800' :
-                blocker.status === 'assigned' ? 'bg-blue-100 text-blue-800' :
-                blocker.status === 'in_progress' ? 'bg-orange-100 text-orange-800' :
-                'bg-gray-100 text-gray-800'
-              }`}>
-                {blocker.status.replace('_', ' ')}
-              </span>
+              <div className="flex items-center">
+                <User className="h-4 w-4 mr-1" />
+                <span className="text-sm">Assigned to: {blocker.assignedTo}</span>
+              </div>
             </div>
 
             <div className="mt-3 flex space-x-2">
@@ -348,6 +402,66 @@ const FieldWorkerDashboard = ({ user, currentProject }) => {
             </select>
           </div>
 
+          {/* Trade Type Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Trade Type</label>
+            <select
+              value={newBlocker.tradeType}
+              onChange={(e) => {
+                const selectedTrade = e.target.value;
+                setNewBlocker(prev => ({
+                  ...prev,
+                  tradeType: selectedTrade,
+                  assignedSubcontractor: '' // Reset subcontractor when trade changes
+                }));
+              }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="">Select trade type...</option>
+              <option value="electrical">Electrical</option>
+              <option value="plumbing">Plumbing</option>
+              <option value="hvac">HVAC</option>
+              <option value="flooring">Flooring</option>
+              <option value="drywall">Drywall</option>
+              <option value="painting">Painting</option>
+              <option value="roofing">Roofing</option>
+              <option value="concrete">Concrete</option>
+              <option value="framing">Framing</option>
+              <option value="insulation">Insulation</option>
+              <option value="glazing">Glazing</option>
+              <option value="landscaping">Landscaping</option>
+            </select>
+          </div>
+
+          {/* Subcontractor Assignment */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Assign to Subcontractor*</label>
+            <select
+              value={newBlocker.assignedSubcontractor}
+              onChange={(e) => setNewBlocker(prev => ({...prev, assignedSubcontractor: e.target.value}))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={!newBlocker.tradeType}
+            >
+              <option value="">
+                {!newBlocker.tradeType ? 'Select trade type first...' : 'Select subcontractor...'}
+              </option>
+              {availableSubcontractors
+                .filter(sub => !newBlocker.tradeType || sub.trade_type === newBlocker.tradeType)
+                .map((subcontractor) => (
+                  <option key={subcontractor.id} value={subcontractor.id}>
+                    {subcontractor.name} - {subcontractor.company_name} ({subcontractor.trade_type})
+                  </option>
+                ))
+              }
+            </select>
+            {availableSubcontractors.length === 0 && (
+              <p className="text-sm text-red-600 mt-1">No subcontractors available. Contact your project manager.</p>
+            )}
+            {newBlocker.tradeType && availableSubcontractors.filter(sub => sub.trade_type === newBlocker.tradeType).length === 0 && (
+              <p className="text-sm text-yellow-600 mt-1">No subcontractors available for {newBlocker.tradeType} trade.</p>
+            )}
+          </div>
+
           {/* Location Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
@@ -410,10 +524,10 @@ const FieldWorkerDashboard = ({ user, currentProject }) => {
           </button>
           <button
             onClick={submitBlocker}
-            disabled={!newBlocker.title || !newBlocker.description}
+            disabled={!newBlocker.title || !newBlocker.description || !newBlocker.assignedSubcontractor}
             className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
           >
-            Submit
+            Submit to Subcontractor
           </button>
         </div>
       </div>
