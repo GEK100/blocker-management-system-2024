@@ -6,6 +6,7 @@ import {
   Phone, Mail, Calendar, Navigation, Maximize2
 } from 'lucide-react';
 import { subcontractorAPI } from '../lib/subcontractorAPI';
+import FieldWorkerDrawings from './drawings/FieldWorkerDrawings';
 
 const FieldWorkerDashboard = ({ user, currentProject }) => {
   const [activeTab, setActiveTab] = useState('home');
@@ -670,6 +671,7 @@ const FieldWorkerDashboard = ({ user, currentProject }) => {
               {[
                 { id: 'home', label: 'Home', icon: Home },
                 { id: 'blockers', label: 'My Blockers', icon: List },
+                { id: 'drawings', label: 'Drawings', icon: FileText },
                 { id: 'settings', label: 'Settings', icon: Settings }
               ].map((item) => {
                 const Icon = item.icon;
@@ -721,6 +723,7 @@ const FieldWorkerDashboard = ({ user, currentProject }) => {
             {[
               { id: 'home', label: 'Home', icon: Home },
               { id: 'blockers', label: 'My Blockers', icon: List },
+              { id: 'drawings', label: 'Drawings', icon: FileText },
               { id: 'settings', label: 'Settings', icon: Settings }
             ].map((tab) => {
               const Icon = tab.icon;
@@ -745,6 +748,7 @@ const FieldWorkerDashboard = ({ user, currentProject }) => {
         {/* Tab Content */}
         {activeTab === 'home' && renderHome()}
         {activeTab === 'blockers' && renderBlockers()}
+        {activeTab === 'drawings' && <FieldWorkerDrawings />}
         {activeTab === 'settings' && (
           <div className="text-center py-12">
             <Settings className="h-12 w-12 text-gray-400 mx-auto mb-4" />
