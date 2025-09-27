@@ -24,7 +24,8 @@ import {
   FolderOpenIcon,
   ArrowTrendingUpIcon,
   ArrowRightIcon,
-  DocumentIcon
+  DocumentIcon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 
 const CompanyOverviewDashboard = ({ companyId }) => {
@@ -40,6 +41,18 @@ const CompanyOverviewDashboard = ({ companyId }) => {
   const [selectedProjectForTeam, setSelectedProjectForTeam] = useState(null);
   const [showDrawingsManager, setShowDrawingsManager] = useState(false);
   const [showProjectNavigation, setShowProjectNavigation] = useState(false);
+  const [showAddProjectModal, setShowAddProjectModal] = useState(false);
+  const [newProject, setNewProject] = useState({
+    name: '',
+    description: '',
+    status: 'planning',
+    startDate: '',
+    endDate: '',
+    budget: '',
+    location: '',
+    projectManager: '',
+    priority: 'medium'
+  });
 
   // Company/Platform Statistics
   const [stats, setStats] = useState({
@@ -345,6 +358,66 @@ const CompanyOverviewDashboard = ({ companyId }) => {
         console.error('Error deleting subcontractor:', error);
         alert('Error deleting subcontractor');
       }
+    }
+  };
+
+  // Project Management Handlers
+  const handleAddProject = () => {
+    setShowAddProjectModal(true);
+  };
+
+  const handleCloseProjectModal = () => {
+    setShowAddProjectModal(false);
+    setNewProject({
+      name: '',
+      description: '',
+      status: 'planning',
+      startDate: '',
+      endDate: '',
+      budget: '',
+      location: '',
+      projectManager: '',
+      priority: 'medium'
+    });
+  };
+
+  const handleProjectInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewProject(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleCreateProject = async (e) => {
+    e.preventDefault();
+
+    if (!newProject.name.trim()) {
+      alert('Project name is required');
+      return;
+    }
+
+    try {
+      // Generate new project with unique ID
+      const newProjectData = {
+        id: Date.now().toString(),
+        ...newProject,
+        companyId: companyId || 'demo_company',
+        createdAt: new Date().toISOString(),
+        blockers: 0,
+        teamMembers: 0
+      };
+
+      // Add to projects list
+      setProjects(prev => [...prev, newProjectData]);
+
+      // Close modal and reset form
+      handleCloseProjectModal();
+
+      alert('Project created successfully!');
+    } catch (error) {
+      console.error('Error creating project:', error);
+      alert('Error creating project');
     }
   };
 
@@ -732,7 +805,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-semibold text-slate-900">Projects</h3>
-        <Button variant="primary" size="sm">
+        <Button variant="primary" size="sm" onClick={handleAddProject}>
           <PlusIcon className="h-4 w-4 mr-2" />
           Add Project
         </Button>
@@ -765,6 +838,189 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       </div>
     </div>
   );
+
+  const renderAddProjectModal = () => {
+    if (!showAddProjectModal) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          {/* Modal Header */}
+          <div className="flex items-center justify-between p-6 border-b border-slate-200">
+            <h3 className="text-lg font-semibold text-slate-900">Add New Project</h3>
+            <button
+              onClick={handleCloseProjectModal}
+              className="text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <XMarkIcon className="h-6 w-6" />
+            </button>
+          </div>
+
+          {/* Modal Body */}
+          <form onSubmit={handleCreateProject} className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Project Name */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Project Name *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={newProject.name}
+                  onChange={handleProjectInputChange}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                  placeholder="Enter project name"
+                  required
+                />
+              </div>
+
+              {/* Description */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Description
+                </label>
+                <textarea
+                  name="description"
+                  value={newProject.description}
+                  onChange={handleProjectInputChange}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                  placeholder="Project description and objectives"
+                />
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Status
+                </label>
+                <select
+                  name="status"
+                  value={newProject.status}
+                  onChange={handleProjectInputChange}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                >
+                  <option value="planning">Planning</option>
+                  <option value="active">Active</option>
+                  <option value="on-hold">On Hold</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+
+              {/* Priority */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Priority
+                </label>
+                <select
+                  name="priority"
+                  value={newProject.priority}
+                  onChange={handleProjectInputChange}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="critical">Critical</option>
+                </select>
+              </div>
+
+              {/* Start Date */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Start Date
+                </label>
+                <input
+                  type="date"
+                  name="startDate"
+                  value={newProject.startDate}
+                  onChange={handleProjectInputChange}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                />
+              </div>
+
+              {/* End Date */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Expected End Date
+                </label>
+                <input
+                  type="date"
+                  name="endDate"
+                  value={newProject.endDate}
+                  onChange={handleProjectInputChange}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                />
+              </div>
+
+              {/* Budget */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Budget
+                </label>
+                <input
+                  type="number"
+                  name="budget"
+                  value={newProject.budget}
+                  onChange={handleProjectInputChange}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                  placeholder="Project budget"
+                />
+              </div>
+
+              {/* Location */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Location
+                </label>
+                <input
+                  type="text"
+                  name="location"
+                  value={newProject.location}
+                  onChange={handleProjectInputChange}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                  placeholder="Project location/address"
+                />
+              </div>
+
+              {/* Project Manager */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Project Manager
+                </label>
+                <input
+                  type="text"
+                  name="projectManager"
+                  value={newProject.projectManager}
+                  onChange={handleProjectInputChange}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                  placeholder="Project manager name"
+                />
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end space-x-4 mt-8 pt-6 border-t border-slate-200">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleCloseProjectModal}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+              >
+                Create Project
+              </Button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
 
   const renderUsers = () => (
     <div className="space-y-6">
@@ -1254,6 +1510,9 @@ const CompanyOverviewDashboard = ({ companyId }) => {
         )}
         {activeTab === 'settings' && renderSettings()}
       </div>
+
+      {/* Add Project Modal */}
+      {renderAddProjectModal()}
     </div>
   );
 };
