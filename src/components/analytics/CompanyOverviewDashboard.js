@@ -483,8 +483,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
   };
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: ChartBarIcon },
-    { id: 'analytics', label: 'Analytics', icon: ChartBarIcon },
+    { id: 'overview', label: 'Overview & Analytics', icon: ChartBarIcon },
     { id: 'project-navigation', label: 'Project Navigation', icon: FolderOpenIcon },
     { id: 'projects', label: 'Projects', icon: FolderOpenIcon },
     { id: 'users', label: 'Team Management', icon: UserGroupIcon },
@@ -498,87 +497,6 @@ const CompanyOverviewDashboard = ({ companyId }) => {
     tabs.splice(1, 0, { id: 'companies', label: 'Companies', icon: BuildingOfficeIcon });
   }
 
-  const renderAnalytics = () => {
-    if (showProjectNavigation) {
-      return (
-        <ProjectNavigationWrapper
-          companyId={companyId}
-          onBack={() => setShowProjectNavigation(false)}
-        />
-      );
-    }
-
-    if (showDrawingsManager) {
-      return (
-        <ProjectDrawingsManager
-          companyId={companyId}
-          onBack={() => setShowDrawingsManager(false)}
-        />
-      );
-    }
-
-    if (showProjectTeamManagement && selectedProjectForTeam) {
-      return (
-        <ProjectTeamManagement
-          project={selectedProjectForTeam}
-          onBack={() => {
-            setShowProjectTeamManagement(false);
-            setSelectedProjectForTeam(null);
-          }}
-          companyId={companyId}
-        />
-      );
-    }
-
-    if (showSubcontractorAnalytics) {
-      return (
-        <SubcontractorPerformanceAnalytics
-          companyId={companyId}
-          projectId={selectedProject?.id || null}
-          onBack={() => setShowSubcontractorAnalytics(false)}
-        />
-      );
-    }
-
-    if (selectedProject) {
-      return (
-        <ProjectAnalyticsDashboard
-          project={selectedProject}
-          onBack={() => setSelectedProject(null)}
-          companyId={companyId}
-        />
-      );
-    }
-
-    return (
-      <div className="space-y-8">
-        {/* Analytics Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-2xl font-bold text-slate-900">Company Analytics</h3>
-            <p className="text-slate-600 mt-1">Performance overview across all projects</p>
-          </div>
-          <Button
-            onClick={() => setShowSubcontractorAnalytics(true)}
-            variant="outline"
-            className="flex items-center space-x-2"
-          >
-            <UserGroupIcon className="h-4 w-4" />
-            <span>Subcontractor Performance</span>
-          </Button>
-        </div>
-
-        {/* Company-wide Metrics */}
-        {renderCompanyMetrics()}
-
-        {/* Project Performance Comparison */}
-        {renderProjectComparison()}
-
-        {/* Overall Analytics */}
-        {renderOverallAnalytics()}
-      </div>
-    );
-  };
 
   const renderCompanyMetrics = () => (
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -793,8 +711,61 @@ const CompanyOverviewDashboard = ({ companyId }) => {
     </div>
   );
 
-  const renderOverview = () => (
-    <div className="space-y-6">
+  const renderOverview = () => {
+    // Handle special navigation states that were previously in analytics
+    if (showProjectNavigation) {
+      return (
+        <ProjectNavigationWrapper
+          companyId={companyId}
+          onBack={() => setShowProjectNavigation(false)}
+        />
+      );
+    }
+
+    if (showDrawingsManager) {
+      return (
+        <ProjectDrawingsManager
+          companyId={companyId}
+          onBack={() => setShowDrawingsManager(false)}
+        />
+      );
+    }
+
+    if (showProjectTeamManagement && selectedProjectForTeam) {
+      return (
+        <ProjectTeamManagement
+          project={selectedProjectForTeam}
+          onBack={() => {
+            setShowProjectTeamManagement(false);
+            setSelectedProjectForTeam(null);
+          }}
+          companyId={companyId}
+        />
+      );
+    }
+
+    if (showSubcontractorAnalytics) {
+      return (
+        <SubcontractorPerformanceAnalytics
+          companyId={companyId}
+          projectId={selectedProject?.id || null}
+          onBack={() => setShowSubcontractorAnalytics(false)}
+        />
+      );
+    }
+
+    if (selectedProject) {
+      return (
+        <ProjectAnalyticsDashboard
+          project={selectedProject}
+          onBack={() => setSelectedProject(null)}
+          companyId={companyId}
+        />
+      );
+    }
+
+    return (
+      <div className="space-y-6">
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card className="p-6">
@@ -859,8 +830,34 @@ const CompanyOverviewDashboard = ({ companyId }) => {
           </div>
         </div>
       </Card>
-    </div>
-  );
+
+      {/* Analytics Section Header */}
+      <div className="flex items-center justify-between mt-8">
+        <div>
+          <h3 className="text-2xl font-bold text-slate-900">Company Analytics</h3>
+          <p className="text-slate-600 mt-1">Performance overview across all projects</p>
+        </div>
+        <Button
+          onClick={() => setShowSubcontractorAnalytics(true)}
+          variant="outline"
+          className="flex items-center space-x-2"
+        >
+          <UserGroupIcon className="h-4 w-4" />
+          <span>Subcontractor Performance</span>
+        </Button>
+      </div>
+
+      {/* Company-wide Metrics */}
+      {renderCompanyMetrics()}
+
+      {/* Project Performance Comparison */}
+      {renderProjectComparison()}
+
+      {/* Overall Analytics */}
+      {renderOverallAnalytics()}
+      </div>
+    );
+  };
 
   const renderProjects = () => (
     <div className="space-y-6">
@@ -1546,7 +1543,6 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       {/* Tab Content */}
       <div className="mt-6">
         {activeTab === 'overview' && renderOverview()}
-        {activeTab === 'analytics' && renderAnalytics()}
         {activeTab === 'companies' && userRole === 'super_admin' && renderCompanies()}
         {activeTab === 'project-navigation' && (
           <ProjectNavigationWrapper
