@@ -16,7 +16,7 @@ import {
   ArrowLeftIcon,
   MagnifyingGlassIcon,
   ChevronDownIcon,
-  SwitchHorizontalIcon,
+  ArrowPathRoundedSquareIcon,
   HomeIcon
 } from '@heroicons/react/24/outline';
 
@@ -453,7 +453,7 @@ const ProjectNavigationWrapper = ({ companyId, onBack }) => {
                 onClick={() => setShowProjectSelector(true)}
                 className="flex items-center space-x-2"
               >
-                <SwitchHorizontalIcon className="h-4 w-4" />
+                <ArrowPathRoundedSquareIcon className="h-4 w-4" />
                 <span>Switch Project</span>
               </Button>
             </div>
