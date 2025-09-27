@@ -42,6 +42,8 @@ const CompanyOverviewDashboard = ({ companyId }) => {
   const [showDrawingsManager, setShowDrawingsManager] = useState(false);
   const [showProjectNavigation, setShowProjectNavigation] = useState(false);
   const [showAddProjectModal, setShowAddProjectModal] = useState(false);
+  const [showEditProjectModal, setShowEditProjectModal] = useState(false);
+  const [editingProject, setEditingProject] = useState(null);
   const [newProject, setNewProject] = useState({
     name: '',
     description: '',
@@ -418,6 +420,65 @@ const CompanyOverviewDashboard = ({ companyId }) => {
     } catch (error) {
       console.error('Error creating project:', error);
       alert('Error creating project');
+    }
+  };
+
+  // Edit Project Handlers
+  const handleEditProject = (project) => {
+    setEditingProject(project);
+    setNewProject({
+      name: project.name || '',
+      description: project.description || '',
+      status: project.status || 'planning',
+      startDate: project.startDate || '',
+      endDate: project.endDate || '',
+      budget: project.budget || '',
+      location: project.location || '',
+      projectManager: project.projectManager || '',
+      priority: project.priority || 'medium'
+    });
+    setShowEditProjectModal(true);
+  };
+
+  const handleCloseEditProjectModal = () => {
+    setShowEditProjectModal(false);
+    setEditingProject(null);
+    setNewProject({
+      name: '',
+      description: '',
+      status: 'planning',
+      startDate: '',
+      endDate: '',
+      budget: '',
+      location: '',
+      projectManager: '',
+      priority: 'medium'
+    });
+  };
+
+  const handleUpdateProject = async (e) => {
+    e.preventDefault();
+
+    if (!newProject.name.trim()) {
+      alert('Project name is required');
+      return;
+    }
+
+    try {
+      // Update the project in the projects list
+      setProjects(prev => prev.map(project =>
+        project.id === editingProject.id
+          ? { ...project, ...newProject, updatedAt: new Date().toISOString() }
+          : project
+      ));
+
+      // Close modal and reset form
+      handleCloseEditProjectModal();
+
+      alert('Project updated successfully!');
+    } catch (error) {
+      console.error('Error updating project:', error);
+      alert('Error updating project');
     }
   };
 
@@ -828,7 +889,12 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                 </div>
               </div>
               <div className="flex space-x-2">
-                <Button variant="ghost" size="sm">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleEditProject(project)}
+                  title="Edit project"
+                >
                   <PencilIcon className="h-4 w-4" />
                 </Button>
               </div>
@@ -839,17 +905,21 @@ const CompanyOverviewDashboard = ({ companyId }) => {
     </div>
   );
 
-  const renderAddProjectModal = () => {
-    if (!showAddProjectModal) return null;
+  const renderProjectModal = () => {
+    if (!showAddProjectModal && !showEditProjectModal) return null;
+
+    const isEditing = showEditProjectModal;
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
           {/* Modal Header */}
           <div className="flex items-center justify-between p-6 border-b border-slate-200">
-            <h3 className="text-lg font-semibold text-slate-900">Add New Project</h3>
+            <h3 className="text-lg font-semibold text-slate-900">
+              {isEditing ? 'Edit Project' : 'Add New Project'}
+            </h3>
             <button
-              onClick={handleCloseProjectModal}
+              onClick={isEditing ? handleCloseEditProjectModal : handleCloseProjectModal}
               className="text-slate-400 hover:text-slate-600 transition-colors"
             >
               <XMarkIcon className="h-6 w-6" />
@@ -857,7 +927,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
           </div>
 
           {/* Modal Body */}
-          <form onSubmit={handleCreateProject} className="p-6">
+          <form onSubmit={isEditing ? handleUpdateProject : handleCreateProject} className="p-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Project Name */}
               <div className="md:col-span-2">
@@ -1005,7 +1075,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
               <Button
                 type="button"
                 variant="ghost"
-                onClick={handleCloseProjectModal}
+                onClick={isEditing ? handleCloseEditProjectModal : handleCloseProjectModal}
               >
                 Cancel
               </Button>
@@ -1013,7 +1083,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                 type="submit"
                 variant="primary"
               >
-                Create Project
+                {isEditing ? 'Update Project' : 'Create Project'}
               </Button>
             </div>
           </form>
@@ -1511,8 +1581,8 @@ const CompanyOverviewDashboard = ({ companyId }) => {
         {activeTab === 'settings' && renderSettings()}
       </div>
 
-      {/* Add Project Modal */}
-      {renderAddProjectModal()}
+      {/* Project Modal (Add/Edit) */}
+      {renderProjectModal()}
     </div>
   );
 };
