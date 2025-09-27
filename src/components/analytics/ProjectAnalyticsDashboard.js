@@ -12,8 +12,8 @@ import {
   MapPinIcon,
   ArrowLeftIcon,
   CalendarIcon,
-  TrendingUpIcon,
-  TrendingDownIcon
+  ArrowTrendingUpIcon,
+  ArrowTrendingDownIcon
 } from '@heroicons/react/24/outline';
 
 const ProjectAnalyticsDashboard = ({ project, onBack, companyId }) => {
@@ -159,7 +159,7 @@ const ProjectAnalyticsDashboard = ({ project, onBack, companyId }) => {
               {Math.round((analytics.projectMetrics.resolvedBlockers / analytics.projectMetrics.totalBlockers) * 100)}% rate
             </p>
           </div>
-          <TrendingUpIcon className="h-6 w-6 text-green-600" />
+          <ArrowTrendingUpIcon className="h-6 w-6 text-green-600" />
         </div>
       </Card>
 
@@ -189,7 +189,7 @@ const ProjectAnalyticsDashboard = ({ project, onBack, companyId }) => {
             <p className="text-xs font-medium text-slate-600">Overdue</p>
             <p className="text-xl font-bold text-yellow-600">{analytics.projectMetrics.overdueBlockers}</p>
           </div>
-          <TrendingDownIcon className="h-6 w-6 text-yellow-600" />
+          <ArrowTrendingDownIcon className="h-6 w-6 text-yellow-600" />
         </div>
       </Card>
     </div>

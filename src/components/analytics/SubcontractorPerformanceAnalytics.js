@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   ChartBarIcon,
   ClockIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   UserGroupIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
@@ -461,7 +461,7 @@ const SubcontractorPerformanceAnalytics = ({ companyId, projectId = null, onBack
         <div className="bg-gradient-to-r from-construction-50 to-construction-100 rounded-lg p-6 mb-8">
           <div className="flex items-center space-x-4">
             <div className="w-12 h-12 bg-construction-600 rounded-full flex items-center justify-center">
-              <TrendingUpIcon className="h-6 w-6 text-white" />
+              <ArrowTrendingUpIcon className="h-6 w-6 text-white" />
             </div>
             <div>
               <h3 className="text-lg font-semibold text-construction-900">Top Performer</h3>
