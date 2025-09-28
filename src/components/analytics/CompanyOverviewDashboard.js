@@ -917,6 +917,136 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       {/* Company Metrics */}
       {renderCompanyMetrics()}
 
+      {/* Analytics Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Blocker Analytics */}
+        <Card className="p-6">
+          <h4 className="text-lg font-semibold text-slate-900 mb-4">Blocker Analytics</h4>
+          <div className="space-y-4">
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p className="text-2xl font-bold text-construction-600">{analytics.avgResolutionTime.toFixed(0)}h</p>
+                <p className="text-sm text-slate-600">Avg Resolution</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-red-600">{analytics.criticalBlockersCount}</p>
+                <p className="text-sm text-slate-600">Critical Issues</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-yellow-600">{analytics.overdueBlockersCount}</p>
+                <p className="text-sm text-slate-600">Overdue</p>
+              </div>
+            </div>
+
+            {/* Blocker Types */}
+            <div>
+              <h5 className="text-md font-semibold text-slate-900 mb-3">Blockers by Type</h5>
+              <div className="space-y-2">
+                {analytics.blockersByType.map((type, index) => (
+                  <div key={index} className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div
+                        className="w-3 h-3 rounded-full"
+                        style={{ backgroundColor: type.color }}
+                      ></div>
+                      <span className="text-sm text-slate-700">{type.name}</span>
+                    </div>
+                    <span className="text-sm font-medium text-slate-900">{type.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* Contractor Performance */}
+        <Card className="p-6">
+          <h4 className="text-lg font-semibold text-slate-900 mb-4">Top Contractor Performance</h4>
+          <div className="space-y-3">
+            {analytics.contractorPerformance.slice(0, 5).map((contractor, index) => (
+              <div key={index} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                <div>
+                  <p className="text-sm font-medium text-slate-900">{contractor.name}</p>
+                  <p className="text-xs text-slate-600">{contractor.company}</p>
+                  <p className="text-xs text-construction-600 capitalize">{contractor.tradeType}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-green-600">{contractor.efficiency.toFixed(0)}%</p>
+                  <p className="text-xs text-slate-600">Efficiency</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Resolution Times */}
+        <Card className="p-6">
+          <h4 className="text-lg font-semibold text-slate-900 mb-4">Resolution Performance</h4>
+          <div className="space-y-3">
+            {analytics.resolutionTimes.map((data, index) => (
+              <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
+                <div>
+                  <p className="text-sm font-medium text-slate-900">{data.contractor}</p>
+                  <p className="text-xs text-slate-600">{data.company}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-slate-900">{data.avgHours.toFixed(0)}h</p>
+                  <p className="text-xs text-slate-600">{data.blockersSolved} resolved</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+
+        {/* Problematic Locations */}
+        <Card className="p-6">
+          <h4 className="text-lg font-semibold text-slate-900 mb-4">Problematic Locations</h4>
+          <div className="space-y-3">
+            {analytics.problematicLocations.map((location, index) => (
+              <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
+                <div>
+                  <p className="text-sm font-medium text-slate-900">{location.floor}</p>
+                  <div className="flex items-center space-x-2">
+                    <Badge
+                      variant={location.severity === 'High' ? 'destructive' : location.severity === 'Medium' ? 'warning' : 'secondary'}
+                      size="sm"
+                    >
+                      {location.severity}
+                    </Badge>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-bold text-slate-900">{location.issues}</p>
+                  <p className="text-xs text-slate-600">issues</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      </div>
+
+      {/* Blocker Trends */}
+      <Card className="p-6">
+        <h4 className="text-lg font-semibold text-slate-900 mb-4">7-Day Blocker Trends</h4>
+        <div className="grid grid-cols-7 gap-4">
+          {analytics.blockerTrends.map((day, index) => (
+            <div key={index} className="text-center">
+              <p className="text-xs text-slate-600 mb-2">{day.date}</p>
+              <div className="space-y-1">
+                <div className="bg-red-100 rounded p-2">
+                  <p className="text-sm font-bold text-red-600">{day.created}</p>
+                  <p className="text-xs text-red-600">Created</p>
+                </div>
+                <div className="bg-green-100 rounded p-2">
+                  <p className="text-sm font-bold text-green-600">{day.resolved}</p>
+                  <p className="text-xs text-green-600">Resolved</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
       {/* Project Comparison */}
       {renderProjectComparison()}
     </div>
