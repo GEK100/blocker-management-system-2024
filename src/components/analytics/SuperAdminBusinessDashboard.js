@@ -11,7 +11,7 @@ import {
   ChevronDownIcon,
   ChevronRightIcon,
   FolderOpenIcon,
-  CurrencyDollarIcon,
+  CurrencyPoundIcon,
   ClockIcon,
   CalendarDaysIcon
 } from '@heroicons/react/24/outline';
@@ -281,9 +281,9 @@ const SuperAdminBusinessDashboard = () => {
   };
 
   const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat('en-GB', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'GBP',
       minimumFractionDigits: 0
     }).format(amount);
   };
@@ -380,7 +380,7 @@ const SuperAdminBusinessDashboard = () => {
                 {businessStats.growthRate}% growth
               </p>
             </div>
-            <CurrencyDollarIcon className="h-8 w-8 text-purple-600" />
+            <CurrencyPoundIcon className="h-8 w-8 text-purple-600" />
           </div>
         </Card>
       </div>
@@ -391,7 +391,7 @@ const SuperAdminBusinessDashboard = () => {
           <h3 className="text-lg font-semibold text-slate-900 mb-4">Revenue by Plan</h3>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-slate-700">Enterprise ($199/mo)</span>
+              <span className="text-sm font-medium text-slate-700">Enterprise (£199/mo)</span>
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-slate-600">2 companies</span>
                 <span className="text-sm font-semibold text-slate-900">{formatCurrency(398)}</span>
@@ -402,7 +402,7 @@ const SuperAdminBusinessDashboard = () => {
             </div>
 
             <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-slate-700">Professional ($79/mo)</span>
+              <span className="text-sm font-medium text-slate-700">Professional (£79/mo)</span>
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-slate-600">2 companies</span>
                 <span className="text-sm font-semibold text-slate-900">{formatCurrency(79)}</span>
