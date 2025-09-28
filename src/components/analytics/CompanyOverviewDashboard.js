@@ -485,10 +485,9 @@ const CompanyOverviewDashboard = ({ companyId }) => {
   const tabs = [
     { id: 'overview', label: 'Overview & Analytics', icon: ChartBarIcon },
     { id: 'project-navigation', label: 'Project Navigation', icon: FolderOpenIcon },
-    { id: 'projects', label: 'Projects', icon: FolderOpenIcon },
+    { id: 'projects', label: 'Projects & Drawings', icon: FolderOpenIcon },
     { id: 'users', label: 'Team Management', icon: UserGroupIcon },
     { id: 'subcontractors', label: 'Subcontractors', icon: BuildingOfficeIcon },
-    { id: 'drawings', label: 'Drawings', icon: DocumentIcon },
     { id: 'settings', label: 'Settings', icon: CogIcon }
   ];
 
@@ -862,11 +861,29 @@ const CompanyOverviewDashboard = ({ companyId }) => {
   const renderProjects = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold text-slate-900">Projects</h3>
+        <div>
+          <h3 className="text-lg font-semibold text-slate-900">Projects & Drawings</h3>
+          <p className="text-sm text-slate-600 mt-1">Manage projects and their associated drawings</p>
+        </div>
         <Button variant="primary" size="sm" onClick={handleAddProject}>
           <PlusIcon className="h-4 w-4 mr-2" />
           Add Project
         </Button>
+      </div>
+
+      {/* Action Icons Legend */}
+      <div className="bg-slate-50 p-3 rounded-lg border">
+        <p className="text-xs font-medium text-slate-700 mb-2">Quick Actions:</p>
+        <div className="flex items-center space-x-4 text-xs text-slate-600">
+          <div className="flex items-center space-x-1">
+            <DocumentIcon className="h-4 w-4" />
+            <span>Manage Drawings</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <PencilIcon className="h-4 w-4" />
+            <span>Edit Project</span>
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-4">
@@ -886,6 +903,17 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                 </div>
               </div>
               <div className="flex space-x-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSelectedProject(project);
+                    setShowDrawingsManager(true);
+                  }}
+                  title="Manage project drawings"
+                >
+                  <DocumentIcon className="h-4 w-4" />
+                </Button>
                 <Button
                   variant="ghost"
                   size="sm"
@@ -1553,27 +1581,6 @@ const CompanyOverviewDashboard = ({ companyId }) => {
         {activeTab === 'projects' && renderProjects()}
         {activeTab === 'users' && renderUsers()}
         {activeTab === 'subcontractors' && renderSubcontractors()}
-        {activeTab === 'drawings' && (
-          <div>
-            <Button
-              onClick={() => setShowDrawingsManager(true)}
-              className="mb-4"
-            >
-              <DocumentIcon className="h-4 w-4 mr-2" />
-              Manage Project Drawings
-            </Button>
-            <Card className="p-6">
-              <div className="text-center py-8 text-slate-600">
-                <DocumentIcon className="h-12 w-12 mx-auto mb-4 text-slate-300" />
-                <h3 className="text-lg font-semibold text-slate-900 mb-2">Project Drawings Management</h3>
-                <p className="mb-4">Upload and manage project-specific drawings, floor plans, and technical documents.</p>
-                <p className="text-sm text-slate-500">
-                  Organize drawings by project to ensure field workers only see relevant documents.
-                </p>
-              </div>
-            </Card>
-          </div>
-        )}
         {activeTab === 'settings' && renderSettings()}
       </div>
 
