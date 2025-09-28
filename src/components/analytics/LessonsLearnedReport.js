@@ -11,7 +11,7 @@ import {
   ClockIcon,
   ExclamationTriangleIcon,
   UserGroupIcon,
-  TrendingUpIcon,
+  ArrowTrendingUpIcon,
   TrendingDownIcon,
   LightBulbIcon,
   DocumentTextIcon,
@@ -398,7 +398,7 @@ const LessonsLearnedReport = ({ blockers = [], subcontractors = [], projects = [
       {/* Key Insights */}
       <Card className="p-6">
         <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
-          <TrendingUpIcon className="h-5 w-5 mr-2" />
+          <ArrowTrendingUpIcon className="h-5 w-5 mr-2" />
           Key Insights & Recommendations
         </h3>
 
