@@ -56,7 +56,19 @@ const CompanyOverviewDashboard = ({ companyId }) => {
     budget: '',
     location: '',
     projectManager: '',
-    priority: 'medium'
+    priority: 'medium',
+    drawings: []
+  });
+
+  // Drawings state
+  const [projectDrawings, setProjectDrawings] = useState([]);
+  const [showDrawingUpload, setShowDrawingUpload] = useState(false);
+  const [newDrawing, setNewDrawing] = useState({
+    name: '',
+    category: 'architectural',
+    version: '1.0',
+    description: '',
+    file: null
   });
 
   // Company/Platform Statistics
@@ -567,7 +579,17 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       budget: '',
       location: '',
       projectManager: '',
-      priority: 'medium'
+      priority: 'medium',
+      drawings: []
+    });
+    setProjectDrawings([]);
+    setShowDrawingUpload(false);
+    setNewDrawing({
+      name: '',
+      category: 'architectural',
+      version: '1.0',
+      description: '',
+      file: null
     });
   };
 
@@ -592,6 +614,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       const newProjectData = {
         id: Date.now().toString(),
         ...newProject,
+        drawings: projectDrawings,
         companyId: companyId || 'demo_company',
         createdAt: new Date().toISOString(),
         blockers: 0,
@@ -611,6 +634,68 @@ const CompanyOverviewDashboard = ({ companyId }) => {
     }
   };
 
+  // Drawing management handlers
+  const handleAddDrawing = () => {
+    if (!newDrawing.name.trim()) {
+      alert('Drawing name is required');
+      return;
+    }
+
+    const drawing = {
+      id: Date.now().toString(),
+      ...newDrawing,
+      uploadedAt: new Date().toISOString(),
+      uploadedBy: user?.name || 'Current User',
+      status: 'active'
+    };
+
+    setProjectDrawings(prev => [...prev, drawing]);
+    setNewDrawing({
+      name: '',
+      category: 'architectural',
+      version: '1.0',
+      description: '',
+      file: null
+    });
+    setShowDrawingUpload(false);
+  };
+
+  const handleRemoveDrawing = (drawingId) => {
+    setProjectDrawings(prev => prev.filter(d => d.id !== drawingId));
+  };
+
+  const handleDrawingInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewDrawing(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Validate file type
+      const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'application/vnd.ms-excel', 'text/csv'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Please upload a valid file type (PDF, Image, Excel, CSV)');
+        return;
+      }
+
+      // Validate file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        alert('File size must be less than 10MB');
+        return;
+      }
+
+      setNewDrawing(prev => ({
+        ...prev,
+        file: file,
+        name: prev.name || file.name.split('.')[0]
+      }));
+    }
+  };
+
   // Edit Project Handlers
   const handleEditProject = (project) => {
     setEditingProject(project);
@@ -623,8 +708,10 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       budget: project.budget || '',
       location: project.location || '',
       projectManager: project.projectManager || '',
-      priority: project.priority || 'medium'
+      priority: project.priority || 'medium',
+      drawings: project.drawings || []
     });
+    setProjectDrawings(project.drawings || []);
     setShowEditProjectModal(true);
   };
 
@@ -640,7 +727,17 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       budget: '',
       location: '',
       projectManager: '',
-      priority: 'medium'
+      priority: 'medium',
+      drawings: []
+    });
+    setProjectDrawings([]);
+    setShowDrawingUpload(false);
+    setNewDrawing({
+      name: '',
+      category: 'architectural',
+      version: '1.0',
+      description: '',
+      file: null
     });
   };
 
@@ -656,7 +753,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       // Update the project in the projects list
       setProjects(prev => prev.map(project =>
         project.id === editingProject.id
-          ? { ...project, ...newProject, updatedAt: new Date().toISOString() }
+          ? { ...project, ...newProject, drawings: projectDrawings, updatedAt: new Date().toISOString() }
           : project
       ));
 
@@ -1352,6 +1449,151 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
                   placeholder="Project manager name"
                 />
+              </div>
+
+              {/* Project Drawings Section */}
+              <div className="md:col-span-2">
+                <div className="border-t border-slate-200 pt-6 mt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h4 className="text-md font-semibold text-slate-900">Project Drawings</h4>
+                      <p className="text-sm text-slate-600">Upload architectural plans, blueprints, and technical drawings</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowDrawingUpload(true)}
+                    >
+                      <PlusIcon className="h-4 w-4 mr-2" />
+                      Add Drawing
+                    </Button>
+                  </div>
+
+                  {/* Drawing Upload Form */}
+                  {showDrawingUpload && (
+                    <div className="bg-slate-50 p-4 rounded-lg mb-4">
+                      <h5 className="text-sm font-semibold text-slate-900 mb-3">Upload New Drawing</h5>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">Drawing Name *</label>
+                          <input
+                            type="text"
+                            name="name"
+                            value={newDrawing.name}
+                            onChange={handleDrawingInputChange}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500"
+                            placeholder="e.g., Floor Plan Level 1"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">Category</label>
+                          <select
+                            name="category"
+                            value={newDrawing.category}
+                            onChange={handleDrawingInputChange}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500"
+                          >
+                            <option value="architectural">Architectural</option>
+                            <option value="structural">Structural</option>
+                            <option value="electrical">Electrical</option>
+                            <option value="plumbing">Plumbing</option>
+                            <option value="hvac">HVAC</option>
+                            <option value="mechanical">Mechanical</option>
+                            <option value="site_plan">Site Plan</option>
+                            <option value="elevation">Elevation</option>
+                            <option value="section">Section</option>
+                            <option value="detail">Detail</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">Version</label>
+                          <input
+                            type="text"
+                            name="version"
+                            value={newDrawing.version}
+                            onChange={handleDrawingInputChange}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500"
+                            placeholder="e.g., 1.0, Rev A"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">File Upload</label>
+                          <input
+                            type="file"
+                            onChange={handleFileChange}
+                            accept=".pdf,.jpg,.jpeg,.png,.gif,.xls,.xlsx,.csv"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-construction-50 file:text-construction-700 hover:file:bg-construction-100"
+                          />
+                          <p className="text-xs text-slate-500 mt-1">Supported: PDF, Images, Excel, CSV (Max 10MB)</p>
+                        </div>
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium text-slate-700 mb-2">Description</label>
+                          <textarea
+                            name="description"
+                            value={newDrawing.description}
+                            onChange={handleDrawingInputChange}
+                            rows={2}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500"
+                            placeholder="Optional description or notes about this drawing"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex space-x-3 mt-4">
+                        <Button type="button" variant="primary" size="sm" onClick={handleAddDrawing}>
+                          Add Drawing
+                        </Button>
+                        <Button type="button" variant="ghost" size="sm" onClick={() => setShowDrawingUpload(false)}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Existing Drawings List */}
+                  {projectDrawings.length > 0 && (
+                    <div className="space-y-3">
+                      <h5 className="text-sm font-semibold text-slate-900">Added Drawings ({projectDrawings.length})</h5>
+                      {projectDrawings.map((drawing) => (
+                        <div key={drawing.id} className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-3">
+                              <DocumentIcon className="h-5 w-5 text-construction-600" />
+                              <div>
+                                <p className="text-sm font-medium text-slate-900">{drawing.name}</p>
+                                <div className="flex items-center space-x-4 text-xs text-slate-500">
+                                  <span className="capitalize">{drawing.category}</span>
+                                  <span>v{drawing.version}</span>
+                                  {drawing.file && <span>{drawing.file.name}</span>}
+                                </div>
+                                {drawing.description && (
+                                  <p className="text-xs text-slate-600 mt-1">{drawing.description}</p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveDrawing(drawing.id)}
+                            className="text-red-600 hover:text-red-700 p-1"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {projectDrawings.length === 0 && !showDrawingUpload && (
+                    <div className="text-center py-6 text-slate-500">
+                      <DocumentIcon className="h-8 w-8 mx-auto mb-2 text-slate-400" />
+                      <p className="text-sm">No drawings added yet</p>
+                      <p className="text-xs">Click "Add Drawing" to upload project documents</p>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
