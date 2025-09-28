@@ -54,18 +54,6 @@ const NavigationBar = () => {
 
   const getNavigationItems = () => {
     const baseItems = [];
-
-    // Add Analytics for all users except super_admin (they have Business Analytics)
-    if (userRole !== 'super_admin') {
-      baseItems.push({
-        name: 'Analytics',
-        path: '/analytics',
-        icon: ChartBarIcon,
-        description: 'View performance metrics and reports',
-        allowedRoles: 'all'
-      });
-    }
-
     const roleSpecificItems = [];
 
     switch (userRole) {
@@ -84,10 +72,10 @@ const NavigationBar = () => {
       case 'company_admin':
         roleSpecificItems.push(
           {
-            name: 'Company Overview',
+            name: 'Company Analytics',
             path: '/company-admin',
-            icon: BuildingOfficeIcon,
-            description: 'Manage company statistics and team'
+            icon: ChartBarIcon,
+            description: 'Comprehensive analytics, metrics, and company management'
           }
         );
         break;
@@ -95,6 +83,13 @@ const NavigationBar = () => {
       case 'field_worker':
       case 'subcontractor':
       case 'supervisor':
+        baseItems.push({
+          name: 'Analytics',
+          path: '/analytics',
+          icon: ChartBarIcon,
+          description: 'View performance metrics and reports',
+          allowedRoles: 'all'
+        });
         roleSpecificItems.push(
           {
             name: 'Field Interface',
@@ -108,6 +103,13 @@ const NavigationBar = () => {
       case 'main_contractor':
       case 'project_manager':
       case 'subcontractor_manager':
+        baseItems.push({
+          name: 'Analytics',
+          path: '/analytics',
+          icon: ChartBarIcon,
+          description: 'View performance metrics and reports',
+          allowedRoles: 'all'
+        });
         roleSpecificItems.push(
           {
             name: 'Blockers',
