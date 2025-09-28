@@ -516,12 +516,15 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
   const [selectedBlocker, setSelectedBlocker] = useState(null);
   const [assignmentData, setAssignmentData] = useState({
     assignedTo: '',
+    assignmentType: 'subcontractor', // 'subcontractor' or 'manager'
     priority: 'medium',
     dueDate: '',
     notes: ''
   });
   const [subcontractors, setSubcontractors] = useState([]);
   const [loadingSubcontractors, setLoadingSubcontractors] = useState(true);
+  const [siteManagers, setSiteManagers] = useState([]);
+  const [loadingSiteManagers, setLoadingSiteManagers] = useState(true);
 
   // New blocker state
   const [newBlocker, setNewBlocker] = useState({
@@ -535,7 +538,7 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
 
   const pendingBlockers = blockers.filter(b => b.status === 'pending_review').length;
 
-  // Load subcontractors on component mount
+  // Load subcontractors and site managers on component mount
   useEffect(() => {
     const loadSubcontractors = async () => {
       if (!user?.companyId) return;
@@ -558,7 +561,43 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
       }
     };
 
+    const loadSiteManagers = async () => {
+      setLoadingSiteManagers(true);
+      try {
+        // Mock site managers data - in a real implementation, this would be an API call
+        const mockSiteManagers = [
+          {
+            id: 'mgr_1',
+            name: 'John Smith',
+            email: 'john.smith@company.com',
+            phone: '+1-555-0101',
+            specialization: 'General Construction',
+            projects: [project?.id].filter(Boolean)
+          },
+          {
+            id: 'mgr_2',
+            name: 'Sarah Johnson',
+            email: 'sarah.johnson@company.com',
+            phone: '+1-555-0102',
+            specialization: 'Safety & Compliance',
+            projects: [project?.id].filter(Boolean)
+          }
+        ];
+
+        // Filter managers assigned to current project or all if no specific project
+        const availableManagers = mockSiteManagers.filter(manager =>
+          !project?.id || manager.projects.includes(project.id) || manager.projects.length === 0
+        );
+        setSiteManagers(availableManagers);
+      } catch (error) {
+        console.error('Error loading site managers:', error);
+      } finally {
+        setLoadingSiteManagers(false);
+      }
+    };
+
     loadSubcontractors();
+    loadSiteManagers();
   }, [user?.companyId, project?.id]);
 
   const handlePhotoCapture = (file) => {
@@ -609,6 +648,7 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
     setSelectedBlocker(blocker);
     setAssignmentData({
       assignedTo: '',
+      assignmentType: 'subcontractor',
       priority: blocker.priority || 'medium',
       dueDate: '',
       notes: ''
@@ -618,7 +658,7 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
 
   const handleSubmitAssignment = () => {
     if (!assignmentData.assignedTo) {
-      alert('Please select a subcontractor');
+      alert(`Please select a ${assignmentData.assignmentType === 'subcontractor' ? 'subcontractor' : 'site manager'}`);
       return;
     }
 
@@ -626,6 +666,7 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
       ...selectedBlocker,
       status: 'assigned',
       assignedTo: assignmentData.assignedTo,
+      assignmentType: assignmentData.assignmentType,
       assignedAt: new Date().toISOString(),
       dueDate: assignmentData.dueDate,
       assignmentNotes: assignmentData.notes,
@@ -637,6 +678,7 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
     setSelectedBlocker(null);
     setAssignmentData({
       assignedTo: '',
+      assignmentType: 'subcontractor',
       priority: 'medium',
       dueDate: '',
       notes: ''
@@ -965,7 +1007,12 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
                     )}
                     {blocker.assignedTo && (
                       <div className="text-xs text-construction-600">
-                        Assigned: {subcontractors.find(s => s.id === blocker.assignedTo)?.name || 'Unknown'}
+                        Assigned: {
+                          blocker.assignmentType === 'manager'
+                            ? (siteManagers.find(m => m.id === blocker.assignedTo)?.name || 'Unknown Manager')
+                            : (subcontractors.find(s => s.id === blocker.assignedTo)?.name || 'Unknown Subcontractor')
+                        }
+                        {blocker.assignmentType === 'manager' && ' (Site Manager)'}
                       </div>
                     )}
                   </div>
@@ -1045,22 +1092,54 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                Assign to Subcontractor *
+                Assignment Type *
+              </label>
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                <TouchButton
+                  onClick={() => setAssignmentData(prev => ({ ...prev, assignmentType: 'subcontractor', assignedTo: '' }))}
+                  variant={assignmentData.assignmentType === 'subcontractor' ? 'primary' : 'outline'}
+                  size="md"
+                  className="text-sm py-2"
+                >
+                  Subcontractor
+                </TouchButton>
+                <TouchButton
+                  onClick={() => setAssignmentData(prev => ({ ...prev, assignmentType: 'manager', assignedTo: '' }))}
+                  variant={assignmentData.assignmentType === 'manager' ? 'primary' : 'outline'}
+                  size="md"
+                  className="text-sm py-2"
+                >
+                  Site Manager
+                </TouchButton>
+              </div>
+
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                {assignmentData.assignmentType === 'subcontractor' ? 'Select Subcontractor *' : 'Select Site Manager *'}
               </label>
               <select
                 value={assignmentData.assignedTo}
                 onChange={(e) => setAssignmentData(prev => ({ ...prev, assignedTo: e.target.value }))}
                 className="form-select w-full py-3 text-sm"
-                disabled={loadingSubcontractors}
+                disabled={assignmentData.assignmentType === 'subcontractor' ? loadingSubcontractors : loadingSiteManagers}
               >
                 <option value="">
-                  {loadingSubcontractors ? 'Loading subcontractors...' : 'Select a subcontractor...'}
+                  {assignmentData.assignmentType === 'subcontractor'
+                    ? (loadingSubcontractors ? 'Loading subcontractors...' : 'Select a subcontractor...')
+                    : (loadingSiteManagers ? 'Loading site managers...' : 'Select a site manager...')
+                  }
                 </option>
-                {subcontractors.map(sub => (
-                  <option key={sub.id} value={sub.id}>
-                    {sub.name} ({sub.company_name}) - {sub.trade_type}
-                  </option>
-                ))}
+                {assignmentData.assignmentType === 'subcontractor'
+                  ? subcontractors.map(sub => (
+                      <option key={sub.id} value={sub.id}>
+                        {sub.name} ({sub.company_name}) - {sub.trade_type}
+                      </option>
+                    ))
+                  : siteManagers.map(manager => (
+                      <option key={manager.id} value={manager.id}>
+                        {manager.name} - {manager.specialization}
+                      </option>
+                    ))
+                }
               </select>
             </div>
 

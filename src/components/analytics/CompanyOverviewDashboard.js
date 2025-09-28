@@ -35,6 +35,15 @@ const CompanyOverviewDashboard = ({ companyId }) => {
   const [subcontractors, setSubcontractors] = useState([]);
   const [users, setUsers] = useState([]);
   const [projects, setProjects] = useState([]);
+  // const [siteManagers, setSiteManagers] = useState([]);
+  // const [showAddManagerModal, setShowAddManagerModal] = useState(false);
+  // const [newManager, setNewManager] = useState({
+  //   name: '',
+  //   email: '',
+  //   phone: '',
+  //   projects: [],
+  //   specialization: ''
+  // });
   const [selectedProject, setSelectedProject] = useState(null);
   const [showSubcontractorAnalytics, setShowSubcontractorAnalytics] = useState(false);
   const [showProjectTeamManagement, setShowProjectTeamManagement] = useState(false);
@@ -248,8 +257,43 @@ const CompanyOverviewDashboard = ({ companyId }) => {
         }
       ];
 
+      // Mock site managers data
+      const mockSiteManagers = [
+        {
+          id: 1,
+          name: 'John Smith',
+          email: 'john.smith@company.com',
+          phone: '+1 (555) 123-4567',
+          projects: [1, 2], // Residential Tower A and Office Complex B
+          specialization: 'Residential Construction',
+          status: 'active',
+          joinDate: '2023-01-15'
+        },
+        {
+          id: 2,
+          name: 'Sarah Johnson',
+          email: 'sarah.johnson@company.com',
+          phone: '+1 (555) 234-5678',
+          projects: [3], // Shopping Center Renovation
+          specialization: 'Commercial Development',
+          status: 'active',
+          joinDate: '2023-03-20'
+        },
+        {
+          id: 3,
+          name: 'Mike Davis',
+          email: 'mike.davis@company.com',
+          phone: '+1 (555) 345-6789',
+          projects: [3, 4], // Shopping Center and Corporate HQ
+          specialization: 'Project Coordination',
+          status: 'active',
+          joinDate: '2022-11-10'
+        }
+      ];
+
       setUsers(mockUsers);
       setProjects(mockProjects);
+      setSiteManagers(mockSiteManagers);
 
       // Calculate stats
       const totalBlockers = mockProjects.reduce((sum, p) => sum + p.blockers, 0);
@@ -479,6 +523,64 @@ const CompanyOverviewDashboard = ({ companyId }) => {
     } catch (error) {
       console.error('Error updating project:', error);
       alert('Error updating project');
+    }
+  };
+
+  // Site Manager Management Handlers
+  const handleAddManager = () => {
+    setShowAddManagerModal(true);
+  };
+
+  const handleCloseManagerModal = () => {
+    setShowAddManagerModal(false);
+    setNewManager({
+      name: '',
+      email: '',
+      phone: '',
+      projects: [],
+      specialization: ''
+    });
+  };
+
+  const handleManagerInputChange = (e) => {
+    const { name, value } = e.target;
+    setNewManager(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleManagerProjectToggle = (projectId) => {
+    setNewManager(prev => ({
+      ...prev,
+      projects: prev.projects.includes(projectId)
+        ? prev.projects.filter(id => id !== projectId)
+        : [...prev.projects, projectId]
+    }));
+  };
+
+  const handleCreateManager = async (e) => {
+    e.preventDefault();
+
+    if (!newManager.name.trim() || !newManager.email.trim()) {
+      alert('Name and email are required');
+      return;
+    }
+
+    try {
+      const newManagerData = {
+        id: Date.now(),
+        ...newManager,
+        status: 'active',
+        joinDate: new Date().toISOString().split('T')[0]
+      };
+
+      setSiteManagers(prev => [...prev, newManagerData]);
+      handleCloseManagerModal();
+      alert('Site manager added successfully!');
+    } catch (error) {
+      console.error('Error creating manager:', error);
+      alert('Error creating manager');
     }
   };
 
@@ -858,6 +960,137 @@ const CompanyOverviewDashboard = ({ companyId }) => {
     );
   };
 
+  const renderAddManagerModal = () => {
+    if (!showAddManagerModal) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          {/* Modal Header */}
+          <div className="flex items-center justify-between p-6 border-b border-slate-200">
+            <h3 className="text-lg font-semibold text-slate-900">Add Site Manager</h3>
+            <button
+              onClick={handleCloseManagerModal}
+              className="text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <XMarkIcon className="h-6 w-6" />
+            </button>
+          </div>
+
+          {/* Modal Body */}
+          <form onSubmit={handleCreateManager} className="p-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Manager Name */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={newManager.name}
+                  onChange={handleManagerInputChange}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                  placeholder="Enter manager's full name"
+                  required
+                />
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Email Address *
+                </label>
+                <input
+                  type="email"
+                  name="email"
+                  value={newManager.email}
+                  onChange={handleManagerInputChange}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                  placeholder="manager@example.com"
+                  required
+                />
+              </div>
+
+              {/* Phone */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Phone Number
+                </label>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={newManager.phone}
+                  onChange={handleManagerInputChange}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                  placeholder="+1 (555) 123-4567"
+                />
+              </div>
+
+              {/* Specialization */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Specialization
+                </label>
+                <input
+                  type="text"
+                  name="specialization"
+                  value={newManager.specialization}
+                  onChange={handleManagerInputChange}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                  placeholder="e.g., Residential Construction, Commercial Development"
+                />
+              </div>
+
+              {/* Project Assignments */}
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Project Assignments
+                </label>
+                <div className="space-y-2 max-h-40 overflow-y-auto border border-slate-200 rounded-lg p-3">
+                  {projects.map(project => (
+                    <label key={project.id} className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={newManager.projects.includes(project.id)}
+                        onChange={() => handleManagerProjectToggle(project.id)}
+                        className="rounded border-slate-300 text-construction-600 focus:ring-construction-500"
+                      />
+                      <div className="flex-1">
+                        <span className="text-sm font-medium text-slate-900">{project.name}</span>
+                        <span className="ml-2 text-xs text-slate-500">({project.status})</span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Select projects this manager will oversee
+                </p>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end space-x-4 mt-8 pt-6 border-t border-slate-200">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={handleCloseManagerModal}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="primary"
+              >
+                Add Site Manager
+              </Button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
   const renderProjects = () => (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -1118,13 +1351,93 @@ const CompanyOverviewDashboard = ({ companyId }) => {
   };
 
   const renderUsers = () => (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h3 className="text-lg font-semibold text-slate-900">Project Team Management</h3>
-          <p className="text-sm text-slate-600 mt-1">Manage team assignments per project</p>
+    <div className="space-y-8">
+      {/* Site Managers Section - Temporarily Commented Out */}
+      {/*
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">Site Managers</h3>
+            <p className="text-sm text-slate-600 mt-1">Manage site managers and their project assignments</p>
+          </div>
+          <Button variant="primary" size="sm" onClick={handleAddManager}>
+            <PlusIcon className="h-4 w-4 mr-2" />
+            Add Site Manager
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {siteManagers.map((manager) => (
+            <Card key={manager.id} className="p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div>
+                  <h4 className="font-semibold text-slate-900">{manager.name}</h4>
+                  <p className="text-sm text-slate-600">{manager.specialization}</p>
+                </div>
+                <Badge variant="construction" size="sm">
+                  Active
+                </Badge>
+              </div>
+
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center text-slate-600">
+                  <span className="w-16">Email:</span>
+                  <span className="font-medium">{manager.email}</span>
+                </div>
+                <div className="flex items-center text-slate-600">
+                  <span className="w-16">Phone:</span>
+                  <span className="font-medium">{manager.phone}</span>
+                </div>
+                <div className="flex items-start text-slate-600">
+                  <span className="w-16">Projects:</span>
+                  <div className="flex-1">
+                    {manager.projects.length > 0 ? (
+                      <div className="space-y-1">
+                        {manager.projects.map(projectId => {
+                          const project = projects.find(p => p.id === projectId);
+                          return project ? (
+                            <span key={projectId} className="inline-block bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs mr-1 mb-1">
+                              {project.name}
+                            </span>
+                          ) : null;
+                        })}
+                      </div>
+                    ) : (
+                      <span className="text-slate-400">No assignments</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ))}
+
+          {siteManagers.length === 0 && (
+            <div className="col-span-full">
+              <Card className="p-6">
+                <div className="text-center py-4 text-slate-600">
+                  <UserGroupIcon className="h-12 w-12 mx-auto mb-4 text-slate-300" />
+                  <h4 className="text-lg font-semibold text-slate-900 mb-2">No Site Managers</h4>
+                  <p className="mb-4">Add site managers to assign blockers and manage project remedies.</p>
+                  <Button onClick={handleAddManager} variant="primary">
+                    <PlusIcon className="h-4 w-4 mr-2" />
+                    Add First Site Manager
+                  </Button>
+                </div>
+              </Card>
+            </div>
+          )}
         </div>
       </div>
+      */}
+
+      {/* Project Team Management Section */}
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="text-lg font-semibold text-slate-900">Project Team Management</h3>
+            <p className="text-sm text-slate-600 mt-1">Manage team assignments per project</p>
+          </div>
+        </div>
 
       {/* Project Selection for Team Management */}
       <Card className="p-6">
@@ -1586,6 +1899,9 @@ const CompanyOverviewDashboard = ({ companyId }) => {
 
       {/* Project Modal (Add/Edit) */}
       {renderProjectModal()}
+
+      {/* Add Manager Modal - Temporarily Commented Out */}
+      {/* {renderAddManagerModal()} */}
     </div>
   );
 };
