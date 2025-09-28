@@ -917,138 +917,174 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       {/* Company Metrics */}
       {renderCompanyMetrics()}
 
-      {/* Analytics Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Blocker Analytics */}
-        <Card className="p-6">
-          <h4 className="text-lg font-semibold text-slate-900 mb-4">Blocker Analytics</h4>
-          <div className="space-y-4">
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <p className="text-2xl font-bold text-construction-600">{analytics.avgResolutionTime.toFixed(0)}h</p>
-                <p className="text-sm text-slate-600">Avg Resolution</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-red-600">{analytics.criticalBlockersCount}</p>
-                <p className="text-sm text-slate-600">Critical Issues</p>
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-yellow-600">{analytics.overdueBlockersCount}</p>
-                <p className="text-sm text-slate-600">Overdue</p>
-              </div>
-            </div>
-
-            {/* Blocker Types */}
-            <div>
-              <h5 className="text-md font-semibold text-slate-900 mb-3">Blockers by Type</h5>
-              <div className="space-y-2">
-                {analytics.blockersByType.map((type, index) => (
-                  <div key={index} className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
-                      <div
-                        className="w-3 h-3 rounded-full"
-                        style={{ backgroundColor: type.color }}
-                      ></div>
-                      <span className="text-sm text-slate-700">{type.name}</span>
-                    </div>
-                    <span className="text-sm font-medium text-slate-900">{type.value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
+      {/* Project Analytics Buttons */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h4 className="text-lg font-semibold text-slate-900">Project Analytics</h4>
+            <p className="text-sm text-slate-600">Click on any project to view detailed analytics and insights</p>
           </div>
-        </Card>
+        </div>
 
-        {/* Contractor Performance */}
-        <Card className="p-6">
-          <h4 className="text-lg font-semibold text-slate-900 mb-4">Top Contractor Performance</h4>
-          <div className="space-y-3">
-            {analytics.contractorPerformance.slice(0, 5).map((contractor, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">{contractor.name}</p>
-                  <p className="text-xs text-slate-600">{contractor.company}</p>
-                  <p className="text-xs text-construction-600 capitalize">{contractor.tradeType}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-green-600">{contractor.efficiency.toFixed(0)}%</p>
-                  <p className="text-xs text-slate-600">Efficiency</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {projects.map((project) => {
+            const resolutionRate = project.blockers > 0 ?
+              ((project.resolved / (project.blockers + project.resolved)) * 100).toFixed(1) : 100;
+            const criticalIssues = project.critical || 0;
 
-        {/* Resolution Times */}
-        <Card className="p-6">
-          <h4 className="text-lg font-semibold text-slate-900 mb-4">Resolution Performance</h4>
-          <div className="space-y-3">
-            {analytics.resolutionTimes.map((data, index) => (
-              <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">{data.contractor}</p>
-                  <p className="text-xs text-slate-600">{data.company}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-slate-900">{data.avgHours.toFixed(0)}h</p>
-                  <p className="text-xs text-slate-600">{data.blockersSolved} resolved</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-
-        {/* Problematic Locations */}
-        <Card className="p-6">
-          <h4 className="text-lg font-semibold text-slate-900 mb-4">Problematic Locations</h4>
-          <div className="space-y-3">
-            {analytics.problematicLocations.map((location, index) => (
-              <div key={index} className="flex items-center justify-between p-3 border border-slate-200 rounded-lg">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">{location.floor}</p>
-                  <div className="flex items-center space-x-2">
+            return (
+              <button
+                key={project.id}
+                onClick={() => setSelectedProject(project)}
+                className="text-left p-4 bg-white border border-slate-200 rounded-lg hover:border-construction-300 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h5 className="text-lg font-semibold text-slate-900 truncate">{project.name}</h5>
                     <Badge
-                      variant={location.severity === 'High' ? 'destructive' : location.severity === 'Medium' ? 'warning' : 'secondary'}
+                      variant={project.status === 'active' ? 'construction' : 'secondary'}
                       size="sm"
                     >
-                      {location.severity}
+                      {project.status}
                     </Badge>
                   </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-slate-900">{location.issues}</p>
-                  <p className="text-xs text-slate-600">issues</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </Card>
-      </div>
 
-      {/* Blocker Trends */}
-      <Card className="p-6">
-        <h4 className="text-lg font-semibold text-slate-900 mb-4">7-Day Blocker Trends</h4>
-        <div className="grid grid-cols-7 gap-4">
-          {analytics.blockerTrends.map((day, index) => (
-            <div key={index} className="text-center">
-              <p className="text-xs text-slate-600 mb-2">{day.date}</p>
-              <div className="space-y-1">
-                <div className="bg-red-100 rounded p-2">
-                  <p className="text-sm font-bold text-red-600">{day.created}</p>
-                  <p className="text-xs text-red-600">Created</p>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-slate-600">Progress</p>
+                      <p className="font-semibold text-slate-900">{project.progress}%</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-600">Blockers</p>
+                      <p className="font-semibold text-slate-900">{project.blockers}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-600">Resolution Rate</p>
+                      <p className="font-semibold text-green-600">{resolutionRate}%</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-600">Critical</p>
+                      <p className={`font-semibold ${criticalIssues > 0 ? 'text-red-600' : 'text-slate-900'}`}>
+                        {criticalIssues}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                    <span className="text-xs text-slate-500">Manager: {project.manager}</span>
+                    <div className="flex items-center text-construction-600">
+                      <span className="text-xs font-medium">View Analytics</span>
+                      <ArrowRightIcon className="h-3 w-3 ml-1" />
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-green-100 rounded p-2">
-                  <p className="text-sm font-bold text-green-600">{day.resolved}</p>
-                  <p className="text-xs text-green-600">Resolved</p>
-                </div>
-              </div>
-            </div>
-          ))}
+              </button>
+            );
+          })}
         </div>
       </Card>
 
-      {/* Project Comparison */}
-      {renderProjectComparison()}
+      {/* Selected Project Analytics */}
+      {selectedProject && (
+        <Card className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h4 className="text-lg font-semibold text-slate-900">{selectedProject.name} - Detailed Analytics</h4>
+              <p className="text-sm text-slate-600">Project manager: {selectedProject.manager}</p>
+            </div>
+            <button
+              onClick={() => setSelectedProject(null)}
+              className="text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <XMarkIcon className="h-6 w-6" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Project Overview */}
+            <div className="space-y-4">
+              <h5 className="text-md font-semibold text-slate-900">Project Overview</h5>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-50 p-4 rounded-lg">
+                  <p className="text-sm text-slate-600">Progress</p>
+                  <p className="text-2xl font-bold text-construction-600">{selectedProject.progress}%</p>
+                </div>
+                <div className="bg-slate-50 p-4 rounded-lg">
+                  <p className="text-sm text-slate-600">Active Blockers</p>
+                  <p className="text-2xl font-bold text-red-600">{selectedProject.blockers}</p>
+                </div>
+                <div className="bg-slate-50 p-4 rounded-lg">
+                  <p className="text-sm text-slate-600">Resolved</p>
+                  <p className="text-2xl font-bold text-green-600">{selectedProject.resolved}</p>
+                </div>
+                <div className="bg-slate-50 p-4 rounded-lg">
+                  <p className="text-sm text-slate-600">Critical Issues</p>
+                  <p className="text-2xl font-bold text-red-600">{selectedProject.critical || 0}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Project Details */}
+            <div className="space-y-4">
+              <h5 className="text-md font-semibold text-slate-900">Project Details</h5>
+              <div className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-sm text-slate-600">Budget:</span>
+                  <span className="text-sm font-medium text-slate-900">
+                    ${selectedProject.budget?.toLocaleString() || 'Not specified'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-slate-600">Timeline:</span>
+                  <span className="text-sm font-medium text-slate-900">
+                    {selectedProject.timeline || 'Not specified'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-slate-600">Last Activity:</span>
+                  <span className="text-sm font-medium text-slate-900">
+                    {selectedProject.lastActivity}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-slate-600">Status:</span>
+                  <Badge
+                    variant={selectedProject.status === 'active' ? 'construction' : 'secondary'}
+                    size="sm"
+                  >
+                    {selectedProject.status}
+                  </Badge>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Additional Analytics for Selected Project */}
+          <div className="mt-6 pt-6 border-t border-slate-200">
+            <h5 className="text-md font-semibold text-slate-900 mb-4">Performance Insights</h5>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center p-4 bg-blue-50 rounded-lg">
+                <p className="text-lg font-bold text-blue-600">
+                  {((selectedProject.resolved / (selectedProject.blockers + selectedProject.resolved)) * 100).toFixed(1)}%
+                </p>
+                <p className="text-sm text-blue-600">Resolution Rate</p>
+              </div>
+              <div className="text-center p-4 bg-green-50 rounded-lg">
+                <p className="text-lg font-bold text-green-600">
+                  {Math.max(0, selectedProject.progress - selectedProject.blockers)}
+                </p>
+                <p className="text-sm text-green-600">Performance Score</p>
+              </div>
+              <div className="text-center p-4 bg-yellow-50 rounded-lg">
+                <p className="text-lg font-bold text-yellow-600">
+                  {selectedProject.critical > 0 ? 'High' : selectedProject.blockers > 5 ? 'Medium' : 'Low'}
+                </p>
+                <p className="text-sm text-yellow-600">Risk Level</p>
+              </div>
+            </div>
+          </div>
+        </Card>
+      )}
     </div>
   );
 
