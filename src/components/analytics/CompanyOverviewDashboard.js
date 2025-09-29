@@ -57,6 +57,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
     location: '',
     projectManager: '',
     assignedUsers: [], // Array of user IDs assigned to this project
+    assignedSubcontractors: [], // Array of subcontractor company IDs assigned to this project
     priority: 'medium',
     drawings: []
   });
@@ -70,6 +71,23 @@ const CompanyOverviewDashboard = ({ companyId }) => {
     version: '1.0',
     description: '',
     file: null
+  });
+
+  // Subcontractor management within projects
+  const [projectSubcontractors, setProjectSubcontractors] = useState([]);
+  const [showProjectSubcontractorForm, setShowProjectSubcontractorForm] = useState(false);
+  const [newSubcontractor, setNewSubcontractor] = useState({
+    companyName: '',
+    tradeType: '',
+    contactEmail: '',
+    contactPhone: '',
+    users: [] // Array of individual subcontractor users
+  });
+  const [newSubcontractorUser, setNewSubcontractorUser] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    role: 'worker'
   });
 
   // Company/Platform Statistics
@@ -467,7 +485,6 @@ const CompanyOverviewDashboard = ({ companyId }) => {
     { id: 'project-navigation', label: 'Project Navigation', icon: FolderOpenIcon },
     { id: 'projects', label: 'Projects & Drawings', icon: FolderOpenIcon },
     { id: 'users', label: 'Team Management', icon: UserGroupIcon },
-    { id: 'subcontractors', label: 'Subcontractors', icon: BuildingOfficeIcon },
     { id: 'lessons-learned', label: 'Lessons Learned', icon: LightBulbIcon },
     { id: 'settings', label: 'Settings', icon: CogIcon }
   ];
@@ -585,6 +602,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       location: '',
       projectManager: '',
       assignedUsers: [],
+      assignedSubcontractors: [],
       priority: 'medium',
       drawings: []
     });
@@ -715,6 +733,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       location: project.location || '',
       projectManager: project.projectManager || '',
       assignedUsers: project.assignedUsers || [],
+      assignedSubcontractors: project.assignedSubcontractors || [],
       priority: project.priority || 'medium',
       drawings: project.drawings || []
     });
@@ -735,6 +754,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       location: '',
       projectManager: '',
       assignedUsers: [],
+      assignedSubcontractors: [],
       priority: 'medium',
       drawings: []
     });
@@ -773,6 +793,71 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       console.error('Error updating project:', error);
       alert('Error updating project');
     }
+  };
+
+  // Subcontractor management handlers for projects
+  const handleAddSubcontractorToProject = () => {
+    if (!newSubcontractor.companyName.trim() || !newSubcontractor.tradeType.trim()) {
+      alert('Company name and trade type are required');
+      return;
+    }
+
+    const subcontractorId = Date.now().toString();
+    const subcontractorData = {
+      id: subcontractorId,
+      ...newSubcontractor
+    };
+
+    setProjectSubcontractors(prev => [...prev, subcontractorData]);
+    setNewProject(prev => ({
+      ...prev,
+      assignedSubcontractors: [...prev.assignedSubcontractors, subcontractorId]
+    }));
+
+    // Reset form
+    setNewSubcontractor({
+      companyName: '',
+      tradeType: '',
+      contactEmail: '',
+      contactPhone: '',
+      users: []
+    });
+    setShowSubcontractorForm(false);
+  };
+
+  const handleAddUserToSubcontractor = () => {
+    if (!newSubcontractorUser.name.trim() || !newSubcontractorUser.email.trim()) {
+      alert('Name and email are required for subcontractor users');
+      return;
+    }
+
+    setNewSubcontractor(prev => ({
+      ...prev,
+      users: [...prev.users, { ...newSubcontractorUser, id: Date.now().toString() }]
+    }));
+
+    // Reset user form
+    setNewSubcontractorUser({
+      name: '',
+      email: '',
+      phone: '',
+      role: 'worker'
+    });
+  };
+
+  const handleRemoveUserFromSubcontractor = (userId) => {
+    setNewSubcontractor(prev => ({
+      ...prev,
+      users: prev.users.filter(user => user.id !== userId)
+    }));
+  };
+
+  const handleRemoveSubcontractorFromProject = (subcontractorId) => {
+    setProjectSubcontractors(prev => prev.filter(sub => sub.id !== subcontractorId));
+    setNewProject(prev => ({
+      ...prev,
+      assignedSubcontractors: prev.assignedSubcontractors.filter(id => id !== subcontractorId)
+    }));
   };
 
   // Render Functions
@@ -1794,6 +1879,259 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                   )}
                 </div>
               </div>
+
+              {/* Project Subcontractors Section */}
+              <div className="md:col-span-2">
+                <div className="border-t border-slate-200 pt-6 mt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h4 className="text-md font-semibold text-slate-900">Project Subcontractors</h4>
+                      <p className="text-sm text-slate-600">Manage subcontractor companies and their personnel for this project</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowProjectSubcontractorForm(true)}
+                    >
+                      <PlusIcon className="h-4 w-4 mr-2" />
+                      Add Subcontractor
+                    </Button>
+                  </div>
+
+                  {/* Subcontractor Form */}
+                  {showProjectSubcontractorForm && (
+                    <div className="bg-slate-50 p-4 rounded-lg mb-4">
+                      <h5 className="text-sm font-semibold text-slate-900 mb-3">Add Subcontractor Company</h5>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">Company Name *</label>
+                          <input
+                            type="text"
+                            value={newSubcontractor.companyName}
+                            onChange={(e) => setNewSubcontractor(prev => ({ ...prev, companyName: e.target.value }))}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                            placeholder="Subcontractor company name"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">Trade Type *</label>
+                          <select
+                            value={newSubcontractor.tradeType}
+                            onChange={(e) => setNewSubcontractor(prev => ({ ...prev, tradeType: e.target.value }))}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                          >
+                            <option value="">Select trade type</option>
+                            <option value="electrical">Electrical</option>
+                            <option value="plumbing">Plumbing</option>
+                            <option value="hvac">HVAC</option>
+                            <option value="carpentry">Carpentry</option>
+                            <option value="masonry">Masonry</option>
+                            <option value="roofing">Roofing</option>
+                            <option value="flooring">Flooring</option>
+                            <option value="painting">Painting</option>
+                            <option value="drywall">Drywall</option>
+                            <option value="concrete">Concrete</option>
+                            <option value="steel">Steel Work</option>
+                            <option value="excavation">Excavation</option>
+                            <option value="landscaping">Landscaping</option>
+                            <option value="security">Security Systems</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">Contact Email</label>
+                          <input
+                            type="email"
+                            value={newSubcontractor.contactEmail}
+                            onChange={(e) => setNewSubcontractor(prev => ({ ...prev, contactEmail: e.target.value }))}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                            placeholder="Primary contact email"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">Contact Phone</label>
+                          <input
+                            type="tel"
+                            value={newSubcontractor.contactPhone}
+                            onChange={(e) => setNewSubcontractor(prev => ({ ...prev, contactPhone: e.target.value }))}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                            placeholder="Primary contact phone"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Subcontractor Users Section */}
+                      <div className="border-t border-slate-200 pt-4 mt-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <h6 className="text-sm font-semibold text-slate-900">Subcontractor Personnel</h6>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              if (newSubcontractorUser.name && newSubcontractorUser.email) {
+                                handleAddUserToSubcontractor();
+                              }
+                            }}
+                          >
+                            <PlusIcon className="h-4 w-4 mr-1" />
+                            Add Person
+                          </Button>
+                        </div>
+
+                        {/* Add User Form */}
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
+                          <input
+                            type="text"
+                            value={newSubcontractorUser.name}
+                            onChange={(e) => setNewSubcontractorUser(prev => ({ ...prev, name: e.target.value }))}
+                            className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500 text-sm"
+                            placeholder="Full name"
+                          />
+                          <input
+                            type="email"
+                            value={newSubcontractorUser.email}
+                            onChange={(e) => setNewSubcontractorUser(prev => ({ ...prev, email: e.target.value }))}
+                            className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500 text-sm"
+                            placeholder="Email address"
+                          />
+                          <input
+                            type="tel"
+                            value={newSubcontractorUser.phone}
+                            onChange={(e) => setNewSubcontractorUser(prev => ({ ...prev, phone: e.target.value }))}
+                            className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500 text-sm"
+                            placeholder="Phone (optional)"
+                          />
+                          <select
+                            value={newSubcontractorUser.role}
+                            onChange={(e) => setNewSubcontractorUser(prev => ({ ...prev, role: e.target.value }))}
+                            className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500 text-sm"
+                          >
+                            <option value="worker">Worker</option>
+                            <option value="supervisor">Supervisor</option>
+                            <option value="foreman">Foreman</option>
+                            <option value="manager">Manager</option>
+                          </select>
+                        </div>
+
+                        {/* Current Users List */}
+                        {newSubcontractor.users.length > 0 && (
+                          <div className="space-y-2">
+                            {newSubcontractor.users.map((user) => (
+                              <div key={user.id} className="flex items-center justify-between bg-white p-2 rounded border">
+                                <div className="flex-1">
+                                  <span className="font-medium text-sm">{user.name}</span>
+                                  <span className="text-slate-500 text-sm ml-2">({user.email})</span>
+                                  <span className="text-xs bg-slate-100 px-2 py-1 rounded ml-2">{user.role}</span>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleRemoveUserFromSubcontractor(user.id)}
+                                  className="text-red-600 hover:text-red-800"
+                                >
+                                  <XMarkIcon className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Form Actions */}
+                      <div className="flex justify-end space-x-2 mt-4">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setShowProjectSubcontractorForm(false);
+                            setNewSubcontractor({
+                              companyName: '',
+                              tradeType: '',
+                              contactEmail: '',
+                              contactPhone: '',
+                              users: []
+                            });
+                            setNewSubcontractorUser({
+                              name: '',
+                              email: '',
+                              phone: '',
+                              role: 'worker'
+                            });
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="primary"
+                          size="sm"
+                          onClick={handleAddSubcontractorToProject}
+                        >
+                          Add Subcontractor
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Current Project Subcontractors List */}
+                  {projectSubcontractors.length > 0 ? (
+                    <div className="space-y-3">
+                      {projectSubcontractors.map((subcontractor) => (
+                        <div key={subcontractor.id} className="border border-slate-200 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center space-x-3">
+                              <h6 className="font-semibold text-slate-900">{subcontractor.companyName}</h6>
+                              <Badge variant="construction" size="sm">
+                                {subcontractor.tradeType}
+                              </Badge>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveSubcontractorFromProject(subcontractor.id)}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                            </Button>
+                          </div>
+
+                          {subcontractor.contactEmail && (
+                            <p className="text-sm text-slate-600 mb-1">Contact: {subcontractor.contactEmail}</p>
+                          )}
+
+                          {subcontractor.users.length > 0 && (
+                            <div className="mt-2">
+                              <p className="text-xs font-medium text-slate-700 mb-1">Personnel ({subcontractor.users.length}):</p>
+                              <div className="flex flex-wrap gap-1">
+                                {subcontractor.users.map((user) => (
+                                  <span key={user.id} className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-slate-100 text-slate-700">
+                                    {user.name} ({user.role})
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-6 text-slate-500">
+                      <BuildingOfficeIcon className="h-8 w-8 mx-auto mb-2 text-slate-400" />
+                      <p className="text-sm">No subcontractors assigned</p>
+                      <p className="text-xs">Click "Add Subcontractor" to assign companies to this project</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Modal Footer */}
@@ -1872,7 +2210,6 @@ const CompanyOverviewDashboard = ({ companyId }) => {
         )}
         {activeTab === 'projects' && renderProjects()}
         {activeTab === 'users' && renderUsers()}
-        {activeTab === 'subcontractors' && renderSubcontractors()}
         {activeTab === 'lessons-learned' && (
           <LessonsLearnedReport
             blockers={blockers}

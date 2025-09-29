@@ -23,12 +23,15 @@ import {
 
 const LessonsLearnedReport = ({ blockers = [], subcontractors = [], projects = [] }) => {
   const [selectedTimeframe, setSelectedTimeframe] = useState('last_30_days');
+  const [selectedProject, setSelectedProject] = useState('all');
+  const [selectedView, setSelectedView] = useState('overview');
+  const [selectedSubcontractor, setSelectedSubcontractor] = useState(null);
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     generateReport();
-  }, [blockers, subcontractors, selectedTimeframe]);
+  }, [blockers, subcontractors, selectedTimeframe, selectedProject]);
 
   const generateReport = () => {
     setLoading(true);
@@ -45,9 +48,16 @@ const LessonsLearnedReport = ({ blockers = [], subcontractors = [], projects = [
     const daysBack = timeframeFilters[selectedTimeframe] || 30;
     const startDate = new Date(now.getTime() - (daysBack * 24 * 60 * 60 * 1000));
 
-    const filteredBlockers = blockers.filter(blocker =>
+    let filteredBlockers = blockers.filter(blocker =>
       new Date(blocker.created_at) >= startDate
     );
+
+    // Filter by project if specific project selected
+    if (selectedProject !== 'all') {
+      filteredBlockers = filteredBlockers.filter(blocker =>
+        blocker.projectId === selectedProject || blocker.project_id === selectedProject
+      );
+    }
 
     // 1. Analyze highest volume blocker types
     const blockerTypeAnalysis = analyzeBlockerTypes(filteredBlockers);
@@ -61,16 +71,102 @@ const LessonsLearnedReport = ({ blockers = [], subcontractors = [], projects = [
     // 4. Generate insights and recommendations
     const insights = generateInsights(blockerTypeAnalysis, resolutionTimeAnalysis, contractorPerformanceAnalysis);
 
+    // Get current project info
+    const currentProject = selectedProject !== 'all'
+      ? projects.find(p => p.id === selectedProject)
+      : null;
+
+    // Generate project comparison data if viewing all projects
+    const projectComparison = selectedProject === 'all'
+      ? generateProjectComparison(blockers, projects, startDate)
+      : null;
+
     setReportData({
       blockerTypeAnalysis,
       resolutionTimeAnalysis,
       contractorPerformanceAnalysis,
       insights,
+      projectComparison,
+      currentProject,
       totalBlockers: filteredBlockers.length,
-      timeframe: selectedTimeframe
+      timeframe: selectedTimeframe,
+      selectedProject
     });
 
     setLoading(false);
+  };
+
+  const generateProjectComparison = (allBlockers, projects, startDate) => {
+    const projectStats = {};
+
+    // Initialize project stats
+    projects.forEach(project => {
+      projectStats[project.id] = {
+        id: project.id,
+        name: project.name,
+        totalBlockers: 0,
+        resolvedBlockers: 0,
+        avgResolutionTime: 0,
+        criticalBlockers: 0,
+        topIssueTypes: {},
+        contractorPerformance: {},
+        resolutionRate: 0,
+        assignedSubcontractors: project.assignedSubcontractors || []
+      };
+    });
+
+    // Analyze blockers by project
+    allBlockers
+      .filter(blocker => new Date(blocker.created_at) >= startDate)
+      .forEach(blocker => {
+        const projectId = blocker.projectId || blocker.project_id;
+        if (projectStats[projectId]) {
+          const stats = projectStats[projectId];
+          stats.totalBlockers++;
+
+          if (blocker.priority === 'critical' || blocker.priority === 'high') {
+            stats.criticalBlockers++;
+          }
+
+          if (blocker.status === 'verified_complete') {
+            stats.resolvedBlockers++;
+          }
+
+          // Track issue types
+          const type = blocker.category || blocker.type || 'Uncategorized';
+          stats.topIssueTypes[type] = (stats.topIssueTypes[type] || 0) + 1;
+
+          // Track contractor performance
+          if (blocker.assignedTo) {
+            if (!stats.contractorPerformance[blocker.assignedTo]) {
+              stats.contractorPerformance[blocker.assignedTo] = {
+                assigned: 0,
+                completed: 0,
+                avgTime: 0
+              };
+            }
+            stats.contractorPerformance[blocker.assignedTo].assigned++;
+            if (blocker.status === 'verified_complete') {
+              stats.contractorPerformance[blocker.assignedTo].completed++;
+            }
+          }
+        }
+      });
+
+    // Calculate derived metrics
+    Object.values(projectStats).forEach(stats => {
+      stats.resolutionRate = stats.totalBlockers > 0
+        ? Math.round((stats.resolvedBlockers / stats.totalBlockers) * 100)
+        : 0;
+
+      // Convert top issue types to sorted array
+      stats.topIssueTypes = Object.entries(stats.topIssueTypes)
+        .map(([type, count]) => ({ type, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 3);
+    });
+
+    return Object.values(projectStats).sort((a, b) => b.totalBlockers - a.totalBlockers);
   };
 
   const analyzeBlockerTypes = (blockers) => {
@@ -342,6 +438,437 @@ const LessonsLearnedReport = ({ blockers = [], subcontractors = [], projects = [
 
   const CHART_COLORS = ['#2563eb', '#dc2626', '#ea580c', '#65a30d', '#7c3aed', '#db2777', '#0891b2', '#4f46e5'];
 
+  const renderSubcontractorAnalysis = () => (
+    <div className="space-y-6">
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+          <UserGroupIcon className="h-5 w-5 mr-2" />
+          Subcontractor Performance Analysis
+        </h3>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+          {reportData.contractorPerformanceAnalysis.map((contractor) => (
+            <Card
+              key={contractor.id}
+              className={`p-4 cursor-pointer transition-all hover:shadow-md border-l-4 ${
+                contractor.performance === 'good' ? 'border-green-500' :
+                contractor.performance === 'average' ? 'border-yellow-500' :
+                'border-red-500'
+              }`}
+              onClick={() => setSelectedSubcontractor(contractor)}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="font-semibold text-slate-900">{contractor.name}</h4>
+                <Badge
+                  variant={contractor.performance === 'good' ? 'success' :
+                          contractor.performance === 'average' ? 'warning' : 'danger'}
+                  size="sm"
+                >
+                  {contractor.performance}
+                </Badge>
+              </div>
+
+              <p className="text-sm text-slate-600 mb-3">{contractor.company}</p>
+
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span>Resolution Rate:</span>
+                  <span className="font-medium">{contractor.resolutionRate}%</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Total Assigned:</span>
+                  <span className="font-medium">{contractor.totalAssigned}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Avg Resolution:</span>
+                  <span className="font-medium">{contractor.avgResolutionTime}d</span>
+                </div>
+              </div>
+
+              {Object.keys(contractor.problemTypes).length > 0 && (
+                <div className="mt-3 pt-3 border-t border-slate-100">
+                  <p className="text-xs text-slate-500 mb-1">Common Issues:</p>
+                  <div className="flex flex-wrap gap-1">
+                    {Object.entries(contractor.problemTypes)
+                      .sort(([,a], [,b]) => b - a)
+                      .slice(0, 3)
+                      .map(([type, count]) => (
+                        <span key={type} className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-slate-100 text-slate-700">
+                          {type} ({count})
+                        </span>
+                      ))}
+                  </div>
+                </div>
+              )}
+            </Card>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+
+  const renderProjectComparison = () => (
+    <div className="space-y-6">
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+          <BuildingOfficeIcon className="h-5 w-5 mr-2" />
+          Project Performance Comparison
+        </h3>
+
+        <div className="space-y-4">
+          {reportData.projectComparison?.map((project) => (
+            <Card key={project.id} className="p-4 border border-slate-200">
+              <div className="flex items-center justify-between mb-3">
+                <h4 className="font-semibold text-slate-900">{project.name}</h4>
+                <div className="flex items-center space-x-2">
+                  <Badge
+                    variant={project.resolutionRate >= 80 ? 'success' :
+                            project.resolutionRate >= 60 ? 'warning' : 'danger'}
+                    size="sm"
+                  >
+                    {project.resolutionRate}% resolved
+                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedProject(project.id)}
+                  >
+                    View Details
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <div className="text-slate-500">Total Blockers</div>
+                  <div className="font-semibold text-lg">{project.totalBlockers}</div>
+                </div>
+                <div>
+                  <div className="text-slate-500">Critical Issues</div>
+                  <div className="font-semibold text-lg text-red-600">{project.criticalBlockers}</div>
+                </div>
+                <div>
+                  <div className="text-slate-500">Resolved</div>
+                  <div className="font-semibold text-lg text-green-600">{project.resolvedBlockers}</div>
+                </div>
+                <div>
+                  <div className="text-slate-500">Subcontractors</div>
+                  <div className="font-semibold text-lg">{project.assignedSubcontractors.length}</div>
+                </div>
+              </div>
+
+              {project.topIssueTypes.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-slate-100">
+                  <p className="text-sm text-slate-500 mb-2">Top Issue Types:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {project.topIssueTypes.map((issue) => (
+                      <span key={issue.type} className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-construction-100 text-construction-800">
+                        {issue.type} ({issue.count})
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </Card>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+
+  const renderTrendsAnalysis = () => (
+    <div className="space-y-6">
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+          <ChartBarIcon className="h-5 w-5 mr-2" />
+          Trends & Pattern Analysis
+        </h3>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Resolution Time Trends */}
+          <div>
+            <h4 className="font-medium text-slate-900 mb-3">Resolution Time by Issue Type</h4>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={reportData.resolutionTimeAnalysis.avgTimesByType}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="type"
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                  interval={0}
+                />
+                <YAxis />
+                <Tooltip formatter={(value) => [`${value} days`, 'Avg Resolution Time']} />
+                <Bar dataKey="avgTime" fill="#f59e0b" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Blocker Type Distribution */}
+          <div>
+            <h4 className="font-medium text-slate-900 mb-3">Issue Type Distribution</h4>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={reportData.blockerTypeAnalysis.slice(0, 6)}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="type"
+                  angle={-45}
+                  textAnchor="end"
+                  height={80}
+                  interval={0}
+                />
+                <YAxis />
+                <Tooltip />
+                <Bar dataKey="count" fill="#3b82f6" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Insights */}
+        <div className="mt-6 pt-6 border-t border-slate-200">
+          <h4 className="font-medium text-slate-900 mb-3">Key Trends Identified:</h4>
+          <div className="space-y-2 text-sm text-slate-600">
+            <div className="flex items-start space-x-2">
+              <ArrowTrendingUpIcon className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+              <span>Electrical issues have the highest volume with an average resolution time of {reportData.resolutionTimeAnalysis.avgTimesByType.find(t => t.type === 'Electrical')?.avgTime || 'N/A'} days</span>
+            </div>
+            <div className="flex items-start space-x-2">
+              <ClockIcon className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+              <span>Overall average resolution time: {reportData.resolutionTimeAnalysis.overallAvgTime} days</span>
+            </div>
+            <div className="flex items-start space-x-2">
+              <CheckCircleIcon className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+              <span>Top performing contractors maintain resolution rates above 85%</span>
+            </div>
+          </div>
+        </div>
+      </Card>
+    </div>
+  );
+
+  const renderProjectSpecificInsights = () => (
+    <div className="space-y-6">
+      {/* Project Overview */}
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+          <BuildingOfficeIcon className="h-5 w-5 mr-2" />
+          Project-Specific Insights: {reportData.currentProject?.name}
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-slate-900">{reportData.totalBlockers}</div>
+            <div className="text-sm text-slate-600">Total Issues</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-green-600">
+              {Math.round((reportData.totalBlockers - reportData.blockerTypeAnalysis.reduce((sum, type) => sum + (type.count - type.resolvedCount), 0)) / reportData.totalBlockers * 100) || 0}%
+            </div>
+            <div className="text-sm text-slate-600">Resolution Rate</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-yellow-600">
+              {reportData.resolutionTimeAnalysis.overallAvgTime}d
+            </div>
+            <div className="text-sm text-slate-600">Avg Resolution</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-blue-600">
+              {reportData.currentProject?.assignedSubcontractors?.length || 0}
+            </div>
+            <div className="text-sm text-slate-600">Subcontractors</div>
+          </div>
+        </div>
+
+        {/* Project-Specific Recommendations */}
+        <div className="border-t border-slate-200 pt-4">
+          <h4 className="font-medium text-slate-900 mb-3">Project-Specific Recommendations:</h4>
+          <div className="space-y-2 text-sm text-slate-600">
+            {reportData.blockerTypeAnalysis.length > 0 && (
+              <div className="flex items-start space-x-2">
+                <ExclamationTriangleIcon className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                <span>
+                  Focus on {reportData.blockerTypeAnalysis[0].type.toLowerCase()} issues - they represent
+                  {Math.round((reportData.blockerTypeAnalysis[0].count / reportData.totalBlockers) * 100)}% of all project issues
+                </span>
+              </div>
+            )}
+            {reportData.resolutionTimeAnalysis.overallAvgTime > 5 && (
+              <div className="flex items-start space-x-2">
+                <ClockIcon className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                <span>
+                  Resolution times are above average - consider process improvements or additional resources
+                </span>
+              </div>
+            )}
+            <div className="flex items-start space-x-2">
+              <CheckCircleIcon className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+              <span>
+                Regular contractor performance reviews could help optimize assignment strategies
+              </span>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Project Subcontractors Performance */}
+      {reportData.currentProject?.assignedSubcontractors?.length > 0 && (
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+            <UserGroupIcon className="h-5 w-5 mr-2" />
+            Project Subcontractor Performance
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {reportData.contractorPerformanceAnalysis
+              .filter(contractor =>
+                reportData.currentProject.assignedSubcontractors.includes(contractor.id)
+              )
+              .map(contractor => (
+                <div
+                  key={contractor.id}
+                  className={`p-4 border rounded-lg cursor-pointer hover:shadow-md transition-all border-l-4 ${
+                    contractor.performance === 'good' ? 'border-green-500' :
+                    contractor.performance === 'average' ? 'border-yellow-500' :
+                    'border-red-500'
+                  }`}
+                  onClick={() => setSelectedSubcontractor(contractor)}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="font-medium text-slate-900">{contractor.name}</h4>
+                    <Badge
+                      variant={contractor.performance === 'good' ? 'success' :
+                              contractor.performance === 'average' ? 'warning' : 'danger'}
+                      size="sm"
+                    >
+                      {contractor.performance}
+                    </Badge>
+                  </div>
+                  <div className="text-sm text-slate-600">
+                    {contractor.resolutionRate}% resolution rate • {contractor.totalAssigned} assigned
+                  </div>
+                </div>
+              ))}
+          </div>
+        </Card>
+      )}
+    </div>
+  );
+
+  const renderSubcontractorDetailModal = () => {
+    if (!selectedSubcontractor) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-between p-6 border-b border-slate-200">
+            <h3 className="text-lg font-semibold text-slate-900">
+              {selectedSubcontractor.name} - Detailed Performance Analysis
+            </h3>
+            <button
+              onClick={() => setSelectedSubcontractor(null)}
+              className="text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <XCircleIcon className="h-6 w-6" />
+            </button>
+          </div>
+
+          <div className="p-6 space-y-6">
+            {/* Performance Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <Card className="p-4 text-center">
+                <div className="text-2xl font-bold text-slate-900">{selectedSubcontractor.resolutionRate}%</div>
+                <div className="text-sm text-slate-600">Resolution Rate</div>
+              </Card>
+              <Card className="p-4 text-center">
+                <div className="text-2xl font-bold text-slate-900">{selectedSubcontractor.totalAssigned}</div>
+                <div className="text-sm text-slate-600">Total Assigned</div>
+              </Card>
+              <Card className="p-4 text-center">
+                <div className="text-2xl font-bold text-slate-900">{selectedSubcontractor.avgResolutionTime}d</div>
+                <div className="text-sm text-slate-600">Avg Resolution Time</div>
+              </Card>
+              <Card className="p-4 text-center">
+                <div className="text-2xl font-bold text-slate-900">{selectedSubcontractor.highPriorityCount}</div>
+                <div className="text-sm text-slate-600">High Priority Issues</div>
+              </Card>
+            </div>
+
+            {/* Problem Types Breakdown */}
+            <Card className="p-4">
+              <h4 className="font-semibold text-slate-900 mb-3">Issue Types Handled</h4>
+              <div className="space-y-2">
+                {Object.entries(selectedSubcontractor.problemTypes)
+                  .sort(([,a], [,b]) => b - a)
+                  .map(([type, count]) => (
+                    <div key={type} className="flex items-center justify-between">
+                      <span className="text-sm">{type}</span>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-24 bg-slate-200 rounded-full h-2">
+                          <div
+                            className="bg-construction-500 h-2 rounded-full"
+                            style={{
+                              width: `${(count / Math.max(...Object.values(selectedSubcontractor.problemTypes))) * 100}%`
+                            }}
+                          />
+                        </div>
+                        <span className="text-sm font-medium w-8 text-right">{count}</span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </Card>
+
+            {/* Recommendations */}
+            <Card className="p-4">
+              <h4 className="font-semibold text-slate-900 mb-3">Recommendations</h4>
+              <div className="space-y-2 text-sm">
+                {selectedSubcontractor.performance === 'poor' && (
+                  <>
+                    <div className="flex items-start space-x-2">
+                      <ExclamationTriangleIcon className="h-4 w-4 text-red-500 mt-0.5 flex-shrink-0" />
+                      <span>Consider additional training or support for this subcontractor</span>
+                    </div>
+                    <div className="flex items-start space-x-2">
+                      <ClockIcon className="h-4 w-4 text-yellow-500 mt-0.5 flex-shrink-0" />
+                      <span>Monitor resolution times more closely</span>
+                    </div>
+                  </>
+                )}
+                {selectedSubcontractor.performance === 'average' && (
+                  <>
+                    <div className="flex items-start space-x-2">
+                      <ArrowTrendingUpIcon className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                      <span>Provide targeted training on common issue types</span>
+                    </div>
+                    <div className="flex items-start space-x-2">
+                      <UserGroupIcon className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span>Pair with high-performing contractors for knowledge sharing</span>
+                    </div>
+                  </>
+                )}
+                {selectedSubcontractor.performance === 'good' && (
+                  <>
+                    <div className="flex items-start space-x-2">
+                      <CheckCircleIcon className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                      <span>Excellent performance - consider for complex projects</span>
+                    </div>
+                    <div className="flex items-start space-x-2">
+                      <UserGroupIcon className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                      <span>Could mentor other subcontractors</span>
+                    </div>
+                  </>
+                )}
+              </div>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -372,11 +899,41 @@ const LessonsLearnedReport = ({ blockers = [], subcontractors = [], projects = [
             Lessons Learned Report
           </h2>
           <p className="text-slate-600 mt-1">
-            Analysis of blocker patterns, resolution times, and contractor performance
+            {selectedProject === 'all'
+              ? 'Analysis of blocker patterns, resolution times, and contractor performance across all projects'
+              : `Project-specific analysis for ${reportData?.currentProject?.name || 'selected project'}`
+            }
           </p>
         </div>
 
         <div className="flex items-center space-x-4">
+          {/* Project Selection */}
+          <select
+            value={selectedProject}
+            onChange={(e) => setSelectedProject(e.target.value)}
+            className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+          >
+            <option value="all">All Projects</option>
+            {projects.map(project => (
+              <option key={project.id} value={project.id}>
+                {project.name}
+              </option>
+            ))}
+          </select>
+
+          {/* View Selection */}
+          <select
+            value={selectedView}
+            onChange={(e) => setSelectedView(e.target.value)}
+            className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+          >
+            <option value="overview">Overview</option>
+            <option value="subcontractors">Subcontractor Analysis</option>
+            <option value="projects">Project Comparison</option>
+            <option value="trends">Trends & Patterns</option>
+          </select>
+
+          {/* Timeframe Selection */}
           <select
             value={selectedTimeframe}
             onChange={(e) => setSelectedTimeframe(e.target.value)}
@@ -607,6 +1164,17 @@ const LessonsLearnedReport = ({ blockers = [], subcontractors = [], projects = [
           <div className="text-sm text-slate-600">Active Contractors</div>
         </Card>
       </div>
+
+      {/* Project-Specific Content when single project selected */}
+      {selectedProject !== 'all' && selectedView === 'overview' && renderProjectSpecificInsights()}
+
+      {/* View-based Content */}
+      {selectedView === 'subcontractors' && renderSubcontractorAnalysis()}
+      {selectedView === 'projects' && selectedProject === 'all' && renderProjectComparison()}
+      {selectedView === 'trends' && renderTrendsAnalysis()}
+
+      {/* Subcontractor Detail Modal */}
+      {renderSubcontractorDetailModal()}
     </div>
   );
 };
