@@ -56,6 +56,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
     budget: '',
     location: '',
     projectManager: '',
+    assignedUsers: [], // Array of user IDs assigned to this project
     priority: 'medium',
     drawings: []
   });
@@ -219,6 +220,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
           progress: 65,
           lastActivity: new Date(Date.now() - 24 * 60 * 60 * 1000).toLocaleDateString(),
           manager: 'John Smith',
+          assignedUsers: [],
           budget: 2500000,
           timeline: '18 months'
         },
@@ -232,6 +234,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
           progress: 45,
           lastActivity: new Date(Date.now() - 12 * 60 * 60 * 1000).toLocaleDateString(),
           manager: 'Sarah Johnson',
+          assignedUsers: [],
           budget: 1800000,
           timeline: '12 months'
         },
@@ -245,6 +248,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
           progress: 80,
           lastActivity: new Date(Date.now() - 6 * 60 * 60 * 1000).toLocaleDateString(),
           manager: 'Mike Davis',
+          assignedUsers: [],
           budget: 3200000,
           timeline: '24 months'
         },
@@ -258,6 +262,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
           progress: 15,
           lastActivity: new Date(Date.now() - 48 * 60 * 60 * 1000).toLocaleDateString(),
           manager: 'Lisa Chen',
+          assignedUsers: [],
           budget: 4500000,
           timeline: '30 months'
         }
@@ -579,6 +584,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       budget: '',
       location: '',
       projectManager: '',
+      assignedUsers: [],
       priority: 'medium',
       drawings: []
     });
@@ -618,7 +624,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
         companyId: companyId || 'demo_company',
         createdAt: new Date().toISOString(),
         blockers: 0,
-        teamMembers: 0
+        teamMembers: newProject.assignedUsers.length
       };
 
       // Add to projects list
@@ -708,6 +714,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       budget: project.budget || '',
       location: project.location || '',
       projectManager: project.projectManager || '',
+      assignedUsers: project.assignedUsers || [],
       priority: project.priority || 'medium',
       drawings: project.drawings || []
     });
@@ -727,6 +734,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       budget: '',
       location: '',
       projectManager: '',
+      assignedUsers: [],
       priority: 'medium',
       drawings: []
     });
@@ -753,7 +761,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       // Update the project in the projects list
       setProjects(prev => prev.map(project =>
         project.id === editingProject.id
-          ? { ...project, ...newProject, drawings: projectDrawings, updatedAt: new Date().toISOString() }
+          ? { ...project, ...newProject, drawings: projectDrawings, teamMembers: newProject.assignedUsers.length, updatedAt: new Date().toISOString() }
           : project
       ));
 
@@ -1603,7 +1611,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
               </div>
 
               {/* Project Manager */}
-              <div className="md:col-span-2">
+              <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">
                   Project Manager
                 </label>
@@ -1615,6 +1623,31 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                   className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
                   placeholder="Project manager name"
                 />
+              </div>
+
+              {/* Assigned Team Members */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Assigned Team Members
+                </label>
+                <select
+                  multiple
+                  value={newProject.assignedUsers}
+                  onChange={(e) => {
+                    const selectedUsers = Array.from(e.target.selectedOptions, option => option.value);
+                    setNewProject(prev => ({ ...prev, assignedUsers: selectedUsers }));
+                  }}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500 min-h-[120px]"
+                >
+                  {users.map(user => (
+                    <option key={user.id} value={user.email}>
+                      {user.name} ({user.email})
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-slate-500 mt-1">
+                  Hold Ctrl/Cmd to select multiple users. Assigned users will see this project in their field worker interface.
+                </p>
               </div>
 
               {/* Project Drawings Section */}

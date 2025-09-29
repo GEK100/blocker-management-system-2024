@@ -507,8 +507,9 @@ const FloorPlanViewer = ({ floorPlan, markers = [], onMarkerAdd, onMarkerSelect 
   );
 };
 
-const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBlocker, onUpdateBlocker }) => {
+const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [], onCreateBlocker, onUpdateBlocker }) => {
   const [activeTab, setActiveTab] = useState('home');
+  const [selectedProject, setSelectedProject] = useState(project);
   const [showPhotoCapture, setShowPhotoCapture] = useState(false);
   const [showVoiceRecording, setShowVoiceRecording] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
@@ -538,6 +539,18 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
 
   const pendingBlockers = blockers.filter(b => b.status === 'pending_review').length;
 
+  // Filter projects that the user is assigned to
+  const userProjects = projects.filter(project =>
+    project.assignedUsers && project.assignedUsers.includes(user?.email)
+  );
+
+  // Use the first assigned project if no project is selected
+  useEffect(() => {
+    if (!selectedProject && userProjects.length > 0) {
+      setSelectedProject(userProjects[0]);
+    }
+  }, [userProjects, selectedProject]);
+
   // Load subcontractors and site managers on component mount
   useEffect(() => {
     const loadSubcontractors = async () => {
@@ -550,7 +563,7 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
           // Filter subcontractors who have access to this project or all active ones if no specific project
           const availableSubcontractors = result.subcontractors.filter(sub =>
             sub.status === 'active' &&
-            (!project?.id || sub.project_access.includes(project.id) || sub.project_access.length === 0)
+            (!selectedProject?.id || sub.project_access.includes(selectedProject.id) || sub.project_access.length === 0)
           );
           setSubcontractors(availableSubcontractors);
         }
@@ -572,7 +585,7 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
             email: 'john.smith@company.com',
             phone: '+1-555-0101',
             specialization: 'General Construction',
-            projects: [project?.id].filter(Boolean)
+            projects: [selectedProject?.id].filter(Boolean)
           },
           {
             id: 'mgr_2',
@@ -580,13 +593,13 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
             email: 'sarah.johnson@company.com',
             phone: '+1-555-0102',
             specialization: 'Safety & Compliance',
-            projects: [project?.id].filter(Boolean)
+            projects: [selectedProject?.id].filter(Boolean)
           }
         ];
 
         // Filter managers assigned to current project or all if no specific project
         const availableManagers = mockSiteManagers.filter(manager =>
-          !project?.id || manager.projects.includes(project.id) || manager.projects.length === 0
+          !selectedProject?.id || manager.projects.includes(selectedProject.id) || manager.projects.length === 0
         );
         setSiteManagers(availableManagers);
       } catch (error) {
@@ -598,7 +611,7 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
 
     loadSubcontractors();
     loadSiteManagers();
-  }, [user?.companyId, project?.id]);
+  }, [user?.companyId, selectedProject?.id]);
 
   const handlePhotoCapture = (file) => {
     const url = URL.createObjectURL(file);
@@ -690,9 +703,44 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
       {/* Header */}
       <div className="bg-gradient-construction p-4 sm:p-6 text-white flex-shrink-0">
         <h1 className="text-xl sm:text-2xl font-bold mb-1">Field Worker</h1>
-        <p className="text-construction-100 text-sm sm:text-base">
-          {project?.name || 'Construction Site'}
-        </p>
+
+        {userProjects.length === 0 ? (
+          <div className="mt-2">
+            <p className="text-construction-100 text-sm sm:text-base mb-2">
+              No projects assigned
+            </p>
+            <p className="text-construction-200 text-xs">
+              Contact your admin to be assigned to projects
+            </p>
+          </div>
+        ) : (
+          <>
+            <p className="text-construction-100 text-sm sm:text-base">
+              {selectedProject?.name || 'Select a project'}
+            </p>
+
+            {/* Project Selector */}
+            {userProjects.length > 1 && (
+              <div className="mt-3">
+                <select
+                  value={selectedProject?.id || ''}
+                  onChange={(e) => {
+                    const project = userProjects.find(p => p.id === e.target.value);
+                    setSelectedProject(project);
+                  }}
+                  className="bg-white/10 border border-white/20 text-white text-sm rounded-lg px-3 py-2 min-w-[200px]"
+                >
+                  <option value="">Select Project</option>
+                  {userProjects.map(project => (
+                    <option key={project.id} value={project.id} className="text-slate-900">
+                      {project.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+          </>
+        )}
       </div>
 
       {/* Quick Actions */}
@@ -704,10 +752,17 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
           variant="primary"
           size="xl"
           className="w-full"
+          disabled={!selectedProject}
         >
           <PlusIcon className="h-6 w-6 mr-3" />
           Report New Blocker
         </TouchButton>
+
+        {!selectedProject && (
+          <p className="text-sm text-slate-500 text-center mt-2">
+            Select a project to start reporting blockers
+          </p>
+        )}
 
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
           <TouchButton
@@ -1054,8 +1109,8 @@ const MobileFieldWorkerInterface = ({ user, project, blockers = [], onCreateBloc
   const renderFloorPlanTab = () => (
     <div className="flex-1 overflow-y-auto">
       <FloorPlanViewer
-        floorPlan={project?.floorPlan}
-        markers={project?.blockerMarkers || []}
+        floorPlan={selectedProject?.floorPlan}
+        markers={selectedProject?.blockerMarkers || []}
         onMarkerAdd={(position) => {
           console.log('Add marker at:', position);
         }}

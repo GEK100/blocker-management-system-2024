@@ -6,7 +6,7 @@ import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import SuperAdminInterface from './SuperAdminInterface';
 import CompanyAdminInterface from './CompanyAdminInterface';
-import MobileFieldWorkerInterface from './MobileFieldWorkerInterface';
+import FieldWorkerWrapper from './FieldWorkerWrapper';
 import GDPRConsentForm from './GDPRConsentForm';
 import BlockerWorkflowManager from './BlockerWorkflowManager';
 import AnalyticsDashboard from './AnalyticsDashboard';
@@ -86,7 +86,7 @@ const AppRouter = () => {
 
           <Route path="/mobile" element={
             <ProtectedRoute allowedRoles={['field_worker', 'subcontractor', 'supervisor']}>
-              <MobileFieldWorkerInterface />
+              <FieldWorkerWrapper />
             </ProtectedRoute>
           } />
 

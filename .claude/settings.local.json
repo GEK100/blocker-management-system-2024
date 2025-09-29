@@ -5,7 +5,15 @@
       "Bash(gh:*)",
       "Bash(npm run build:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npx eslint:*)",
+      "Bash(rg:*)",
+      "Bash(node:*)",
+      "Bash(cat:*)",
+      "Bash(git log:*)",
+      "Bash(git shortlog:*)",
+      "Bash(markdown-pdf:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []
