@@ -58,6 +58,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
     projectManager: '',
     assignedUsers: [], // Array of user IDs assigned to this project
     assignedSubcontractors: [], // Array of subcontractor company IDs assigned to this project
+    projectTeam: [], // Array of team member IDs assigned to this project
     priority: 'medium',
     drawings: []
   });
@@ -88,6 +89,19 @@ const CompanyOverviewDashboard = ({ companyId }) => {
     email: '',
     phone: '',
     role: 'worker'
+  });
+
+  // Team management within projects
+  const [projectTeam, setProjectTeam] = useState([]);
+  const [showProjectTeamForm, setShowProjectTeamForm] = useState(false);
+  const [newTeamMember, setNewTeamMember] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    role: 'field_worker',
+    department: '',
+    startDate: '',
+    permissions: []
   });
 
   // Company/Platform Statistics
@@ -484,7 +498,6 @@ const CompanyOverviewDashboard = ({ companyId }) => {
     { id: 'overview', label: 'Overview & Analytics', icon: ChartBarIcon },
     { id: 'project-navigation', label: 'Project Navigation', icon: FolderOpenIcon },
     { id: 'projects', label: 'Projects & Drawings', icon: FolderOpenIcon },
-    { id: 'users', label: 'Team Management', icon: UserGroupIcon },
     { id: 'lessons-learned', label: 'Lessons Learned', icon: LightBulbIcon },
     { id: 'settings', label: 'Settings', icon: CogIcon }
   ];
@@ -603,6 +616,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       projectManager: '',
       assignedUsers: [],
       assignedSubcontractors: [],
+      projectTeam: [],
       priority: 'medium',
       drawings: []
     });
@@ -755,6 +769,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       projectManager: '',
       assignedUsers: [],
       assignedSubcontractors: [],
+      projectTeam: [],
       priority: 'medium',
       drawings: []
     });
@@ -857,6 +872,55 @@ const CompanyOverviewDashboard = ({ companyId }) => {
     setNewProject(prev => ({
       ...prev,
       assignedSubcontractors: prev.assignedSubcontractors.filter(id => id !== subcontractorId)
+    }));
+  };
+
+  // Team management handlers for projects
+  const handleAddTeamMemberToProject = () => {
+    if (!newTeamMember.name.trim() || !newTeamMember.email.trim()) {
+      alert('Name and email are required for team members');
+      return;
+    }
+
+    const teamMemberId = Date.now().toString();
+    const teamMemberData = {
+      id: teamMemberId,
+      ...newTeamMember
+    };
+
+    setProjectTeam(prev => [...prev, teamMemberData]);
+    setNewProject(prev => ({
+      ...prev,
+      projectTeam: [...prev.projectTeam, teamMemberId]
+    }));
+
+    // Reset form
+    setNewTeamMember({
+      name: '',
+      email: '',
+      phone: '',
+      role: 'field_worker',
+      department: '',
+      startDate: '',
+      permissions: []
+    });
+    setShowProjectTeamForm(false);
+  };
+
+  const handleRemoveTeamMemberFromProject = (teamMemberId) => {
+    setProjectTeam(prev => prev.filter(member => member.id !== teamMemberId));
+    setNewProject(prev => ({
+      ...prev,
+      projectTeam: prev.projectTeam.filter(id => id !== teamMemberId)
+    }));
+  };
+
+  const handleTogglePermission = (permission) => {
+    setNewTeamMember(prev => ({
+      ...prev,
+      permissions: prev.permissions.includes(permission)
+        ? prev.permissions.filter(p => p !== permission)
+        : [...prev.permissions, permission]
     }));
   };
 
@@ -2132,6 +2196,225 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                   )}
                 </div>
               </div>
+
+              {/* Project Team Management Section */}
+              <div className="md:col-span-2">
+                <div className="border-t border-slate-200 pt-6 mt-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h4 className="text-md font-semibold text-slate-900">Project Team Management</h4>
+                      <p className="text-sm text-slate-600">Manage internal team members and their roles for this project</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowProjectTeamForm(true)}
+                    >
+                      <PlusIcon className="h-4 w-4 mr-2" />
+                      Add Team Member
+                    </Button>
+                  </div>
+
+                  {/* Team Member Form */}
+                  {showProjectTeamForm && (
+                    <div className="bg-slate-50 p-4 rounded-lg mb-4">
+                      <h5 className="text-sm font-semibold text-slate-900 mb-3">Add Team Member</h5>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">Full Name *</label>
+                          <input
+                            type="text"
+                            value={newTeamMember.name}
+                            onChange={(e) => setNewTeamMember(prev => ({ ...prev, name: e.target.value }))}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                            placeholder="Team member full name"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">Email Address *</label>
+                          <input
+                            type="email"
+                            value={newTeamMember.email}
+                            onChange={(e) => setNewTeamMember(prev => ({ ...prev, email: e.target.value }))}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                            placeholder="email@example.com"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">Phone Number</label>
+                          <input
+                            type="tel"
+                            value={newTeamMember.phone}
+                            onChange={(e) => setNewTeamMember(prev => ({ ...prev, phone: e.target.value }))}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                            placeholder="Phone number"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">Role</label>
+                          <select
+                            value={newTeamMember.role}
+                            onChange={(e) => setNewTeamMember(prev => ({ ...prev, role: e.target.value }))}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                          >
+                            <option value="field_worker">Field Worker</option>
+                            <option value="supervisor">Supervisor</option>
+                            <option value="project_manager">Project Manager</option>
+                            <option value="site_manager">Site Manager</option>
+                            <option value="safety_officer">Safety Officer</option>
+                            <option value="quality_controller">Quality Controller</option>
+                            <option value="engineer">Engineer</option>
+                            <option value="architect">Architect</option>
+                            <option value="admin">Admin</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">Department</label>
+                          <input
+                            type="text"
+                            value={newTeamMember.department}
+                            onChange={(e) => setNewTeamMember(prev => ({ ...prev, department: e.target.value }))}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                            placeholder="Department/Team"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 mb-2">Start Date</label>
+                          <input
+                            type="date"
+                            value={newTeamMember.startDate}
+                            onChange={(e) => setNewTeamMember(prev => ({ ...prev, startDate: e.target.value }))}
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Permissions Section */}
+                      <div className="border-t border-slate-200 pt-4 mt-4">
+                        <h6 className="text-sm font-semibold text-slate-900 mb-3">Project Permissions</h6>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                          {[
+                            { key: 'view_blockers', label: 'View Blockers' },
+                            { key: 'create_blockers', label: 'Create Blockers' },
+                            { key: 'assign_blockers', label: 'Assign Blockers' },
+                            { key: 'resolve_blockers', label: 'Resolve Blockers' },
+                            { key: 'view_drawings', label: 'View Drawings' },
+                            { key: 'upload_drawings', label: 'Upload Drawings' },
+                            { key: 'manage_team', label: 'Manage Team' },
+                            { key: 'view_analytics', label: 'View Analytics' },
+                            { key: 'export_reports', label: 'Export Reports' }
+                          ].map(permission => (
+                            <label key={permission.key} className="flex items-center space-x-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={newTeamMember.permissions.includes(permission.key)}
+                                onChange={() => handleTogglePermission(permission.key)}
+                                className="rounded border-slate-300 text-construction-600 focus:ring-construction-500"
+                              />
+                              <span className="text-sm text-slate-700">{permission.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Form Actions */}
+                      <div className="flex justify-end space-x-2 mt-4">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setShowProjectTeamForm(false);
+                            setNewTeamMember({
+                              name: '',
+                              email: '',
+                              phone: '',
+                              role: 'field_worker',
+                              department: '',
+                              startDate: '',
+                              permissions: []
+                            });
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="primary"
+                          size="sm"
+                          onClick={handleAddTeamMemberToProject}
+                        >
+                          Add Team Member
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Current Project Team List */}
+                  {projectTeam.length > 0 ? (
+                    <div className="space-y-3">
+                      {projectTeam.map((member) => (
+                        <div key={member.id} className="border border-slate-200 rounded-lg p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center space-x-3">
+                              <h6 className="font-semibold text-slate-900">{member.name}</h6>
+                              <Badge variant="construction" size="sm">
+                                {member.role.replace('_', ' ')}
+                              </Badge>
+                              {member.department && (
+                                <span className="text-xs bg-slate-100 px-2 py-1 rounded text-slate-600">
+                                  {member.department}
+                                </span>
+                              )}
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleRemoveTeamMemberFromProject(member.id)}
+                              className="text-red-600 hover:text-red-800"
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                            </Button>
+                          </div>
+
+                          <div className="text-sm text-slate-600 space-y-1">
+                            <div>📧 {member.email}</div>
+                            {member.phone && <div>📞 {member.phone}</div>}
+                            {member.startDate && <div>📅 Starts: {new Date(member.startDate).toLocaleDateString()}</div>}
+                          </div>
+
+                          {member.permissions.length > 0 && (
+                            <div className="mt-2">
+                              <p className="text-xs font-medium text-slate-700 mb-1">Permissions:</p>
+                              <div className="flex flex-wrap gap-1">
+                                {member.permissions.map((permission) => (
+                                  <span key={permission} className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-800">
+                                    {permission.replace('_', ' ')}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-6 text-slate-500">
+                      <UserGroupIcon className="h-8 w-8 mx-auto mb-2 text-slate-400" />
+                      <p className="text-sm">No team members assigned</p>
+                      <p className="text-xs">Click "Add Team Member" to assign internal team members to this project</p>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Modal Footer */}
@@ -2209,7 +2492,6 @@ const CompanyOverviewDashboard = ({ companyId }) => {
           />
         )}
         {activeTab === 'projects' && renderProjects()}
-        {activeTab === 'users' && renderUsers()}
         {activeTab === 'lessons-learned' && (
           <LessonsLearnedReport
             blockers={blockers}
