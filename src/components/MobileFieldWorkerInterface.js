@@ -19,7 +19,9 @@ import {
   ChevronDownIcon,
   MagnifyingGlassIcon,
   ChartBarIcon,
-  ClockIcon
+  ClockIcon,
+  UserPlusIcon,
+  UserGroupIcon
 } from '@heroicons/react/24/outline';
 import {
   CameraIcon as CameraIconSolid,
@@ -528,6 +530,15 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
   const [loadingSubcontractors, setLoadingSubcontractors] = useState(true);
   const [siteManagers, setSiteManagers] = useState([]);
   const [loadingSiteManagers, setLoadingSiteManagers] = useState(true);
+  const [showAddManagerModal, setShowAddManagerModal] = useState(false);
+  const [newManager, setNewManager] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    role: 'Site Manager',
+    specialization: '',
+    department: ''
+  });
 
   // New blocker state
   const [newBlocker, setNewBlocker] = useState({
@@ -700,6 +711,37 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
     });
   };
 
+  const handleAddManager = () => {
+    if (!newManager.name.trim() || !newManager.email.trim()) {
+      alert('Please enter manager name and email');
+      return;
+    }
+
+    const manager = {
+      id: `mgr_${Date.now()}`,
+      ...newManager,
+      projects: [selectedProject?.id].filter(Boolean),
+      addedAt: new Date().toISOString(),
+      addedBy: user?.email
+    };
+
+    // Add to site managers list
+    setSiteManagers(prev => [...prev, manager]);
+
+    // Reset form
+    setNewManager({
+      name: '',
+      email: '',
+      phone: '',
+      role: 'Site Manager',
+      specialization: '',
+      department: ''
+    });
+
+    setShowAddManagerModal(false);
+    alert('Manager added successfully!');
+  };
+
   const renderHomeTab = () => (
     <div className="flex-1 overflow-y-auto pb-20">
       {/* Header */}
@@ -787,6 +829,47 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
             <span className="text-sm sm:text-base">Floor Plan</span>
           </TouchButton>
         </div>
+
+        {/* Manager Management Section */}
+        {selectedProject && (
+          <div className="mt-6 pt-6 border-t border-slate-200">
+            <h3 className="text-md font-semibold text-slate-900 mb-3">Project Management</h3>
+            <TouchButton
+              onClick={() => setShowAddManagerModal(true)}
+              variant="outline"
+              size="lg"
+              className="w-full"
+            >
+              <UserPlusIcon className="h-5 w-5 mr-2" />
+              Add Main Contractor Manager
+            </TouchButton>
+
+            {/* Current Managers List */}
+            {siteManagers.length > 0 && (
+              <div className="mt-4">
+                <h4 className="text-sm font-medium text-slate-700 mb-2">Current Managers</h4>
+                <div className="space-y-2">
+                  {siteManagers
+                    .filter(manager => !selectedProject?.id || manager.projects.includes(selectedProject.id) || manager.projects.length === 0)
+                    .map(manager => (
+                    <div key={manager.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                      <div className="flex items-center">
+                        <UserGroupIcon className="h-5 w-5 text-construction-600 mr-3" />
+                        <div>
+                          <div className="text-sm font-medium text-slate-900">{manager.name}</div>
+                          <div className="text-xs text-slate-600">{manager.specialization || 'Site Manager'}</div>
+                        </div>
+                      </div>
+                      <div className="text-xs text-construction-600 font-medium">
+                        {manager.addedBy === user?.email ? 'Added by you' : 'Active'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Recent Blockers */}
@@ -1313,6 +1396,136 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
     );
   };
 
+  const AddManagerModal = ({ isOpen, onClose, onSubmit }) => {
+    if (!isOpen) return null;
+
+    return (
+      <div className="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-6">
+        <div className="bg-white w-full sm:w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-slate-900">Add Main Contractor Manager</h3>
+            <TouchButton
+              onClick={onClose}
+              variant="ghost"
+              size="md"
+              className="p-2"
+            >
+              <XMarkIcon className="h-5 w-5" />
+            </TouchButton>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Manager Name *
+              </label>
+              <input
+                type="text"
+                value={newManager.name}
+                onChange={(e) => setNewManager(prev => ({ ...prev, name: e.target.value }))}
+                placeholder="Enter manager's full name"
+                className="form-input w-full py-3 text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Email Address *
+              </label>
+              <input
+                type="email"
+                value={newManager.email}
+                onChange={(e) => setNewManager(prev => ({ ...prev, email: e.target.value }))}
+                placeholder="manager@company.com"
+                className="form-input w-full py-3 text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                value={newManager.phone}
+                onChange={(e) => setNewManager(prev => ({ ...prev, phone: e.target.value }))}
+                placeholder="+1-555-0123"
+                className="form-input w-full py-3 text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Role
+              </label>
+              <select
+                value={newManager.role}
+                onChange={(e) => setNewManager(prev => ({ ...prev, role: e.target.value }))}
+                className="form-select w-full py-3 text-sm"
+              >
+                <option value="Site Manager">Site Manager</option>
+                <option value="Project Manager">Project Manager</option>
+                <option value="Safety Manager">Safety Manager</option>
+                <option value="Operations Manager">Operations Manager</option>
+                <option value="Construction Manager">Construction Manager</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Specialization
+              </label>
+              <input
+                type="text"
+                value={newManager.specialization}
+                onChange={(e) => setNewManager(prev => ({ ...prev, specialization: e.target.value }))}
+                placeholder="e.g., General Construction, Safety & Compliance"
+                className="form-input w-full py-3 text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Department
+              </label>
+              <input
+                type="text"
+                value={newManager.department}
+                onChange={(e) => setNewManager(prev => ({ ...prev, department: e.target.value }))}
+                placeholder="e.g., Construction, Safety, Operations"
+                className="form-input w-full py-3 text-sm"
+              />
+            </div>
+
+            <div className="pt-2 text-xs text-slate-600 bg-slate-50 p-3 rounded-lg">
+              <strong>Note:</strong> This manager will be added to the current project ({selectedProject?.name}) and will be available for blocker assignments.
+            </div>
+
+            <div className="flex space-x-3 pt-4">
+              <TouchButton
+                onClick={onClose}
+                variant="outline"
+                size="lg"
+                className="flex-1"
+              >
+                Cancel
+              </TouchButton>
+              <TouchButton
+                onClick={onSubmit}
+                variant="primary"
+                size="lg"
+                className="flex-1"
+                disabled={!newManager.name.trim() || !newManager.email.trim()}
+              >
+                Add Manager
+              </TouchButton>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const AssignmentModal = ({ isOpen, onClose, blocker, onSubmit }) => {
     if (!isOpen || !blocker) return null;
 
@@ -1525,6 +1738,12 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
         onClose={() => setShowAssignModal(false)}
         blocker={selectedBlocker}
         onSubmit={handleSubmitAssignment}
+      />
+
+      <AddManagerModal
+        isOpen={showAddManagerModal}
+        onClose={() => setShowAddManagerModal(false)}
+        onSubmit={handleAddManager}
       />
     </div>
   );
