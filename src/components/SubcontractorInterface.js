@@ -12,7 +12,10 @@ import {
   ExclamationTriangleIcon,
   CheckCircleIcon,
   ClockIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  UserGroupIcon,
+  ArrowDownTrayIcon,
+  BellIcon
 } from '@heroicons/react/24/outline';
 import {
   CameraIcon as CameraIconSolid
@@ -81,6 +84,25 @@ const SubcontractorInterface = ({ user, assignedProjects = [], projectDrawings =
   const [selectedDrawingCategory, setSelectedDrawingCategory] = useState('all');
   const [showCreateBlocker, setShowCreateBlocker] = useState(false);
 
+  // User management state
+  const [subcontractorUsers, setSubcontractorUsers] = useState([]);
+  const [showUserManagement, setShowUserManagement] = useState(false);
+  const [showAddUser, setShowAddUser] = useState(false);
+  const [newUser, setNewUser] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    role: 'worker',
+    skills: '',
+    certifications: ''
+  });
+
+  // Received blockers from main contractor
+  const [receivedBlockers, setReceivedBlockers] = useState([]);
+
+  // Drawings synced from company admin
+  const [syncedDrawings, setSyncedDrawings] = useState([]);
+
   // New blocker state
   const [newBlocker, setNewBlocker] = useState({
     title: '',
@@ -94,7 +116,118 @@ const SubcontractorInterface = ({ user, assignedProjects = [], projectDrawings =
     status: 'active'
   });
 
+  // Sync drawings from company admin
   useEffect(() => {
+    // Mock function to sync drawings from company admin
+    const syncDrawingsFromCompany = async () => {
+      try {
+        // In real implementation, this would fetch from API
+        const companyDrawings = [
+          {
+            id: 'drawing-1',
+            name: 'Site Foundation Plans',
+            category: 'Foundation',
+            version: '2.1',
+            uploadDate: '2024-01-15',
+            fileUrl: '/drawings/foundation-v2.1.pdf',
+            description: 'Updated foundation plans with new specifications',
+            autoSynced: true
+          },
+          {
+            id: 'drawing-2',
+            name: 'Electrical Layout Phase 1',
+            category: 'Electrical',
+            version: '1.3',
+            uploadDate: '2024-01-18',
+            fileUrl: '/drawings/electrical-phase1-v1.3.pdf',
+            description: 'Phase 1 electrical systems layout',
+            autoSynced: true
+          },
+          {
+            id: 'drawing-3',
+            name: 'HVAC System Design',
+            category: 'HVAC',
+            version: '1.0',
+            uploadDate: '2024-01-20',
+            fileUrl: '/drawings/hvac-design-v1.0.pdf',
+            description: 'Complete HVAC system design and specifications',
+            autoSynced: true
+          }
+        ];
+        setSyncedDrawings(companyDrawings);
+      } catch (error) {
+        console.error('Failed to sync drawings:', error);
+      }
+    };
+
+    syncDrawingsFromCompany();
+  }, []);
+
+  // Load subcontractor users and blockers
+  useEffect(() => {
+    // Load subcontractor team members
+    const loadSubcontractorUsers = () => {
+      const users = [
+        {
+          id: 'user-1',
+          name: 'Mike Johnson',
+          email: 'mike.johnson@subcontractor.com',
+          phone: '+1 (555) 123-4567',
+          role: 'foreman',
+          skills: 'Electrical, Safety Management',
+          certifications: 'OSHA 30, Electrical License',
+          status: 'active',
+          joinDate: '2024-01-10'
+        },
+        {
+          id: 'user-2',
+          name: 'Sarah Wilson',
+          email: 'sarah.wilson@subcontractor.com',
+          phone: '+1 (555) 234-5678',
+          role: 'worker',
+          skills: 'Wiring, Installation',
+          certifications: 'OSHA 10',
+          status: 'active',
+          joinDate: '2024-01-15'
+        }
+      ];
+      setSubcontractorUsers(users);
+    };
+
+    // Load received blockers from main contractor
+    const loadReceivedBlockers = () => {
+      const received = [
+        {
+          id: 'received-1',
+          title: 'Foundation Issue - Section B',
+          description: 'Foundation concrete has developed cracks in section B. Needs immediate inspection.',
+          priority: 'high',
+          status: 'assigned',
+          assignedBy: 'Main Contractor',
+          assignedDate: '2024-01-22',
+          dueDate: '2024-01-25',
+          category: 'structural',
+          location: 'Building B - Foundation'
+        },
+        {
+          id: 'received-2',
+          title: 'Electrical Panel Relocation',
+          description: 'Main electrical panel needs to be relocated due to space constraints.',
+          priority: 'medium',
+          status: 'in_progress',
+          assignedBy: 'Main Contractor',
+          assignedDate: '2024-01-20',
+          dueDate: '2024-01-28',
+          category: 'electrical',
+          location: 'Building A - Ground Floor'
+        }
+      ];
+      setReceivedBlockers(received);
+    };
+
+    loadSubcontractorUsers();
+    loadReceivedBlockers();
+
     // Load subcontractor-specific blockers
     const subcontractorBlockers = [
       {
@@ -157,6 +290,259 @@ const SubcontractorInterface = ({ user, assignedProjects = [], projectDrawings =
     setShowCreateBlocker(false);
     setActiveTab('blockers');
   };
+
+  // New render functions for enhanced subcontractor interface
+  const renderDrawingsTab = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-slate-900">Drawings & Documents</h3>
+        <div className="flex items-center space-x-2">
+          <span className="text-sm text-emerald-600 font-medium">Auto-synced from Company Admin</span>
+          <ArrowDownTrayIcon className="h-4 w-4 text-emerald-600" />
+        </div>
+      </div>
+
+      {syncedDrawings.length > 0 ? (
+        <div className="grid grid-cols-1 gap-4">
+          {syncedDrawings.map((drawing) => (
+            <div key={drawing.id} className="bg-white border border-slate-200 rounded-xl p-4 hover:border-emerald-300 transition-colors">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <DocumentIcon className="h-5 w-5 text-emerald-600" />
+                    <h4 className="font-semibold text-slate-900">{drawing.name}</h4>
+                    <span className="px-2 py-1 bg-emerald-100 text-emerald-700 text-xs rounded-full">
+                      {drawing.category}
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-600 mb-2">{drawing.description}</p>
+                  <div className="flex items-center space-x-4 text-xs text-slate-500">
+                    <span>Version {drawing.version}</span>
+                    <span>Updated {drawing.uploadDate}</span>
+                    {drawing.autoSynced && (
+                      <span className="text-emerald-600">✓ Synced</span>
+                    )}
+                  </div>
+                </div>
+                <TouchButton variant="outline" size="sm">
+                  <EyeIcon className="h-4 w-4 mr-1" />
+                  View
+                </TouchButton>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <DocumentIcon className="h-16 w-16 text-slate-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-slate-900 mb-2">No Drawings Available</h3>
+          <p className="text-slate-600">Drawings will appear here when uploaded by the company admin</p>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderUsersTab = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-slate-900">Team Management</h3>
+        <TouchButton variant="primary" size="sm" onClick={() => setShowAddUser(true)}>
+          <PlusIcon className="h-4 w-4 mr-2" />
+          Add Team Member
+        </TouchButton>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4">
+        {subcontractorUsers.map((user) => (
+          <div key={user.id} className="bg-white border border-slate-200 rounded-xl p-4">
+            <div className="flex items-start justify-between">
+              <div className="flex-1">
+                <div className="flex items-center space-x-2 mb-2">
+                  <div className="h-8 w-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-semibold text-emerald-700">
+                      {user.name.charAt(0)}
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-slate-900">{user.name}</h4>
+                    <p className="text-sm text-slate-600">{user.role}</p>
+                  </div>
+                </div>
+                <div className="space-y-1 text-sm text-slate-600">
+                  <p>📧 {user.email}</p>
+                  <p>📞 {user.phone}</p>
+                  <p>🛠️ Skills: {user.skills}</p>
+                  <p>📜 Certifications: {user.certifications}</p>
+                  <p>📅 Joined: {user.joinDate}</p>
+                </div>
+              </div>
+              <div className="flex space-x-2">
+                <TouchButton variant="outline" size="sm">
+                  <PencilIcon className="h-4 w-4" />
+                </TouchButton>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Add User Modal */}
+      {showAddUser && (
+        <div className="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-6">
+          <div className="bg-white w-full max-w-md rounded-3xl p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-slate-900">Add Team Member</h3>
+              <TouchButton
+                onClick={() => setShowAddUser(false)}
+                variant="ghost"
+                size="md"
+                className="p-2"
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </TouchButton>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Name</label>
+                <input
+                  type="text"
+                  value={newUser.name}
+                  onChange={(e) => setNewUser(prev => ({ ...prev, name: e.target.value }))}
+                  className="form-input w-full"
+                  placeholder="Full name"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Email</label>
+                <input
+                  type="email"
+                  value={newUser.email}
+                  onChange={(e) => setNewUser(prev => ({ ...prev, email: e.target.value }))}
+                  className="form-input w-full"
+                  placeholder="email@example.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Phone</label>
+                <input
+                  type="tel"
+                  value={newUser.phone}
+                  onChange={(e) => setNewUser(prev => ({ ...prev, phone: e.target.value }))}
+                  className="form-input w-full"
+                  placeholder="+1 (555) 123-4567"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Role</label>
+                <select
+                  value={newUser.role}
+                  onChange={(e) => setNewUser(prev => ({ ...prev, role: e.target.value }))}
+                  className="form-select w-full"
+                >
+                  <option value="worker">Worker</option>
+                  <option value="foreman">Foreman</option>
+                  <option value="supervisor">Supervisor</option>
+                </select>
+              </div>
+              <div className="flex space-x-3 pt-4">
+                <TouchButton
+                  onClick={() => setShowAddUser(false)}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Cancel
+                </TouchButton>
+                <TouchButton
+                  onClick={() => {
+                    const newUserWithId = {
+                      ...newUser,
+                      id: `user-${Date.now()}`,
+                      status: 'active',
+                      joinDate: new Date().toISOString().split('T')[0]
+                    };
+                    setSubcontractorUsers(prev => [...prev, newUserWithId]);
+                    setNewUser({ name: '', email: '', phone: '', role: 'worker', skills: '', certifications: '' });
+                    setShowAddUser(false);
+                  }}
+                  variant="primary"
+                  className="flex-1"
+                >
+                  Add User
+                </TouchButton>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const renderReceivedBlockersTab = () => (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-slate-900">Received from Main Contractor</h3>
+        <span className="px-3 py-1 bg-slate-100 text-slate-700 text-sm rounded-full">
+          {receivedBlockers.length} items
+        </span>
+      </div>
+
+      {receivedBlockers.length > 0 ? (
+        <div className="space-y-4">
+          {receivedBlockers.map((blocker) => (
+            <div key={blocker.id} className="bg-white border border-slate-200 rounded-xl p-4">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <h4 className="font-semibold text-slate-900">{blocker.title}</h4>
+                    <span className={`px-2 py-1 text-xs rounded-full ${
+                      blocker.priority === 'high' ? 'bg-red-100 text-red-700' :
+                      blocker.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-green-100 text-green-700'
+                    }`}>
+                      {blocker.priority}
+                    </span>
+                    <span className={`px-2 py-1 text-xs rounded-full ${
+                      blocker.status === 'assigned' ? 'bg-blue-100 text-blue-700' :
+                      blocker.status === 'in_progress' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-green-100 text-green-700'
+                    }`}>
+                      {blocker.status.replace('_', ' ')}
+                    </span>
+                  </div>
+                  <p className="text-sm text-slate-600 mb-2">{blocker.description}</p>
+                  <div className="flex items-center space-x-4 text-xs text-slate-500">
+                    <span>📍 {blocker.location}</span>
+                    <span>👤 {blocker.assignedBy}</span>
+                    <span>📅 Due: {blocker.dueDate}</span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex space-x-2">
+                <TouchButton variant="success" size="sm">
+                  <CheckCircleIcon className="h-4 w-4 mr-1" />
+                  Accept
+                </TouchButton>
+                <TouchButton variant="primary" size="sm">
+                  <ClockIcon className="h-4 w-4 mr-1" />
+                  Update Status
+                </TouchButton>
+                <TouchButton variant="outline" size="sm">
+                  <EyeIcon className="h-4 w-4 mr-1" />
+                  View Details
+                </TouchButton>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <BellIcon className="h-16 w-16 text-slate-400 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-slate-900 mb-2">No Items Received</h3>
+          <p className="text-slate-600">Items assigned by the main contractor will appear here</p>
+        </div>
+      )}
+    </div>
+  );
 
   const DrawingsModal = ({ isOpen, onClose }) => {
     if (!isOpen) return null;
@@ -695,7 +1081,22 @@ const SubcontractorInterface = ({ user, assignedProjects = [], projectDrawings =
             icon={DocumentIcon}
             label="Drawings"
             active={activeTab === 'drawings'}
-            onClick={() => setShowDrawingsModal(true)}
+            onClick={() => setActiveTab('drawings')}
+            badge={syncedDrawings.length}
+          />
+          <SubcontractorTab
+            icon={UserGroupIcon}
+            label="Team"
+            active={activeTab === 'users'}
+            onClick={() => setActiveTab('users')}
+            badge={subcontractorUsers.length}
+          />
+          <SubcontractorTab
+            icon={BellIcon}
+            label="Received"
+            active={activeTab === 'received'}
+            onClick={() => setActiveTab('received')}
+            badge={receivedBlockers.length}
           />
           <SubcontractorTab
             icon={ChartBarIcon}
@@ -710,6 +1111,9 @@ const SubcontractorInterface = ({ user, assignedProjects = [], projectDrawings =
       <div className="p-4">
         {activeTab === 'home' && renderHomeTab()}
         {activeTab === 'blockers' && renderBlockersTab()}
+        {activeTab === 'drawings' && renderDrawingsTab()}
+        {activeTab === 'users' && renderUsersTab()}
+        {activeTab === 'received' && renderReceivedBlockersTab()}
         {activeTab === 'analytics' && (
           <div className="text-center py-12">
             <ChartBarIcon className="h-16 w-16 text-slate-400 mx-auto mb-4" />

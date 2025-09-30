@@ -7,19 +7,19 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Construction industry color palette
-        construction: {
-          50: '#fef7ec',
-          100: '#fdecd3',
-          200: '#fbd5a5',
-          300: '#f7b76d',
-          400: '#f29432',
-          500: '#ed7611',
-          600: '#de5c0a',
-          700: '#b8450c',
-          800: '#923712',
-          900: '#762f12',
-          950: '#401606',
+        // Emerald professional color palette
+        emerald: {
+          50: '#ecfdf5',
+          100: '#d1fae5',
+          200: '#a7f3d0',
+          300: '#6ee7b7',
+          400: '#34d399',
+          500: '#10b981',
+          600: '#059669',
+          700: '#047857',
+          800: '#065f46',
+          900: '#064e3b',
+          950: '#022c22',
         },
         slate: {
           50: '#f8fafc',
@@ -98,8 +98,8 @@ module.exports = {
         '3xl': '1.5rem',
       },
       boxShadow: {
-        'construction': '0 4px 6px -1px rgba(237, 118, 17, 0.1), 0 2px 4px -1px rgba(237, 118, 17, 0.06)',
-        'construction-lg': '0 10px 15px -3px rgba(237, 118, 17, 0.1), 0 4px 6px -2px rgba(237, 118, 17, 0.05)',
+        'emerald': '0 4px 6px -1px rgba(5, 150, 105, 0.1), 0 2px 4px -1px rgba(5, 150, 105, 0.06)',
+        'emerald-lg': '0 10px 15px -3px rgba(5, 150, 105, 0.1), 0 4px 6px -2px rgba(5, 150, 105, 0.05)',
         'slate': '0 4px 6px -1px rgba(51, 65, 85, 0.1), 0 2px 4px -1px rgba(51, 65, 85, 0.06)',
         'slate-lg': '0 10px 15px -3px rgba(51, 65, 85, 0.1), 0 4px 6px -2px rgba(51, 65, 85, 0.05)',
         'inner-lg': 'inset 0 2px 4px 0 rgba(0, 0, 0, 0.06)',

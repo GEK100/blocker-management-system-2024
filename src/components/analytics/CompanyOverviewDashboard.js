@@ -495,9 +495,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
   };
 
   const tabs = [
-    { id: 'overview', label: 'Overview & Analytics', icon: ChartBarIcon },
-    { id: 'project-navigation', label: 'Project Navigation', icon: FolderOpenIcon },
-    { id: 'projects', label: 'Projects & Drawings', icon: FolderOpenIcon },
+    { id: 'overview', label: 'Company Overview', icon: ChartBarIcon },
     { id: 'lessons-learned', label: 'Lessons Learned', icon: LightBulbIcon },
     { id: 'settings', label: 'Settings', icon: CogIcon }
   ];
@@ -2489,13 +2487,6 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       <div className="mt-4 sm:mt-6 px-1 sm:px-0">
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'companies' && userRole === 'super_admin' && renderCompanies()}
-        {activeTab === 'project-navigation' && (
-          <ProjectNavigationWrapper
-            companyId={companyId}
-            onBack={() => setActiveTab('overview')}
-          />
-        )}
-        {activeTab === 'projects' && renderProjects()}
         {activeTab === 'lessons-learned' && (
           <LessonsLearnedReport
             blockers={blockers}
