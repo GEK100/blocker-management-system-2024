@@ -29,7 +29,11 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "deploy": "node deploy.js",
+    "deploy:preview": "npm run build && vercel",
+    "deploy:prod": "npm run build && vercel --prod",
+    "vercel:link": "vercel link"
   },
   "eslintConfig": {
     "extends": [
