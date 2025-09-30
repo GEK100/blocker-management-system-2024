@@ -520,3 +520,49 @@
     @apply bg-slate-800 border-slate-600 text-slate-100;
   }
 }
+
+/* Enhanced Mobile Optimizations */
+@media (max-width: 768px) {
+  /* Reduce excessive spacing on mobile */
+  .space-y-6 > * + * {
+    margin-top: 1rem !important;
+  }
+
+  .space-y-8 > * + * {
+    margin-top: 1.5rem !important;
+  }
+
+  /* Optimize cards for mobile */
+  .card {
+    @apply mx-1 sm:mx-0;
+  }
+
+  /* Better mobile typography */
+  h1, .text-3xl, .text-4xl {
+    @apply text-xl sm:text-2xl;
+  }
+
+  h2, .text-2xl {
+    @apply text-lg sm:text-xl;
+  }
+
+  /* Optimize modal for mobile */
+  .modal-overlay .bg-white {
+    @apply w-full h-full sm:w-auto sm:h-auto sm:rounded-xl;
+  }
+
+  /* Better button sizing on mobile */
+  .btn {
+    @apply py-3 px-4 text-base font-medium;
+  }
+
+  /* Optimize tables for mobile */
+  table {
+    @apply text-sm;
+  }
+
+  /* Better form elements on mobile */
+  input, select, textarea {
+    @apply text-base; /* Prevents zoom on iOS */
+  }
+}

@@ -837,7 +837,16 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       contactPhone: '',
       users: []
     });
-    setShowSubcontractorForm(false);
+
+    // Also reset the user form
+    setNewSubcontractorUser({
+      name: '',
+      email: '',
+      phone: '',
+      role: 'worker'
+    });
+
+    setShowProjectSubcontractorForm(false);
   };
 
   const handleAddUserToSubcontractor = () => {
@@ -926,7 +935,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
 
   // Render Functions
   const renderCompanyMetrics = () => (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 md:gap-6">
       <Card className="p-6">
         <div className="flex items-center justify-between">
           <div>
@@ -1083,7 +1092,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {projects.map((project) => {
             const resolutionRate = project.blockers > 0 ?
               ((project.resolved / (project.blockers + project.resolved)) * 100).toFixed(1) : 100;
@@ -1330,7 +1339,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
         </div>
 
         {/* Project Selection for Team Management */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {projects.map((project) => (
             <Card key={project.id} className="p-4 hover:shadow-md transition-shadow cursor-pointer">
               <div className="flex items-center justify-between mb-3">
@@ -1428,7 +1437,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
         )}
 
         {/* Users List */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {users.map((user) => (
             <Card key={user.id} className="p-4">
               <div className="flex items-center justify-between">
@@ -2440,13 +2449,13 @@ const CompanyOverviewDashboard = ({ companyId }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="text-2xl font-bold text-slate-900">
+      <div className="px-1 sm:px-0">
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
           {userRole === 'super_admin' ? 'Platform Overview' : 'Company Overview'}
         </h2>
-        <p className="text-slate-600 mt-1">
+        <p className="text-sm sm:text-base text-slate-600 mt-1">
           {userRole === 'super_admin'
             ? 'Manage platform companies, statistics, and system usage'
             : 'Manage your company statistics, team, and projects'
@@ -2455,13 +2464,13 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-slate-200">
-        <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+      <div className="border-b border-slate-200 -mx-2 sm:mx-0">
+        <nav className="-mb-px flex space-x-4 sm:space-x-8 overflow-x-auto px-2 sm:px-0 scrollbar-hide" aria-label="Tabs">
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             const buttonClasses = [
-              'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-2',
+              'whitespace-nowrap py-3 sm:py-2 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center space-x-1 sm:space-x-2 flex-shrink-0 touch-manipulation',
               isActive
                 ? 'border-construction-500 text-construction-600'
                 : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
@@ -2482,7 +2491,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       </div>
 
       {/* Tab Content */}
-      <div className="mt-6">
+      <div className="mt-4 sm:mt-6 px-1 sm:px-0">
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'companies' && userRole === 'super_admin' && renderCompanies()}
         {activeTab === 'project-navigation' && (
