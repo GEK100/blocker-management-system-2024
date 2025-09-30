@@ -324,7 +324,7 @@ const SubcontractorInterface = ({ user, assignedProjects = [], projectDrawings =
         </h2>
         {selectedProject ? (
           <p className="text-slate-600">
-            Working on: <span className="font-medium text-construction-600">{selectedProject.name}</span>
+            Working on: <span className="font-medium text-emerald-600">{selectedProject.name}</span>
           </p>
         ) : (
           <p className="text-slate-600">No project assigned</p>

@@ -282,14 +282,14 @@ const VoiceRecordingOverlay = ({ isOpen, onClose, onRecordingComplete }) => {
       <div className="card card-premium p-8 w-full max-w-sm">
         <div className="text-center">
           <div className="mb-6">
-            <div className={`inline-flex items-center justify-center w-24 h-24 rounded-full mb-4 transition-all duration-300 ${isRecording ? 'bg-red-50 shadow-glow' : 'bg-construction-50 shadow-soft'}`}>
-              <MicrophoneIcon className={`h-12 w-12 ${isRecording ? 'text-safety-600' : 'text-construction-600'}`} />
+            <div className={`inline-flex items-center justify-center w-24 h-24 rounded-full mb-4 transition-all duration-300 ${isRecording ? 'bg-red-50 shadow-glow' : 'bg-emerald-50 shadow-soft'}`}>
+              <MicrophoneIcon className={`h-12 w-12 ${isRecording ? 'text-safety-600' : 'text-emerald-600'}`} />
             </div>
             <h3 className="text-xl font-bold text-slate-900 mb-2">
               {isRecording ? 'Recording...' : 'Voice Note'}
             </h3>
             {isRecording && (
-              <div className="text-2xl font-mono text-construction-600 mb-4">
+              <div className="text-2xl font-mono text-emerald-600 mb-4">
                 {formatTime(recordingTime)}
               </div>
             )}
@@ -503,7 +503,7 @@ const FloorPlanViewer = ({ floorPlan, markers = [], onMarkerAdd, onMarkerSelect 
       {markers.length === 0 && floorPlan && (
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 mx-4 text-center">
-            <MapPinIcon className="h-8 w-8 text-construction-500 mx-auto mb-2" />
+            <MapPinIcon className="h-8 w-8 text-emerald-500 mx-auto mb-2" />
             <p className="text-sm font-medium text-slate-700">
               {isAddingMarker ? "Tap on the floor plan to add a marker" : "Toggle marker mode to add blocker locations"}
             </p>
@@ -888,16 +888,16 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
 
         {userProjects.length === 0 ? (
           <div className="mt-2">
-            <p className="text-construction-100 text-sm sm:text-base mb-2">
+            <p className="text-emerald-100 text-sm sm:text-base mb-2">
               No projects assigned
             </p>
-            <p className="text-construction-200 text-xs">
+            <p className="text-emerald-200 text-xs">
               Contact your admin to be assigned to projects
             </p>
           </div>
         ) : (
           <>
-            <p className="text-construction-100 text-sm sm:text-base">
+            <p className="text-emerald-100 text-sm sm:text-base">
               {selectedProject?.name || 'Select a project'}
             </p>
 
@@ -1003,13 +1003,13 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
                     .map(manager => (
                     <div key={manager.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
                       <div className="flex items-center">
-                        <UserGroupIcon className="h-5 w-5 text-construction-600 mr-3" />
+                        <UserGroupIcon className="h-5 w-5 text-emerald-600 mr-3" />
                         <div>
                           <div className="text-sm font-medium text-slate-900">{manager.name}</div>
                           <div className="text-xs text-slate-600">{manager.specialization || 'Site Manager'}</div>
                         </div>
                       </div>
-                      <div className="text-xs text-construction-600 font-medium">
+                      <div className="text-xs text-emerald-600 font-medium">
                         {manager.addedBy === user?.email ? 'Added by you' : 'Active'}
                       </div>
                     </div>
@@ -1116,7 +1116,7 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
                   <div className="flex items-center text-xs text-slate-500 mb-3">
                     <MapPinIcon className="h-4 w-4 mr-1 flex-shrink-0" />
                     <span className="truncate mr-4">{blocker.location || 'No location'}</span>
-                    <span className="text-construction-600 font-medium">
+                    <span className="text-emerald-600 font-medium">
                       By: {blocker.created_by?.company} ({blocker.created_by?.trade})
                     </span>
                   </div>
@@ -1478,7 +1478,7 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
                       </div>
                     )}
                     {blocker.assignedTo && (
-                      <div className="text-xs text-construction-600">
+                      <div className="text-xs text-emerald-600">
                         Assigned: {
                           blocker.assignmentType === 'manager'
                             ? (siteManagers.find(m => m.id === blocker.assignedTo)?.name || 'Unknown Manager')
@@ -1577,7 +1577,7 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
             {selectedProject && (
               <div className="text-right">
                 <p className="text-sm font-medium text-slate-600">Current Project</p>
-                <p className="text-lg font-bold text-construction-600">{selectedProject.name}</p>
+                <p className="text-lg font-bold text-emerald-600">{selectedProject.name}</p>
               </div>
             )}
           </div>
@@ -1659,7 +1659,7 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
               <div className="bg-white rounded-lg p-4 border border-slate-200">
                 <h3 className="text-lg font-semibold text-slate-900 mb-4">Recent Activity</h3>
                 <div className="flex items-center">
-                  <ClipboardDocumentListIcon className="h-8 w-8 text-construction-600 mr-3" />
+                  <ClipboardDocumentListIcon className="h-8 w-8 text-emerald-600 mr-3" />
                   <div>
                     <div className="text-lg font-bold text-slate-900">{recentBlockers}</div>
                     <div className="text-sm text-slate-600">New blockers in last 7 days</div>

@@ -23,8 +23,8 @@ const Card = ({
     elevated: `
       border border-slate-200 shadow-lg rounded-xl
     `,
-    construction: `
-      border border-construction-200 shadow-construction rounded-xl
+    emerald: `
+      border border-emerald-200 shadow-emerald rounded-xl
     `,
     flat: `
       bg-slate-50 border border-slate-200 rounded-lg
@@ -32,14 +32,14 @@ const Card = ({
     outline: `
       border-2 border-slate-200 rounded-xl
     `,
-    'outline-construction': `
-      border-2 border-construction-200 rounded-xl
+    'outline-emerald': `
+      border-2 border-emerald-200 rounded-xl
     `,
     gradient: `
       bg-gradient-to-br from-white to-slate-50 border border-slate-200 shadow-md rounded-xl
     `,
-    'gradient-construction': `
-      bg-gradient-to-br from-construction-50 to-construction-100 border border-construction-200 shadow-construction rounded-xl
+    'gradient-emerald': `
+      bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 shadow-emerald rounded-xl
     `,
   };
 
@@ -171,11 +171,11 @@ export const StatCard = ({
       icon: 'text-blue-600',
       text: 'text-blue-700',
     },
-    construction: {
-      bg: 'bg-construction-50',
-      border: 'border-construction-200',
-      icon: 'text-construction-600',
-      text: 'text-construction-700',
+    emerald: {
+      bg: 'bg-emerald-50',
+      border: 'border-emerald-200',
+      icon: 'text-emerald-600',
+      text: 'text-emerald-700',
     },
     success: {
       bg: 'bg-success-50',
@@ -267,8 +267,8 @@ export const FeatureCard = ({
       <div className="p-6">
         {Icon && (
           <div className="mb-4">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-construction-100">
-              <Icon className="h-6 w-6 text-construction-600" />
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-emerald-100">
+              <Icon className="h-6 w-6 text-emerald-600" />
             </div>
           </div>
         )}
@@ -322,7 +322,7 @@ export const ProductCard = ({
           />
           {badge && (
             <div className="absolute top-3 left-3">
-              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-construction-100 text-construction-800">
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                 {badge}
               </span>
             </div>
@@ -345,7 +345,7 @@ export const ProductCard = ({
         {/* Footer */}
         <div className="flex items-center justify-between">
           {price && (
-            <span className="text-xl font-bold text-construction-600">
+            <span className="text-xl font-bold text-emerald-600">
               {price}
             </span>
           )}

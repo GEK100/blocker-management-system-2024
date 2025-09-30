@@ -43,7 +43,7 @@ const Badge = ({
       bg-slate-100 text-slate-800 border border-slate-200
     `,
     primary: `
-      bg-construction-100 text-construction-800 border border-construction-200
+      bg-emerald-100 text-emerald-800 border border-emerald-200
     `,
     secondary: `
       bg-slate-600 text-white border border-slate-600
@@ -93,7 +93,7 @@ const Badge = ({
 
     // Solid variants
     'solid-primary': `
-      bg-construction-600 text-white border border-construction-600
+      bg-emerald-600 text-white border border-emerald-600
     `,
     'solid-secondary': `
       bg-slate-600 text-white border border-slate-600
@@ -110,8 +110,8 @@ const Badge = ({
 
     // Outline variants
     'outline-primary': `
-      bg-transparent text-construction-600 border border-construction-300
-      hover:bg-construction-50
+      bg-transparent text-emerald-600 border border-emerald-300
+      hover:bg-emerald-50
     `,
     'outline-secondary': `
       bg-transparent text-slate-600 border border-slate-300
@@ -216,7 +216,7 @@ export const DotBadge = ({
   const displayCount = count > max ? `${max}+` : count.toString();
 
   const variantClasses = {
-    primary: 'bg-construction-500 text-white',
+    primary: 'bg-emerald-500 text-white',
     danger: 'bg-safety-500 text-white',
     warning: 'bg-warning-500 text-white',
     success: 'bg-success-500 text-white',

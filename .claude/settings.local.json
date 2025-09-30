@@ -13,7 +13,13 @@
       "Bash(git log:*)",
       "Bash(git shortlog:*)",
       "Bash(markdown-pdf:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(claude --version)",
+      "Bash(claude update)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(vercel:*)",
+      "Bash(find:*)",
+      "Bash(powershell:*)"
     ],
     "deny": [],
     "ask": []

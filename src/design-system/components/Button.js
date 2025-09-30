@@ -50,14 +50,14 @@ const Button = ({
     outline: `
       btn-outline
     `,
-    'outline-construction': `
-      btn-outline-construction
+    'outline-emerald': `
+      btn-outline-emerald
     `,
     ghost: `
       btn-ghost
     `,
-    'ghost-construction': `
-      btn-ghost text-construction-600 hover:text-construction-700 hover:bg-construction-50 focus:ring-construction-500
+    'ghost-emerald': `
+      btn-ghost text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 focus:ring-emerald-500
     `,
   };
 
@@ -231,7 +231,7 @@ export const FloatingActionButton = ({
 
   const fabClasses = `
     ${positionClasses[position]} z-50 rounded-full shadow-2xl
-    hover:shadow-construction-lg transform hover:scale-110 active:scale-95
+    hover:shadow-emerald-lg transform hover:scale-110 active:scale-95
     ${className}
   `.trim().replace(/\s+/g, ' ');
 

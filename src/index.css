@@ -33,12 +33,12 @@
 
   /* Focus styles */
   *:focus {
-    @apply outline-none ring-2 ring-construction-500 ring-offset-2;
+    @apply outline-none ring-2 ring-emerald-500 ring-offset-2;
   }
 
   /* Selection styles */
   ::selection {
-    @apply bg-construction-100 text-construction-800;
+    @apply bg-emerald-100 text-emerald-800;
   }
 
   code {
@@ -51,15 +51,15 @@
 @layer components {
   /* Loading spinner */
   .spinner {
-    @apply inline-block w-8 h-8 border-4 border-construction-200 border-t-construction-500 rounded-full animate-spin;
+    @apply inline-block w-8 h-8 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin;
   }
 
   .spinner-sm {
-    @apply inline-block w-4 h-4 border-2 border-construction-200 border-t-construction-500 rounded-full animate-spin;
+    @apply inline-block w-4 h-4 border-2 border-emerald-200 border-t-emerald-500 rounded-full animate-spin;
   }
 
   .spinner-lg {
-    @apply inline-block w-12 h-12 border-4 border-construction-200 border-t-construction-500 rounded-full animate-spin;
+    @apply inline-block w-12 h-12 border-4 border-emerald-200 border-t-emerald-500 rounded-full animate-spin;
   }
 
   /* Enhanced Button styles */
@@ -74,17 +74,17 @@
   }
 
   .btn-primary {
-    @apply text-white border-transparent focus:ring-construction-500 font-medium;
-    background: linear-gradient(135deg, #ed7611 0%, #f29432 100%);
-    box-shadow: 0 0 20px rgba(237, 118, 17, 0.15), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    @apply text-white border-transparent focus:ring-emerald-500 font-medium;
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    box-shadow: 0 0 20px rgba(5, 150, 105, 0.15), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   }
 
   .btn-primary:hover {
-    box-shadow: 0 0 40px rgba(237, 118, 17, 0.2), 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 40px rgba(5, 150, 105, 0.2), 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   }
 
   .btn-secondary {
-    @apply bg-white text-construction-600 border-construction-200 hover:bg-construction-50 hover:border-construction-300 focus:ring-construction-500;
+    @apply bg-white text-emerald-600 border-emerald-200 hover:bg-emerald-50 hover:border-emerald-300 focus:ring-emerald-500;
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
   }
 
@@ -110,8 +110,8 @@
     @apply bg-white text-slate-700 border-slate-300 hover:bg-slate-50 hover:border-slate-400 focus:ring-slate-500 shadow-sm;
   }
 
-  .btn-outline-construction {
-    @apply bg-white text-construction-600 border-construction-300 hover:bg-construction-50 hover:border-construction-400 focus:ring-construction-500 shadow-sm;
+  .btn-outline-emerald {
+    @apply bg-white text-emerald-600 border-emerald-300 hover:bg-emerald-50 hover:border-emerald-400 focus:ring-emerald-500 shadow-sm;
   }
 
   .btn-ghost {
@@ -119,13 +119,13 @@
   }
 
   .btn-premium {
-    @apply text-white border-transparent focus:ring-purple-500 font-medium;
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
-    box-shadow: 0 0 20px rgba(237, 118, 17, 0.15), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    @apply text-white border-transparent focus:ring-slate-500 font-medium;
+    background: linear-gradient(135deg, #475569 0%, #64748b 50%, #334155 100%);
+    box-shadow: 0 0 20px rgba(71, 85, 105, 0.15), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   }
 
   .btn-premium:hover {
-    box-shadow: 0 0 40px rgba(237, 118, 17, 0.2), 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 40px rgba(71, 85, 105, 0.2), 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   }
 
   .btn-sm {
@@ -149,13 +149,13 @@
     @apply transition-all duration-200 hover:shadow-lg hover:-translate-y-1;
   }
 
-  .card-construction {
-    @apply bg-white rounded-xl shadow-construction border border-construction-200;
+  .card-emerald {
+    @apply bg-white rounded-xl shadow-emerald border border-emerald-200;
   }
 
   /* Form input styles */
   .form-input {
-    @apply block w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:border-construction-500 focus:ring-construction-500 transition-colors duration-200;
+    @apply block w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500 transition-colors duration-200;
   }
 
   .form-input-error {
@@ -163,19 +163,19 @@
   }
 
   .form-select {
-    @apply block w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-sm focus:border-construction-500 focus:ring-construction-500 transition-colors duration-200;
+    @apply block w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500 transition-colors duration-200;
   }
 
   .form-textarea {
-    @apply block w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:border-construction-500 focus:ring-construction-500 transition-colors duration-200 resize-none;
+    @apply block w-full rounded-lg border-slate-300 bg-white px-3 py-2 text-sm placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500 transition-colors duration-200 resize-none;
   }
 
   .form-checkbox {
-    @apply rounded border-slate-300 text-construction-600 focus:ring-construction-500 focus:ring-offset-0;
+    @apply rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0;
   }
 
   .form-radio {
-    @apply border-slate-300 text-construction-600 focus:ring-construction-500 focus:ring-offset-0;
+    @apply border-slate-300 text-emerald-600 focus:ring-emerald-500 focus:ring-offset-0;
   }
 
   /* Status badges */
@@ -251,8 +251,8 @@
   }
 
   /* Gradient backgrounds */
-  .bg-gradient-construction {
-    background: linear-gradient(135deg, #ed7611 0%, #f29432 100%);
+  .bg-gradient-emerald {
+    background: linear-gradient(135deg, #059669 0%, #10b981 100%);
   }
 
   .bg-gradient-slate {
@@ -308,8 +308,8 @@
   }
 
   /* Utility classes */
-  .text-gradient-construction {
-    @apply bg-gradient-to-r from-construction-600 to-construction-500 bg-clip-text text-transparent;
+  .text-gradient-emerald {
+    @apply bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent;
   }
 
   .text-gradient-premium {
@@ -318,13 +318,13 @@
 
   .border-gradient {
     background: linear-gradient(white, white) padding-box,
-                linear-gradient(135deg, #ed7611, #f29432) border-box;
+                linear-gradient(135deg, #059669, #10b981) border-box;
     border: 2px solid transparent;
   }
 
   .border-gradient-premium {
     background: linear-gradient(white, white) padding-box,
-                linear-gradient(135deg, #6366f1, #8b5cf6, #d946ef) border-box;
+                linear-gradient(135deg, #475569, #64748b, #334155) border-box;
     border: 2px solid transparent;
   }
 
@@ -373,7 +373,7 @@
 
   /* Mobile form optimizations */
   .form-input {
-    @apply w-full px-4 py-3 text-base border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500 bg-white touch-manipulation;
+    @apply w-full px-4 py-3 text-base border border-slate-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 bg-white touch-manipulation;
   }
 
 
@@ -385,13 +385,13 @@
 .card-premium {
   @apply bg-white rounded-2xl border border-slate-100 overflow-hidden transition-all duration-300;
   background: linear-gradient(white, white) padding-box,
-              linear-gradient(135deg, #6366f1, #8b5cf6, #d946ef) border-box;
+              linear-gradient(135deg, #475569, #64748b, #334155) border-box;
   border: 2px solid transparent;
-  box-shadow: 0 0 20px rgba(237, 118, 17, 0.15), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 20px rgba(71, 85, 105, 0.15), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .card-premium:hover {
-  box-shadow: 0 0 40px rgba(237, 118, 17, 0.2), 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 40px rgba(71, 85, 105, 0.2), 0 10px 15px -3px rgba(0, 0, 0, 0.1);
 }
 
 .card-glass {
@@ -424,7 +424,7 @@
 }
 
 .badge-primary {
-  @apply bg-construction-50 text-construction-700 ring-construction-600/20;
+  @apply bg-emerald-50 text-emerald-700 ring-emerald-600/20;
 }
 
 .badge-success {
@@ -449,7 +449,7 @@
 
 /* Enhanced Input Styles */
 .input {
-  @apply block w-full rounded-xl border-slate-300 shadow-soft focus:border-construction-500 focus:ring-construction-500 transition-all duration-200 placeholder:text-slate-400;
+  @apply block w-full rounded-xl border-slate-300 shadow-soft focus:border-emerald-500 focus:ring-emerald-500 transition-all duration-200 placeholder:text-slate-400;
 }
 
 .input-sm {
@@ -479,8 +479,8 @@
 
 .nav-tab-active {
   @apply px-6 py-3 text-sm font-medium rounded-xl transition-all duration-200 text-white;
-  background: linear-gradient(135deg, #ed7611 0%, #f29432 100%);
-  box-shadow: 0 0 20px rgba(237, 118, 17, 0.15), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  box-shadow: 0 0 20px rgba(5, 150, 105, 0.15), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   transform: translateY(0);
   transition: all 0.3s ease;
 }
@@ -550,11 +550,11 @@
 }
 
   .form-textarea {
-    @apply w-full px-4 py-3 text-base border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500 bg-white touch-manipulation resize-none;
+    @apply w-full px-4 py-3 text-base border border-slate-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 bg-white touch-manipulation resize-none;
   }
 
   .form-select {
-    @apply w-full px-4 py-3 text-base border border-slate-300 rounded-lg focus:ring-construction-500 focus:border-construction-500 bg-white touch-manipulation;
+    @apply w-full px-4 py-3 text-base border border-slate-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500 bg-white touch-manipulation;
   }
 
   /* Line clamping */
@@ -608,8 +608,8 @@
     @apply bg-white rounded-xl p-6 shadow-sm border border-slate-200;
   }
 
-  .chart-container-construction {
-    @apply bg-white rounded-xl p-6 shadow-construction border border-construction-200;
+  .chart-container-emerald {
+    @apply bg-white rounded-xl p-6 shadow-emerald border border-emerald-200;
   }
 
   /* Dashboard layout */
@@ -631,7 +631,7 @@
   }
 
   .nav-link-active {
-    @apply bg-construction-100 text-construction-700;
+    @apply bg-emerald-100 text-emerald-700;
   }
 
   .nav-link-inactive {
@@ -759,15 +759,15 @@
 @layer utilities {
   /* Advanced Shadows */
   .shadow-glow {
-    box-shadow: 0 0 20px rgba(237, 118, 17, 0.15), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 20px rgba(5, 150, 105, 0.15), 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   }
 
   .shadow-glow-lg {
-    box-shadow: 0 0 40px rgba(237, 118, 17, 0.2), 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 40px rgba(5, 150, 105, 0.2), 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   }
 
   .shadow-inner-glow {
-    box-shadow: inset 0 2px 4px 0 rgba(237, 118, 17, 0.06), 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+    box-shadow: inset 0 2px 4px 0 rgba(5, 150, 105, 0.06), 0 2px 4px 0 rgba(0, 0, 0, 0.06);
   }
 
   .shadow-soft {
@@ -783,12 +783,12 @@
   }
 
   /* Gradient Backgrounds */
-  .bg-gradient-construction {
-    background: linear-gradient(135deg, #ed7611 0%, #de5c0a 100%);
+  .bg-gradient-emerald {
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
   }
 
-  .bg-gradient-construction-subtle {
-    background: linear-gradient(135deg, #fef7ec 0%, #fdecd3 100%);
+  .bg-gradient-emerald-subtle {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
   }
 
   .bg-gradient-slate {
@@ -854,18 +854,18 @@
 
   /* Button Effects */
   .btn-glow {
-    box-shadow: 0 4px 14px 0 rgba(237, 118, 17, 0.3);
+    box-shadow: 0 4px 14px 0 rgba(5, 150, 105, 0.3);
     transition: all 0.3s ease;
   }
 
   .btn-glow:hover {
-    box-shadow: 0 6px 20px 0 rgba(237, 118, 17, 0.4);
+    box-shadow: 0 6px 20px 0 rgba(5, 150, 105, 0.4);
     transform: translateY(-1px);
   }
 
   /* Text Effects */
-  .text-gradient-construction {
-    background: linear-gradient(135deg, #ed7611, #de5c0a);
+  .text-gradient-emerald {
+    background: linear-gradient(135deg, #059669, #047857);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -926,10 +926,10 @@
 
 @keyframes pulseGlow {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(237, 118, 17, 0.15);
+    box-shadow: 0 0 20px rgba(5, 150, 105, 0.15);
   }
   50% {
-    box-shadow: 0 0 30px rgba(237, 118, 17, 0.3);
+    box-shadow: 0 0 30px rgba(5, 150, 105, 0.3);
   }
 }
 

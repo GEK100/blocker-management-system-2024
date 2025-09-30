@@ -173,8 +173,8 @@ const NavigationBar = () => {
           {/* Logo and Brand */}
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-construction-100 rounded-lg flex items-center justify-center">
-                <BuildingOfficeIcon className="h-5 w-5 text-construction-600" />
+              <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                <BuildingOfficeIcon className="h-5 w-5 text-emerald-600" />
               </div>
               <div className="hidden md:block">
                 <h1 className="text-xl font-bold text-slate-900">{brandConfig.name}</h1>
@@ -195,7 +195,7 @@ const NavigationBar = () => {
                   onClick={() => navigate(item.path)}
                   className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
                     isActive
-                      ? 'bg-construction-100 text-construction-700'
+                      ? 'bg-emerald-100 text-emerald-700'
                       : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                   title={item.description}
@@ -228,8 +228,8 @@ const NavigationBar = () => {
                     {getRoleName(userRole)}
                   </div>
                 </div>
-                <div className="w-8 h-8 bg-construction-100 rounded-full flex items-center justify-center">
-                  <UserCircleIcon className="h-5 w-5 text-construction-600" />
+                <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
+                  <UserCircleIcon className="h-5 w-5 text-emerald-600" />
                 </div>
               </button>
 
@@ -238,8 +238,8 @@ const NavigationBar = () => {
                   {/* User Info */}
                   <div className="px-4 py-3 border-b border-slate-200">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-construction-100 rounded-full flex items-center justify-center">
-                        <UserCircleIcon className="h-6 w-6 text-construction-600" />
+                      <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                        <UserCircleIcon className="h-6 w-6 text-emerald-600" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-900 truncate">
@@ -328,7 +328,7 @@ const NavigationBar = () => {
                     }}
                     className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 ${
                       isActive
-                        ? 'bg-construction-100 text-construction-700'
+                        ? 'bg-emerald-100 text-emerald-700'
                         : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                     }`}
                   >

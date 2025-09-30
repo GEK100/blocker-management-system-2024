@@ -945,7 +945,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
               {projects.filter(p => p.status === 'active').length} active
             </p>
           </div>
-          <FolderOpenIcon className="h-8 w-8 text-construction-600" />
+          <FolderOpenIcon className="h-8 w-8 text-emerald-600" />
         </div>
       </Card>
 
@@ -981,12 +981,12 @@ const CompanyOverviewDashboard = ({ companyId }) => {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-slate-600">Avg Progress</p>
-            <p className="text-2xl font-bold text-construction-600">
+            <p className="text-2xl font-bold text-emerald-600">
               {Math.round(projects.reduce((sum, p) => sum + (p.progress || 0), 0) / projects.length)}%
             </p>
             <p className="text-xs text-green-600 mt-1">Company-wide</p>
           </div>
-          <ArrowTrendingUpIcon className="h-8 w-8 text-construction-600" />
+          <ArrowTrendingUpIcon className="h-8 w-8 text-emerald-600" />
         </div>
       </Card>
     </div>
@@ -1008,7 +1008,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
           return (
             <Card
               key={project.id}
-              className="p-4 hover:shadow-md transition-shadow cursor-pointer border-l-4 border-construction-500"
+              className="p-4 hover:shadow-md transition-shadow cursor-pointer border-l-4 border-emerald-500"
               onClick={() => setSelectedProject(project)}
             >
               <div className="flex items-center justify-between">
@@ -1063,7 +1063,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                         <UserGroupIcon className="h-4 w-4 mr-1" />
                         <span>Manage Team</span>
                       </button>
-                      <div className="flex items-center text-construction-600">
+                      <div className="flex items-center text-emerald-600">
                         <span className="text-sm font-medium">View Analytics</span>
                         <ArrowRightIcon className="h-4 w-4 ml-1" />
                       </div>
@@ -1102,7 +1102,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
               <button
                 key={project.id}
                 onClick={() => setSelectedProject(project)}
-                className="card text-left p-4 hover:border-construction-300 focus:outline-none focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                className="card text-left p-4 hover:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -1138,7 +1138,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
 
                   <div className="flex items-center justify-between pt-2 border-t border-slate-100">
                     <span className="text-xs text-slate-500">Manager: {project.manager}</span>
-                    <div className="flex items-center text-construction-600">
+                    <div className="flex items-center text-emerald-600">
                       <span className="text-xs font-medium">View Analytics</span>
                       <ArrowRightIcon className="h-3 w-3 ml-1" />
                     </div>
@@ -1173,7 +1173,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-slate-50 p-4 rounded-lg">
                   <p className="text-sm text-slate-600">Progress</p>
-                  <p className="text-2xl font-bold text-construction-600">{selectedProject.progress}%</p>
+                  <p className="text-2xl font-bold text-emerald-600">{selectedProject.progress}%</p>
                 </div>
                 <div className="bg-slate-50 p-4 rounded-lg">
                   <p className="text-sm text-slate-600">Active Blockers</p>
@@ -1402,7 +1402,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                   type="text"
                   value={userFormData.name}
                   onChange={(e) => setUserFormData({...userFormData, name: e.target.value})}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
                   required
                 />
               </div>
@@ -1412,7 +1412,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                   type="email"
                   value={userFormData.email}
                   onChange={(e) => setUserFormData({...userFormData, email: e.target.value})}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
                   required
                 />
               </div>
@@ -1421,7 +1421,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                 <select
                   value={userFormData.role}
                   onChange={(e) => setUserFormData({...userFormData, role: e.target.value})}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
                 >
                   <option value="field_worker">Field Worker</option>
                   <option value="supervisor">Supervisor</option>
@@ -1491,7 +1491,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                 type="text"
                 value={subcontractorFormData.name}
                 onChange={(e) => setSubcontractorFormData({...subcontractorFormData, name: e.target.value})}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
                 required
               />
             </div>
@@ -1501,7 +1501,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                 type="text"
                 value={subcontractorFormData.companyName}
                 onChange={(e) => setSubcontractorFormData({...subcontractorFormData, companyName: e.target.value})}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
                 required
               />
             </div>
@@ -1511,7 +1511,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                 type="email"
                 value={subcontractorFormData.email}
                 onChange={(e) => setSubcontractorFormData({...subcontractorFormData, email: e.target.value})}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
                 required
               />
             </div>
@@ -1521,7 +1521,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                 type="tel"
                 value={subcontractorFormData.phone}
                 onChange={(e) => setSubcontractorFormData({...subcontractorFormData, phone: e.target.value})}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
               />
             </div>
             <div>
@@ -1529,7 +1529,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
               <select
                 value={subcontractorFormData.tradeType}
                 onChange={(e) => setSubcontractorFormData({...subcontractorFormData, tradeType: e.target.value})}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
                 required
               >
                 <option value="">Select Trade Type</option>
@@ -1653,7 +1653,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                   name="name"
                   value={newProject.name}
                   onChange={handleProjectInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   placeholder="Enter project name"
                   required
                 />
@@ -1669,7 +1669,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                   value={newProject.description}
                   onChange={handleProjectInputChange}
                   rows={3}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   placeholder="Enter project description"
                 />
               </div>
@@ -1683,7 +1683,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                   name="status"
                   value={newProject.status}
                   onChange={handleProjectInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="planning">Planning</option>
                   <option value="active">Active</option>
@@ -1701,7 +1701,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                   name="priority"
                   value={newProject.priority}
                   onChange={handleProjectInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -1720,7 +1720,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                   name="startDate"
                   value={newProject.startDate}
                   onChange={handleProjectInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 />
               </div>
 
@@ -1734,7 +1734,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                   name="endDate"
                   value={newProject.endDate}
                   onChange={handleProjectInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                 />
               </div>
 
@@ -1748,7 +1748,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                   name="budget"
                   value={newProject.budget}
                   onChange={handleProjectInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   placeholder="Project budget"
                 />
               </div>
@@ -1763,7 +1763,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                   name="location"
                   value={newProject.location}
                   onChange={handleProjectInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   placeholder="Project location/address"
                 />
               </div>
@@ -1778,7 +1778,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                   name="projectManager"
                   value={newProject.projectManager}
                   onChange={handleProjectInputChange}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   placeholder="Project manager name"
                 />
               </div>
@@ -1795,7 +1795,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                     const selectedUsers = Array.from(e.target.selectedOptions, option => option.value);
                     setNewProject(prev => ({ ...prev, assignedUsers: selectedUsers }));
                   }}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500 min-h-[120px]"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 min-h-[120px]"
                 >
                   {users.map(user => (
                     <option key={user.id} value={user.email}>
@@ -1843,31 +1843,22 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                             name="name"
                             value={newDrawing.name}
                             onChange={handleDrawingInputChange}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
                             placeholder="e.g., Floor Plan Level 1"
                             required
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium text-slate-700 mb-2">Category</label>
-                          <select
+                          <label className="block text-sm font-medium text-slate-700 mb-2">Drawing Type/Category</label>
+                          <input
+                            type="text"
                             name="category"
                             value={newDrawing.category}
                             onChange={handleDrawingInputChange}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500"
-                          >
-                            <option value="architectural">Architectural</option>
-                            <option value="structural">Structural</option>
-                            <option value="electrical">Electrical</option>
-                            <option value="plumbing">Plumbing</option>
-                            <option value="hvac">HVAC</option>
-                            <option value="mechanical">Mechanical</option>
-                            <option value="site_plan">Site Plan</option>
-                            <option value="elevation">Elevation</option>
-                            <option value="section">Section</option>
-                            <option value="detail">Detail</option>
-                            <option value="other">Other</option>
-                          </select>
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+                            placeholder="e.g., Architectural Plans, Electrical Schematics, Site Layout, Custom Category"
+                          />
+                          <p className="text-xs text-slate-500 mt-1">Enter any custom category or type name for this drawing</p>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-slate-700 mb-2">Version</label>
@@ -1876,7 +1867,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                             name="version"
                             value={newDrawing.version}
                             onChange={handleDrawingInputChange}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
                             placeholder="e.g., 1.0, Rev A"
                           />
                         </div>
@@ -1897,7 +1888,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                             value={newDrawing.description}
                             onChange={handleDrawingInputChange}
                             rows={2}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
                             placeholder="Optional description or notes about this drawing"
                           />
                         </div>
@@ -1921,7 +1912,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                         <div key={drawing.id} className="card flex items-center justify-between p-3">
                           <div className="flex-1">
                             <div className="flex items-center space-x-3">
-                              <DocumentIcon className="h-5 w-5 text-construction-600" />
+                              <DocumentIcon className="h-5 w-5 text-emerald-600" />
                               <div>
                                 <p className="text-sm font-medium text-slate-900">{drawing.name}</p>
                                 <div className="flex items-center space-x-4 text-xs text-slate-500">
@@ -1988,7 +1979,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                             type="text"
                             value={newSubcontractor.companyName}
                             onChange={(e) => setNewSubcontractor(prev => ({ ...prev, companyName: e.target.value }))}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                             placeholder="Subcontractor company name"
                           />
                         </div>
@@ -1998,7 +1989,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                           <select
                             value={newSubcontractor.tradeType}
                             onChange={(e) => setNewSubcontractor(prev => ({ ...prev, tradeType: e.target.value }))}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                           >
                             <option value="">Select trade type</option>
                             <option value="electrical">Electrical</option>
@@ -2025,7 +2016,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                             type="email"
                             value={newSubcontractor.contactEmail}
                             onChange={(e) => setNewSubcontractor(prev => ({ ...prev, contactEmail: e.target.value }))}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                             placeholder="Primary contact email"
                           />
                         </div>
@@ -2036,7 +2027,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                             type="tel"
                             value={newSubcontractor.contactPhone}
                             onChange={(e) => setNewSubcontractor(prev => ({ ...prev, contactPhone: e.target.value }))}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                             placeholder="Primary contact phone"
                           />
                         </div>
@@ -2067,27 +2058,27 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                             type="text"
                             value={newSubcontractorUser.name}
                             onChange={(e) => setNewSubcontractorUser(prev => ({ ...prev, name: e.target.value }))}
-                            className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500 text-sm"
+                            className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
                             placeholder="Full name"
                           />
                           <input
                             type="email"
                             value={newSubcontractorUser.email}
                             onChange={(e) => setNewSubcontractorUser(prev => ({ ...prev, email: e.target.value }))}
-                            className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500 text-sm"
+                            className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
                             placeholder="Email address"
                           />
                           <input
                             type="tel"
                             value={newSubcontractorUser.phone}
                             onChange={(e) => setNewSubcontractorUser(prev => ({ ...prev, phone: e.target.value }))}
-                            className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500 text-sm"
+                            className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
                             placeholder="Phone (optional)"
                           />
                           <select
                             value={newSubcontractorUser.role}
                             onChange={(e) => setNewSubcontractorUser(prev => ({ ...prev, role: e.target.value }))}
-                            className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500 text-sm"
+                            className="px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm"
                           >
                             <option value="worker">Worker</option>
                             <option value="supervisor">Supervisor</option>
@@ -2241,7 +2232,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                             type="text"
                             value={newTeamMember.name}
                             onChange={(e) => setNewTeamMember(prev => ({ ...prev, name: e.target.value }))}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                             placeholder="Team member full name"
                           />
                         </div>
@@ -2252,7 +2243,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                             type="email"
                             value={newTeamMember.email}
                             onChange={(e) => setNewTeamMember(prev => ({ ...prev, email: e.target.value }))}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                             placeholder="email@example.com"
                           />
                         </div>
@@ -2263,7 +2254,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                             type="tel"
                             value={newTeamMember.phone}
                             onChange={(e) => setNewTeamMember(prev => ({ ...prev, phone: e.target.value }))}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                             placeholder="Phone number"
                           />
                         </div>
@@ -2273,7 +2264,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                           <select
                             value={newTeamMember.role}
                             onChange={(e) => setNewTeamMember(prev => ({ ...prev, role: e.target.value }))}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                           >
                             <option value="field_worker">Field Worker</option>
                             <option value="supervisor">Supervisor</option>
@@ -2293,7 +2284,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                             type="text"
                             value={newTeamMember.department}
                             onChange={(e) => setNewTeamMember(prev => ({ ...prev, department: e.target.value }))}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                             placeholder="Department/Team"
                           />
                         </div>
@@ -2304,7 +2295,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                             type="date"
                             value={newTeamMember.startDate}
                             onChange={(e) => setNewTeamMember(prev => ({ ...prev, startDate: e.target.value }))}
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                           />
                         </div>
                       </div>
@@ -2329,7 +2320,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                                 type="checkbox"
                                 checked={newTeamMember.permissions.includes(permission.key)}
                                 onChange={() => handleTogglePermission(permission.key)}
-                                className="rounded border-slate-300 text-construction-600 focus:ring-construction-500"
+                                className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
                               />
                               <span className="text-sm text-slate-700">{permission.label}</span>
                             </label>
@@ -2476,7 +2467,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
             const buttonClasses = [
               'whitespace-nowrap py-3 sm:py-2 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center space-x-1 sm:space-x-2 flex-shrink-0 touch-manipulation',
               isActive
-                ? 'border-construction-500 text-construction-600'
+                ? 'border-emerald-500 text-emerald-600'
                 : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
             ].join(' ');
 
