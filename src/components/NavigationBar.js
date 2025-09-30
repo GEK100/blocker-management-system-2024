@@ -81,7 +81,6 @@ const NavigationBar = () => {
         break;
 
       case 'field_worker':
-      case 'subcontractor':
       case 'supervisor':
         baseItems.push({
           name: 'Analytics',
@@ -96,6 +95,24 @@ const NavigationBar = () => {
             path: '/mobile',
             icon: ExclamationTriangleIcon,
             description: 'Mobile-optimized interface'
+          }
+        );
+        break;
+
+      case 'subcontractor':
+        baseItems.push({
+          name: 'Analytics',
+          path: '/analytics',
+          icon: ChartBarIcon,
+          description: 'View performance metrics and reports',
+          allowedRoles: 'all'
+        });
+        roleSpecificItems.push(
+          {
+            name: 'Subcontractor Portal',
+            path: '/subcontractor',
+            icon: BuildingOfficeIcon,
+            description: 'Access project drawings and report issues'
           }
         );
         break;

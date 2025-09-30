@@ -7,6 +7,7 @@ import RegisterForm from './RegisterForm';
 import SuperAdminInterface from './SuperAdminInterface';
 import CompanyAdminInterface from './CompanyAdminInterface';
 import FieldWorkerWrapper from './FieldWorkerWrapper';
+import SubcontractorWrapper from './SubcontractorWrapper';
 import GDPRConsentForm from './GDPRConsentForm';
 import BlockerWorkflowManager from './BlockerWorkflowManager';
 import AnalyticsDashboard from './AnalyticsDashboard';
@@ -85,8 +86,14 @@ const AppRouter = () => {
           } />
 
           <Route path="/mobile" element={
-            <ProtectedRoute allowedRoles={['field_worker', 'subcontractor', 'supervisor']}>
+            <ProtectedRoute allowedRoles={['field_worker', 'supervisor']}>
               <FieldWorkerWrapper />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/subcontractor" element={
+            <ProtectedRoute allowedRoles={['subcontractor', 'subcontractor_manager']}>
+              <SubcontractorWrapper />
             </ProtectedRoute>
           } />
 

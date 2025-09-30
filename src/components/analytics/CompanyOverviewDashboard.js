@@ -1815,6 +1815,10 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                     <div>
                       <h4 className="text-md font-semibold text-slate-900">Project Drawings</h4>
                       <p className="text-sm text-slate-600">Upload architectural plans, blueprints, and technical drawings</p>
+                      <div className="mt-2 flex items-center space-x-2">
+                        <span className="badge badge-success text-xs">Auto-synced</span>
+                        <span className="text-xs text-slate-500">Available to Field Workers & Subcontractors</span>
+                      </div>
                     </div>
                     <Button
                       type="button"
