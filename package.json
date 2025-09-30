@@ -1,5 +1,5 @@
 {
-  "name": "blocker-app",
+  "name": "blocker-management-app",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

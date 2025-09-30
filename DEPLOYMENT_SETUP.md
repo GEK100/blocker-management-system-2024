@@ -17,7 +17,7 @@ This guide will help you properly configure Vercel deployment to update your exi
    # or
    vercel link
    ```
-   - Select your existing "construction-blockers-app" project when prompted
+   - Select your existing "blocker-management-app" project when prompted
    - This will create the proper `.vercel/project.json` file
 
 3. **Deploy:**
@@ -30,7 +30,7 @@ This guide will help you properly configure Vercel deployment to update your exi
 
 1. **Find your project details:**
    - Go to https://vercel.com/dashboard
-   - Navigate to your "construction-blockers-app" project
+   - Navigate to your "blocker-management-app" project
    - Click Settings > General
    - Copy the Project ID (starts with `prj_`)
    - Copy the Team/Org ID (starts with `team_`)

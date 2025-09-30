@@ -6,7 +6,7 @@ This guide will help you set up the complete Supabase backend for the Constructi
 
 1. Go to [supabase.com](https://supabase.com) and create a new project
 2. Choose your organization and create a new project:
-   - Name: `construction-blockers-app`
+   - Name: `blocker-management-app`
    - Database Password: Create a strong password
    - Region: Choose the closest to your users
 

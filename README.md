@@ -50,8 +50,8 @@ This application helps construction teams efficiently track, manage, and resolve
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/your-username/construction-blockers-app.git
-   cd construction-blockers-app
+   git clone https://github.com/your-username/blocker-management-app.git
+   cd blocker-management-app
    ```
 
 2. **Install dependencies**

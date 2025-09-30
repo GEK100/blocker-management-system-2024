@@ -25,7 +25,7 @@ if (!fs.existsSync(projectJsonPath)) {
   console.log('Run the following steps:');
   console.log('1. vercel login');
   console.log('2. vercel link');
-  console.log('3. Select your existing construction-blockers-app project');
+  console.log('3. Select your existing blocker-management-app project');
   process.exit(1);
 }
 
