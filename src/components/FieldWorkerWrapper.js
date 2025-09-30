@@ -75,6 +75,70 @@ const FieldWorkerWrapper = () => {
             assignmentType: 'subcontractor',
             photos: [],
             voiceNotes: []
+          },
+          // Subcontractor-raised blockers
+          {
+            id: '3',
+            title: 'Plumbing fixture delivery delay',
+            description: 'Scheduled plumbing fixtures delayed by 3 weeks, blocking bathroom completion',
+            location: 'Floor 4, All Bathrooms',
+            status: 'subcontractor_pending',
+            priority: 'high',
+            created_at: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(),
+            created_by: {
+              name: 'Mike Wilson',
+              email: 'mike.wilson@plumbingpro.com',
+              role: 'subcontractor',
+              company: 'PlumbingPro LLC',
+              trade: 'Plumbing'
+            },
+            projectId: '1',
+            raisedBy: 'subcontractor',
+            subcontractorId: 'sub_1',
+            photos: [],
+            voiceNotes: []
+          },
+          {
+            id: '4',
+            title: 'Steel beam structural issue',
+            description: 'Discovered crack in main support beam that needs immediate attention',
+            location: 'Floor 2, Central Support',
+            status: 'subcontractor_pending',
+            priority: 'critical',
+            created_at: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(),
+            created_by: {
+              name: 'Sarah Martinez',
+              email: 'sarah.martinez@steelworks.com',
+              role: 'subcontractor',
+              company: 'SteelWorks Construction',
+              trade: 'Structural Steel'
+            },
+            projectId: '1',
+            raisedBy: 'subcontractor',
+            subcontractorId: 'sub_2',
+            photos: [],
+            voiceNotes: []
+          },
+          {
+            id: '5',
+            title: 'Electrical panel access blocked',
+            description: 'Cannot access main electrical panel due to drywall installation',
+            location: 'Floor 1, Electrical Room',
+            status: 'subcontractor_pending',
+            priority: 'medium',
+            created_at: new Date(Date.now() - 18 * 60 * 60 * 1000).toISOString(),
+            created_by: {
+              name: 'Tom Jackson',
+              email: 'tom.jackson@voltageexperts.com',
+              role: 'subcontractor',
+              company: 'Voltage Experts Inc',
+              trade: 'Electrical'
+            },
+            projectId: '2',
+            raisedBy: 'subcontractor',
+            subcontractorId: 'sub_3',
+            photos: [],
+            voiceNotes: []
           }
         ];
 

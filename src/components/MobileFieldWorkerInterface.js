@@ -21,7 +21,10 @@ import {
   ChartBarIcon,
   ClockIcon,
   UserPlusIcon,
-  UserGroupIcon
+  UserGroupIcon,
+  ExclamationTriangleIcon,
+  ShieldCheckIcon,
+  ArrowPathIcon
 } from '@heroicons/react/24/outline';
 import {
   CameraIcon as CameraIconSolid,
@@ -539,6 +542,15 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
     specialization: '',
     department: ''
   });
+  const [showSubcontractorBlockerModal, setShowSubcontractorBlockerModal] = useState(false);
+  const [selectedSubcontractorBlocker, setSelectedSubcontractorBlocker] = useState(null);
+  const [blockerAction, setBlockerAction] = useState(''); // 'accept', 'reject', 'reassign'
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [reassignmentData, setReassignmentData] = useState({
+    assignedTo: '',
+    notes: '',
+    priority: 'medium'
+  });
 
   // New blocker state
   const [newBlocker, setNewBlocker] = useState({
@@ -742,6 +754,82 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
     alert('Manager added successfully!');
   };
 
+  const handleSubcontractorBlockerAction = (blocker, action) => {
+    setSelectedSubcontractorBlocker(blocker);
+    setBlockerAction(action);
+    setShowSubcontractorBlockerModal(true);
+  };
+
+  const handleSubcontractorBlockerSubmit = () => {
+    if (!selectedSubcontractorBlocker) return;
+
+    let updatedBlocker = { ...selectedSubcontractorBlocker };
+
+    switch (blockerAction) {
+      case 'accept':
+        updatedBlocker = {
+          ...updatedBlocker,
+          status: 'pending_review',
+          acceptedAt: new Date().toISOString(),
+          acceptedBy: user?.email,
+          reviewNotes: 'Accepted by field worker'
+        };
+        break;
+
+      case 'reject':
+        if (!rejectionReason.trim()) {
+          alert('Please provide a reason for rejection');
+          return;
+        }
+        updatedBlocker = {
+          ...updatedBlocker,
+          status: 'rejected',
+          rejectedAt: new Date().toISOString(),
+          rejectedBy: user?.email,
+          rejectionReason: rejectionReason
+        };
+        break;
+
+      case 'reassign':
+        if (!reassignmentData.assignedTo) {
+          alert('Please select a subcontractor to reassign to');
+          return;
+        }
+        updatedBlocker = {
+          ...updatedBlocker,
+          status: 'assigned',
+          assignedTo: reassignmentData.assignedTo,
+          assignedAt: new Date().toISOString(),
+          assignedBy: user?.email,
+          assignmentNotes: reassignmentData.notes,
+          priority: reassignmentData.priority,
+          assignmentType: 'subcontractor'
+        };
+        break;
+
+      default:
+        return;
+    }
+
+    // Update the blocker
+    onUpdateBlocker(updatedBlocker);
+
+    // Reset state
+    setShowSubcontractorBlockerModal(false);
+    setSelectedSubcontractorBlocker(null);
+    setBlockerAction('');
+    setRejectionReason('');
+    setReassignmentData({
+      assignedTo: '',
+      notes: '',
+      priority: 'medium'
+    });
+
+    const actionText = blockerAction === 'accept' ? 'accepted' :
+                      blockerAction === 'reject' ? 'rejected' : 'reassigned';
+    alert(`Blocker ${actionText} successfully!`);
+  };
+
   const renderHomeTab = () => (
     <div className="flex-1 overflow-y-auto pb-20">
       {/* Header */}
@@ -871,6 +959,82 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
           </div>
         )}
       </div>
+
+      {/* Subcontractor Blockers - Pending Review */}
+      {selectedProject && (() => {
+        const subcontractorBlockers = blockers.filter(blocker =>
+          blocker.raisedBy === 'subcontractor' &&
+          blocker.status === 'subcontractor_pending' &&
+          (blocker.projectId === selectedProject.id || blocker.project_id === selectedProject.id)
+        );
+
+        return subcontractorBlockers.length > 0 && (
+          <div className="px-4 sm:px-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-slate-900">Subcontractor Reports</h2>
+              <span className="bg-amber-100 text-amber-800 text-xs px-2 py-1 rounded-full font-medium">
+                {subcontractorBlockers.length} pending
+              </span>
+            </div>
+            <div className="space-y-3">
+              {subcontractorBlockers.map(blocker => (
+                <div key={blocker.id} className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-semibold text-slate-900 flex-1 text-sm sm:text-base pr-2">{blocker.title}</h3>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      blocker.priority === 'critical' ? 'bg-red-100 text-red-800' :
+                      blocker.priority === 'high' ? 'bg-orange-100 text-orange-800' :
+                      blocker.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-green-100 text-green-800'
+                    }`}>
+                      {blocker.priority}
+                    </span>
+                  </div>
+                  <p className="text-slate-600 text-xs sm:text-sm line-clamp-2 mb-3">{blocker.description}</p>
+
+                  <div className="flex items-center text-xs text-slate-500 mb-3">
+                    <MapPinIcon className="h-4 w-4 mr-1 flex-shrink-0" />
+                    <span className="truncate mr-4">{blocker.location || 'No location'}</span>
+                    <span className="text-construction-600 font-medium">
+                      By: {blocker.created_by?.company} ({blocker.created_by?.trade})
+                    </span>
+                  </div>
+
+                  <div className="flex space-x-2">
+                    <TouchButton
+                      onClick={() => handleSubcontractorBlockerAction(blocker, 'accept')}
+                      variant="success"
+                      size="sm"
+                      className="flex-1 text-xs py-2"
+                    >
+                      <CheckCircleIcon className="h-4 w-4 mr-1" />
+                      Accept
+                    </TouchButton>
+                    <TouchButton
+                      onClick={() => handleSubcontractorBlockerAction(blocker, 'reassign')}
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 text-xs py-2"
+                    >
+                      <ArrowPathIcon className="h-4 w-4 mr-1" />
+                      Reassign
+                    </TouchButton>
+                    <TouchButton
+                      onClick={() => handleSubcontractorBlockerAction(blocker, 'reject')}
+                      variant="danger"
+                      size="sm"
+                      className="flex-1 text-xs py-2"
+                    >
+                      <XMarkIcon className="h-4 w-4 mr-1" />
+                      Reject
+                    </TouchButton>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Recent Blockers */}
       <div className="px-4 sm:px-6 pb-6 flex-1 min-h-0">
@@ -1396,6 +1560,158 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
     );
   };
 
+  const SubcontractorBlockerModal = ({ isOpen, onClose, blocker, action, onSubmit }) => {
+    if (!isOpen || !blocker) return null;
+
+    const actionTitle = action === 'accept' ? 'Accept Blocker' :
+                       action === 'reject' ? 'Reject Blocker' : 'Reassign Blocker';
+
+    return (
+      <div className="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-6">
+        <div className="bg-white w-full sm:w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-slate-900">{actionTitle}</h3>
+            <TouchButton
+              onClick={onClose}
+              variant="ghost"
+              size="md"
+              className="p-2"
+            >
+              <XMarkIcon className="h-5 w-5" />
+            </TouchButton>
+          </div>
+
+          <div className="space-y-4">
+            {/* Blocker Details */}
+            <div className="p-3 bg-slate-50 rounded-lg">
+              <h4 className="font-medium text-slate-900 text-sm mb-1">{blocker.title}</h4>
+              <p className="text-xs text-slate-600 mb-2">{blocker.description}</p>
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-500">By: {blocker.created_by?.company}</span>
+                <span className={`px-2 py-1 rounded-full font-medium ${
+                  blocker.priority === 'critical' ? 'bg-red-100 text-red-800' :
+                  blocker.priority === 'high' ? 'bg-orange-100 text-orange-800' :
+                  blocker.priority === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                  'bg-green-100 text-green-800'
+                }`}>
+                  {blocker.priority}
+                </span>
+              </div>
+            </div>
+
+            {/* Action-specific content */}
+            {action === 'accept' && (
+              <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                <div className="flex items-center">
+                  <ShieldCheckIcon className="h-5 w-5 text-green-600 mr-2" />
+                  <span className="text-sm font-medium text-green-800">
+                    This blocker will be accepted and moved to pending review for assignment.
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {action === 'reject' && (
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Reason for Rejection *
+                </label>
+                <textarea
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  placeholder="Please provide a clear reason for rejecting this blocker..."
+                  rows={3}
+                  className="form-textarea w-full py-3 text-sm resize-none"
+                />
+              </div>
+            )}
+
+            {action === 'reassign' && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Reassign to Subcontractor *
+                  </label>
+                  <select
+                    value={reassignmentData.assignedTo}
+                    onChange={(e) => setReassignmentData(prev => ({ ...prev, assignedTo: e.target.value }))}
+                    className="form-select w-full py-3 text-sm"
+                    disabled={loadingSubcontractors}
+                  >
+                    <option value="">
+                      {loadingSubcontractors ? 'Loading subcontractors...' : 'Select a subcontractor...'}
+                    </option>
+                    {subcontractors.map(sub => (
+                      <option key={sub.id} value={sub.id}>
+                        {sub.name} ({sub.company_name}) - {sub.trade_type}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Priority Level
+                  </label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {['low', 'medium', 'high'].map(priority => (
+                      <TouchButton
+                        key={priority}
+                        onClick={() => setReassignmentData(prev => ({ ...prev, priority }))}
+                        variant={reassignmentData.priority === priority ? 'primary' : 'outline'}
+                        size="md"
+                        className="capitalize text-sm py-2"
+                      >
+                        {priority}
+                      </TouchButton>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    Assignment Notes
+                  </label>
+                  <textarea
+                    value={reassignmentData.notes}
+                    onChange={(e) => setReassignmentData(prev => ({ ...prev, notes: e.target.value }))}
+                    placeholder="Additional instructions or notes for the assigned subcontractor..."
+                    rows={3}
+                    className="form-textarea w-full py-3 text-sm resize-none"
+                  />
+                </div>
+              </>
+            )}
+
+            <div className="flex space-x-3 pt-4">
+              <TouchButton
+                onClick={onClose}
+                variant="outline"
+                size="lg"
+                className="flex-1"
+              >
+                Cancel
+              </TouchButton>
+              <TouchButton
+                onClick={onSubmit}
+                variant={action === 'reject' ? 'danger' : 'primary'}
+                size="lg"
+                className="flex-1"
+                disabled={
+                  (action === 'reject' && !rejectionReason.trim()) ||
+                  (action === 'reassign' && !reassignmentData.assignedTo)
+                }
+              >
+                {action === 'accept' ? 'Accept Blocker' :
+                 action === 'reject' ? 'Reject Blocker' : 'Reassign Blocker'}
+              </TouchButton>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const AddManagerModal = ({ isOpen, onClose, onSubmit }) => {
     if (!isOpen) return null;
 
@@ -1744,6 +2060,14 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
         isOpen={showAddManagerModal}
         onClose={() => setShowAddManagerModal(false)}
         onSubmit={handleAddManager}
+      />
+
+      <SubcontractorBlockerModal
+        isOpen={showSubcontractorBlockerModal}
+        onClose={() => setShowSubcontractorBlockerModal(false)}
+        blocker={selectedSubcontractorBlocker}
+        action={blockerAction}
+        onSubmit={handleSubcontractorBlockerSubmit}
       />
     </div>
   );
