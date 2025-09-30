@@ -58,15 +58,15 @@ const MobileTab = ({ icon: Icon, iconSolid: IconSolid, label, active, onClick, b
 );
 
 const TouchButton = ({ children, onClick, variant = 'primary', size = 'lg', className = '', disabled = false }) => {
-  const baseClasses = "inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 touch-manipulation active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed";
+  const baseClasses = "active:scale-95";
 
   const variants = {
     primary: "btn btn-primary",
-    secondary: "bg-slate-600 hover:bg-slate-700 text-white shadow-lg hover:shadow-xl",
-    success: "bg-success-600 hover:bg-success-700 text-white shadow-lg hover:shadow-xl",
-    danger: "bg-safety-600 hover:bg-safety-700 text-white shadow-lg hover:shadow-xl",
-    outline: "bg-white hover:bg-slate-50 text-slate-700 border-2 border-slate-300 hover:border-slate-400 shadow-sm",
-    ghost: "bg-transparent hover:bg-slate-100 text-slate-600 hover:text-slate-800"
+    secondary: "btn btn-secondary",
+    success: "btn btn-success",
+    danger: "btn btn-danger",
+    outline: "btn btn-outline",
+    ghost: "btn btn-ghost"
   };
 
   const sizes = {

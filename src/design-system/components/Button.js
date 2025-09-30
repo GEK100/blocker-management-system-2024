@@ -17,76 +17,47 @@ const Button = ({
 }) => {
   // Base button classes
   const baseClasses = `
-    inline-flex items-center justify-center font-semibold
-    border transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2
-    disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
+    btn
     touch-manipulation select-none
   `;
 
   // Size variants
   const sizeClasses = {
-    xs: 'px-3 py-1.5 text-xs rounded-md min-h-[28px] gap-1',
-    sm: 'px-4 py-2 text-sm rounded-lg min-h-[32px] gap-1.5',
-    base: 'px-5 py-2.5 text-sm rounded-lg min-h-[40px] gap-2',
-    lg: 'px-6 py-3 text-base rounded-xl min-h-[48px] gap-2',
-    xl: 'px-8 py-4 text-lg rounded-xl min-h-[56px] gap-2.5',
+    xs: 'btn-sm text-xs min-h-[28px] gap-1',
+    sm: 'btn-sm min-h-[32px] gap-1.5',
+    base: 'min-h-[40px] gap-2',
+    lg: 'btn-lg min-h-[48px] gap-2',
+    xl: 'btn-xl min-h-[56px] gap-2.5',
   };
 
   // Variant styles
   const variantClasses = {
     primary: `
-      bg-construction-600 text-white border-construction-600
-      hover:bg-construction-700 hover:border-construction-700
-      focus:ring-construction-500 shadow-sm hover:shadow-construction
-      active:bg-construction-800
+      btn-primary
     `,
     secondary: `
-      bg-slate-600 text-white border-slate-600
-      hover:bg-slate-700 hover:border-slate-700
-      focus:ring-slate-500 shadow-sm hover:shadow-slate
-      active:bg-slate-800
+      btn-secondary
     `,
     success: `
-      bg-success-600 text-white border-success-600
-      hover:bg-success-700 hover:border-success-700
-      focus:ring-success-500 shadow-sm
-      active:bg-success-800
+      btn-success
     `,
     warning: `
-      bg-warning-500 text-white border-warning-500
-      hover:bg-warning-600 hover:border-warning-600
-      focus:ring-warning-500 shadow-sm
-      active:bg-warning-700
+      btn-warning
     `,
     danger: `
-      bg-safety-600 text-white border-safety-600
-      hover:bg-safety-700 hover:border-safety-700
-      focus:ring-safety-500 shadow-sm
-      active:bg-safety-800
+      btn-danger
     `,
     outline: `
-      bg-white text-slate-700 border-slate-300
-      hover:bg-slate-50 hover:border-slate-400
-      focus:ring-slate-500 shadow-sm
-      active:bg-slate-100
+      btn-outline
     `,
     'outline-construction': `
-      bg-white text-construction-600 border-construction-300
-      hover:bg-construction-50 hover:border-construction-400
-      focus:ring-construction-500 shadow-sm
-      active:bg-construction-100
+      btn-outline-construction
     `,
     ghost: `
-      bg-transparent text-slate-600 border-transparent
-      hover:bg-slate-100 hover:text-slate-700
-      focus:ring-slate-500
-      active:bg-slate-200
+      btn-ghost
     `,
     'ghost-construction': `
-      bg-transparent text-construction-600 border-transparent
-      hover:bg-construction-50 hover:text-construction-700
-      focus:ring-construction-500
-      active:bg-construction-100
+      btn-ghost text-construction-600 hover:text-construction-700 hover:bg-construction-50 focus:ring-construction-500
     `,
   };
 
