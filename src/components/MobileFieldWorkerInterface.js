@@ -35,10 +35,10 @@ import {
 const MobileTab = ({ icon: Icon, iconSolid: IconSolid, label, active, onClick, badge }) => (
   <button
     onClick={onClick}
-    className={`flex flex-col items-center justify-center py-2 px-1 mobile-tap-target transition-all duration-200 touch-manipulation ${
+    className={`flex flex-col items-center justify-center py-3 px-2 mobile-tap-target transition-all duration-300 touch-manipulation rounded-xl hover-lift ${
       active
-        ? 'text-construction-600 bg-construction-50'
-        : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 active:bg-slate-100'
+        ? 'nav-tab-active'
+        : 'nav-tab-inactive'
     }`}
   >
     <div className="relative">
@@ -48,7 +48,7 @@ const MobileTab = ({ icon: Icon, iconSolid: IconSolid, label, active, onClick, b
         <Icon className="h-5 w-5 sm:h-6 sm:w-6" />
       )}
       {badge && (
-        <span className="absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 bg-construction-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+        <span className="badge badge-primary absolute -top-1 -right-1 h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center text-xs font-bold">
           {badge > 9 ? '9+' : badge}
         </span>
       )}
@@ -61,7 +61,7 @@ const TouchButton = ({ children, onClick, variant = 'primary', size = 'lg', clas
   const baseClasses = "inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-200 touch-manipulation active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed";
 
   const variants = {
-    primary: "bg-construction-600 hover:bg-construction-700 text-white shadow-lg hover:shadow-xl",
+    primary: "btn btn-primary",
     secondary: "bg-slate-600 hover:bg-slate-700 text-white shadow-lg hover:shadow-xl",
     success: "bg-success-600 hover:bg-success-700 text-white shadow-lg hover:shadow-xl",
     danger: "bg-safety-600 hover:bg-safety-700 text-white shadow-lg hover:shadow-xl",
@@ -279,10 +279,10 @@ const VoiceRecordingOverlay = ({ isOpen, onClose, onRecordingComplete }) => {
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-6">
-      <div className="bg-white rounded-3xl p-8 w-full max-w-sm">
+      <div className="card card-premium p-8 w-full max-w-sm">
         <div className="text-center">
           <div className="mb-6">
-            <div className={`inline-flex items-center justify-center w-24 h-24 rounded-full ${isRecording ? 'bg-safety-100' : 'bg-construction-100'} mb-4`}>
+            <div className={`inline-flex items-center justify-center w-24 h-24 rounded-full mb-4 transition-all duration-300 ${isRecording ? 'bg-red-50 shadow-glow' : 'bg-construction-50 shadow-soft'}`}>
               <MicrophoneIcon className={`h-12 w-12 ${isRecording ? 'text-safety-600' : 'text-construction-600'}`} />
             </div>
             <h3 className="text-xl font-bold text-slate-900 mb-2">
@@ -309,7 +309,7 @@ const VoiceRecordingOverlay = ({ isOpen, onClose, onRecordingComplete }) => {
                 onClick={startRecording}
                 variant="primary"
                 size="lg"
-                className="bg-construction-600 hover:bg-construction-700"
+                className="btn btn-primary"
               >
                 <MicrophoneIconSolid className="h-5 w-5 mr-2" />
                 Start
@@ -397,7 +397,7 @@ const FloorPlanViewer = ({ floorPlan, markers = [], onMarkerAdd, onMarkerSelect 
           onClick={() => setIsAddingMarker(!isAddingMarker)}
           variant={isAddingMarker ? "primary" : "outline"}
           size="md"
-          className="bg-white/90 backdrop-blur-sm rounded-full"
+          className="glass rounded-full hover-lift"
         >
           <PlusIcon className="h-5 w-5" />
         </TouchButton>
@@ -437,8 +437,8 @@ const FloorPlanViewer = ({ floorPlan, markers = [], onMarkerAdd, onMarkerSelect 
             }}
             onClick={() => onMarkerSelect(marker)}
           >
-            <div className="w-8 h-8 bg-construction-500 border-4 border-white rounded-full shadow-lg animate-bounce-gentle">
-              <div className="w-full h-full bg-construction-600 rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-construction border-4 border-white rounded-full shadow-glow animate-bounce-gentle">
+              <div className="w-full h-full bg-gradient-construction rounded-full flex items-center justify-center">
                 <span className="text-white text-xs font-bold">{index + 1}</span>
               </div>
             </div>
@@ -452,7 +452,7 @@ const FloorPlanViewer = ({ floorPlan, markers = [], onMarkerAdd, onMarkerSelect 
           onClick={() => setShowControls(!showControls)}
           variant="outline"
           size="md"
-          className="bg-white/90 backdrop-blur-sm mb-2 w-12 h-12 rounded-full"
+          className="glass mb-2 w-12 h-12 rounded-full hover-lift"
         >
           {showControls ? <ChevronUpIcon className="h-5 w-5" /> : <ChevronDownIcon className="h-5 w-5" />}
         </TouchButton>
@@ -514,7 +514,7 @@ const FloorPlanViewer = ({ floorPlan, markers = [], onMarkerAdd, onMarkerSelect 
   );
 };
 
-const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [], allSubcontractors = [], onCreateBlocker, onUpdateBlocker, onUpdateSubcontractor }) => {
+const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [], allSubcontractors = [], projectDrawings = [], onCreateBlocker, onUpdateBlocker, onUpdateSubcontractor }) => {
   const [activeTab, setActiveTab] = useState('home');
   const [selectedProject, setSelectedProject] = useState(project);
   const [showPhotoCapture, setShowPhotoCapture] = useState(false);
@@ -559,6 +559,8 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
     phone: '',
     role: ''
   });
+  const [showDrawingsModal, setShowDrawingsModal] = useState(false);
+  const [selectedDrawingCategory, setSelectedDrawingCategory] = useState('all');
 
   // New blocker state
   const [newBlocker, setNewBlocker] = useState({
@@ -944,25 +946,36 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
           </p>
         )}
 
-        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+        <div className="grid grid-cols-3 gap-3 sm:gap-4">
           <TouchButton
             onClick={() => setShowPhotoCapture(true)}
             variant="outline"
             size="lg"
-            className="flex-col py-4 sm:py-6"
+            className="flex-col py-3 sm:py-4"
           >
-            <CameraIcon className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />
-            <span className="text-sm sm:text-base">Take Photo</span>
+            <CameraIcon className="h-5 w-5 sm:h-6 sm:w-6 mb-2" />
+            <span className="text-xs sm:text-sm">Take Photo</span>
+          </TouchButton>
+
+          <TouchButton
+            onClick={() => setShowDrawingsModal(true)}
+            variant="outline"
+            size="lg"
+            className="flex-col py-3 sm:py-4"
+            disabled={!selectedProject}
+          >
+            <DocumentIcon className="h-5 w-5 sm:h-6 sm:w-6 mb-2" />
+            <span className="text-xs sm:text-sm">Drawings</span>
           </TouchButton>
 
           <TouchButton
             onClick={() => setActiveTab('floor-plan')}
             variant="outline"
             size="lg"
-            className="flex-col py-4 sm:py-6"
+            className="flex-col py-3 sm:py-4"
           >
-            <DocumentIcon className="h-6 w-6 sm:h-8 sm:w-8 mb-2" />
-            <span className="text-sm sm:text-base">Floor Plan</span>
+            <PhotoIcon className="h-5 w-5 sm:h-6 sm:w-6 mb-2" />
+            <span className="text-xs sm:text-sm">Floor Plan</span>
           </TouchButton>
         </div>
 
@@ -1030,7 +1043,7 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
                         <div className="flex-1">
                           <div className="flex items-center space-x-2 mb-1">
                             <h5 className="text-sm font-medium text-slate-900">{subcontractor.company_name}</h5>
-                            <span className="text-xs px-2 py-1 bg-construction-100 text-construction-800 rounded-full">
+                            <span className="badge badge-primary text-xs">
                               {subcontractor.trade_type}
                             </span>
                           </div>
@@ -1235,6 +1248,33 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
           />
         </div>
 
+        {/* Referenced Drawing */}
+        {newBlocker.relatedDrawing && (
+          <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <DocumentIcon className="h-5 w-5 text-blue-600 mr-2" />
+                <div>
+                  <p className="text-sm font-medium text-blue-900">Referenced Drawing</p>
+                  <p className="text-xs text-blue-700">{newBlocker.relatedDrawingName}</p>
+                </div>
+              </div>
+              <TouchButton
+                onClick={() => setNewBlocker(prev => ({
+                  ...prev,
+                  relatedDrawing: '',
+                  relatedDrawingName: ''
+                }))}
+                variant="ghost"
+                size="sm"
+                className="text-blue-600 hover:text-blue-700 p-1"
+              >
+                <XMarkIcon className="h-4 w-4" />
+              </TouchButton>
+            </div>
+          </div>
+        )}
+
         {/* Location */}
         <div>
           <label className="block text-sm font-semibold text-slate-700 mb-2">
@@ -1341,6 +1381,26 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
               </TouchButton>
             </div>
           ))}
+        </div>
+
+        {/* Project Drawings */}
+        <div>
+          <label className="block text-sm font-semibold text-slate-700 mb-2">
+            Project References
+          </label>
+          <TouchButton
+            onClick={() => setShowDrawingsModal(true)}
+            variant="outline"
+            size="lg"
+            className="w-full py-3 sm:py-4"
+            disabled={!selectedProject}
+          >
+            <DocumentIcon className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+            <span className="text-sm sm:text-base">Browse Project Drawings</span>
+          </TouchButton>
+          {!selectedProject && (
+            <p className="text-xs text-slate-500 mt-1">Select a project to access drawings</p>
+          )}
         </div>
 
         {/* Submit Button */}
@@ -1668,6 +1728,166 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
     );
   };
 
+  const DrawingsModal = ({ isOpen, onClose }) => {
+    if (!isOpen) return null;
+
+    // Filter drawings for the selected project
+    const currentProjectDrawings = projectDrawings.filter(drawing =>
+      drawing.projectId === selectedProject?.id && drawing.status === 'active'
+    );
+
+    // Filter by category
+    const filteredDrawings = selectedDrawingCategory === 'all'
+      ? currentProjectDrawings
+      : currentProjectDrawings.filter(drawing => drawing.category === selectedDrawingCategory);
+
+    const categories = [
+      { value: 'all', label: 'All Categories' },
+      { value: 'architectural', label: 'Architectural' },
+      { value: 'structural', label: 'Structural' },
+      { value: 'electrical', label: 'Electrical' },
+      { value: 'mechanical', label: 'Mechanical' },
+      { value: 'plumbing', label: 'Plumbing' },
+      { value: 'survey', label: 'Survey' }
+    ];
+
+    const getCategoryColor = (category) => {
+      const colors = {
+        architectural: 'bg-blue-100 text-blue-800',
+        structural: 'bg-green-100 text-green-800',
+        electrical: 'bg-yellow-100 text-yellow-800',
+        mechanical: 'bg-purple-100 text-purple-800',
+        plumbing: 'bg-indigo-100 text-indigo-800',
+        survey: 'bg-gray-100 text-gray-800'
+      };
+      return colors[category] || 'bg-slate-100 text-slate-800';
+    };
+
+    return (
+      <div className="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-6">
+        <div className="bg-white w-full sm:w-full sm:max-w-2xl rounded-t-3xl sm:rounded-3xl p-6 max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h3 className="text-xl font-bold text-slate-900">Project Drawings</h3>
+              {selectedProject && (
+                <p className="text-sm text-slate-600">{selectedProject.name}</p>
+              )}
+            </div>
+            <TouchButton
+              onClick={onClose}
+              variant="ghost"
+              size="md"
+              className="p-2"
+            >
+              <XMarkIcon className="h-5 w-5" />
+            </TouchButton>
+          </div>
+
+          {/* Category Filter */}
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-slate-700 mb-2">
+              Filter by Category
+            </label>
+            <select
+              value={selectedDrawingCategory}
+              onChange={(e) => setSelectedDrawingCategory(e.target.value)}
+              className="form-select w-full py-2 text-sm"
+            >
+              {categories.map(category => (
+                <option key={category.value} value={category.value}>
+                  {category.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Drawings List */}
+          <div className="space-y-3">
+            {filteredDrawings.length > 0 ? (
+              filteredDrawings.map(drawing => (
+                <div key={drawing.id} className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex-1">
+                      <h4 className="font-medium text-slate-900 text-sm">{drawing.name}</h4>
+                      <p className="text-xs text-slate-600 mt-1">{drawing.description}</p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className={`text-xs px-2 py-1 rounded-full font-medium ${getCategoryColor(drawing.category)}`}>
+                        {drawing.category}
+                      </span>
+                      <span className="text-xs px-2 py-1 bg-slate-200 text-slate-700 rounded-full">
+                        {drawing.version}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs text-slate-500">
+                    <span>Uploaded by: {drawing.uploadedBy}</span>
+                    <span>{new Date(drawing.uploadedAt).toLocaleDateString()}</span>
+                  </div>
+
+                  <div className="mt-3 flex space-x-2">
+                    <TouchButton
+                      onClick={() => {
+                        // In a real app, this would open the drawing file
+                        alert(`Opening ${drawing.name} - ${drawing.fileUrl}`);
+                      }}
+                      variant="outline"
+                      size="sm"
+                      className="flex-1 text-xs py-2"
+                    >
+                      <EyeIcon className="h-4 w-4 mr-1" />
+                      View
+                    </TouchButton>
+                    <TouchButton
+                      onClick={() => {
+                        // Add drawing reference to blocker form if in create mode
+                        setNewBlocker(prev => ({
+                          ...prev,
+                          relatedDrawing: drawing.id,
+                          relatedDrawingName: drawing.name
+                        }));
+                        setShowDrawingsModal(false);
+                        setActiveTab('create');
+                      }}
+                      variant="primary"
+                      size="sm"
+                      className="flex-1 text-xs py-2"
+                    >
+                      <PlusIcon className="h-4 w-4 mr-1" />
+                      Reference in Blocker
+                    </TouchButton>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8">
+                <DocumentIcon className="h-12 w-12 text-slate-400 mx-auto mb-2" />
+                <h4 className="text-sm font-medium text-slate-900 mb-1">No Drawings Found</h4>
+                <p className="text-xs text-slate-600">
+                  {selectedDrawingCategory === 'all'
+                    ? 'No drawings have been uploaded for this project'
+                    : `No ${selectedDrawingCategory} drawings found`}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="pt-4 border-t border-slate-200 mt-6">
+            <TouchButton
+              onClick={onClose}
+              variant="outline"
+              size="lg"
+              className="w-full"
+            >
+              Close
+            </TouchButton>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const SubcontractorManagementModal = ({ isOpen, onClose, subcontractor, onSubmit }) => {
     if (!isOpen || !subcontractor) return null;
 
@@ -1691,7 +1911,7 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
             <div className="p-3 bg-slate-50 rounded-lg">
               <div className="flex items-center space-x-2 mb-2">
                 <h4 className="font-medium text-slate-900 text-sm">{subcontractor.company_name}</h4>
-                <span className="text-xs px-2 py-1 bg-construction-100 text-construction-800 rounded-full">
+                <span className="badge badge-primary text-xs">
                   {subcontractor.trade_type}
                 </span>
               </div>
@@ -2322,6 +2542,11 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
         onClose={() => setShowSubcontractorManagementModal(false)}
         subcontractor={selectedSubcontractorForProject}
         onSubmit={handleAddSubcontractorUser}
+      />
+
+      <DrawingsModal
+        isOpen={showDrawingsModal}
+        onClose={() => setShowDrawingsModal(false)}
       />
     </div>
   );

@@ -1102,7 +1102,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
               <button
                 key={project.id}
                 onClick={() => setSelectedProject(project)}
-                className="text-left p-4 bg-white border border-slate-200 rounded-lg hover:border-construction-300 hover:shadow-md transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
+                className="card text-left p-4 hover:border-construction-300 focus:outline-none focus:ring-2 focus:ring-construction-500 focus:border-construction-500"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
@@ -1626,7 +1626,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="modal-content max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
           {/* Modal Header */}
           <div className="flex items-center justify-between p-6 border-b border-slate-200">
             <h3 className="text-lg font-semibold text-slate-900">
@@ -1882,7 +1882,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                             type="file"
                             onChange={handleFileChange}
                             accept=".pdf,.jpg,.jpeg,.png,.gif,.xls,.xlsx,.csv"
-                            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-construction-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-construction-50 file:text-construction-700 hover:file:bg-construction-100"
+                            className="input file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:btn file:btn-secondary hover:file:shadow-soft"
                           />
                           <p className="text-xs text-slate-500 mt-1">Supported: PDF, Images, Excel, CSV (Max 10MB)</p>
                         </div>
@@ -1914,7 +1914,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                     <div className="space-y-3">
                       <h5 className="text-sm font-semibold text-slate-900">Added Drawings ({projectDrawings.length})</h5>
                       {projectDrawings.map((drawing) => (
-                        <div key={drawing.id} className="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg">
+                        <div key={drawing.id} className="card flex items-center justify-between p-3">
                           <div className="flex-1">
                             <div className="flex items-center space-x-3">
                               <DocumentIcon className="h-5 w-5 text-construction-600" />
@@ -2096,7 +2096,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
                         {newSubcontractor.users.length > 0 && (
                           <div className="space-y-2">
                             {newSubcontractor.users.map((user) => (
-                              <div key={user.id} className="flex items-center justify-between bg-white p-2 rounded border">
+                              <div key={user.id} className="card flex items-center justify-between p-2">
                                 <div className="flex-1">
                                   <span className="font-medium text-sm">{user.name}</span>
                                   <span className="text-slate-500 text-sm ml-2">({user.email})</span>
