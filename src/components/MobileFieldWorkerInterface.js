@@ -514,7 +514,7 @@ const FloorPlanViewer = ({ floorPlan, markers = [], onMarkerAdd, onMarkerSelect 
   );
 };
 
-const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [], onCreateBlocker, onUpdateBlocker }) => {
+const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [], allSubcontractors = [], onCreateBlocker, onUpdateBlocker, onUpdateSubcontractor }) => {
   const [activeTab, setActiveTab] = useState('home');
   const [selectedProject, setSelectedProject] = useState(project);
   const [showPhotoCapture, setShowPhotoCapture] = useState(false);
@@ -550,6 +550,14 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
     assignedTo: '',
     notes: '',
     priority: 'medium'
+  });
+  const [showSubcontractorManagementModal, setShowSubcontractorManagementModal] = useState(false);
+  const [selectedSubcontractorForProject, setSelectedSubcontractorForProject] = useState(null);
+  const [newSubcontractorUser, setNewSubcontractorUser] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    role: ''
   });
 
   // New blocker state
@@ -830,6 +838,46 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
     alert(`Blocker ${actionText} successfully!`);
   };
 
+  const handleSubcontractorSelection = (subcontractor) => {
+    setSelectedSubcontractorForProject(subcontractor);
+    setShowSubcontractorManagementModal(true);
+  };
+
+  const handleAddSubcontractorUser = () => {
+    if (!newSubcontractorUser.name.trim() || !newSubcontractorUser.email.trim()) {
+      alert('Please enter user name and email');
+      return;
+    }
+
+    const updatedSubcontractor = {
+      ...selectedSubcontractorForProject,
+      users: [
+        ...selectedSubcontractorForProject.users,
+        {
+          id: `user_${Date.now()}`,
+          ...newSubcontractorUser,
+          addedAt: new Date().toISOString(),
+          addedBy: user?.email
+        }
+      ]
+    };
+
+    // Update the subcontractor in the allSubcontractors list
+    onUpdateSubcontractor(updatedSubcontractor);
+
+    // Reset form
+    setNewSubcontractorUser({
+      name: '',
+      email: '',
+      phone: '',
+      role: ''
+    });
+
+    setShowSubcontractorManagementModal(false);
+    setSelectedSubcontractorForProject(null);
+    alert('Subcontractor user added successfully!');
+  };
+
   const renderHomeTab = () => (
     <div className="flex-1 overflow-y-auto pb-20">
       {/* Header */}
@@ -956,6 +1004,66 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Subcontractor Management Section */}
+        {selectedProject && (
+          <div className="mt-6 pt-6 border-t border-slate-200">
+            <h3 className="text-md font-semibold text-slate-900 mb-3">Subcontractor Management</h3>
+            <p className="text-sm text-slate-600 mb-4">
+              Add users from subcontractors that have been approved by company admin
+            </p>
+
+            {/* Available Subcontractors */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium text-slate-700">Available Subcontractors</h4>
+              {allSubcontractors
+                .filter(sub => sub.status === 'active')
+                .map(subcontractor => {
+                  const userCount = subcontractor.users ? subcontractor.users.length : 0;
+                  const hasProjectAccess = subcontractor.project_access.includes(selectedProject.id) || subcontractor.project_access.length === 0;
+
+                  return (
+                    <div key={subcontractor.id} className={`p-3 rounded-lg border ${hasProjectAccess ? 'border-slate-200 bg-white' : 'border-slate-100 bg-slate-50'}`}>
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <h5 className="text-sm font-medium text-slate-900">{subcontractor.company_name}</h5>
+                            <span className="text-xs px-2 py-1 bg-construction-100 text-construction-800 rounded-full">
+                              {subcontractor.trade_type}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-600">{subcontractor.name} • {subcontractor.email}</p>
+                          <p className="text-xs text-slate-500 mt-1">
+                            {userCount} user{userCount !== 1 ? 's' : ''} •
+                            {hasProjectAccess ? ' Has project access' : ' No project access'}
+                          </p>
+                        </div>
+                        {hasProjectAccess && (
+                          <TouchButton
+                            onClick={() => handleSubcontractorSelection(subcontractor)}
+                            variant="outline"
+                            size="sm"
+                            className="text-xs px-3 py-1"
+                          >
+                            <UserPlusIcon className="h-4 w-4 mr-1" />
+                            Add User
+                          </TouchButton>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+              {allSubcontractors.filter(sub => sub.status === 'active').length === 0 && (
+                <div className="text-center py-6 text-slate-500">
+                  <UserGroupIcon className="h-8 w-8 mx-auto mb-2" />
+                  <p className="text-sm">No subcontractors available</p>
+                  <p className="text-xs">Contact admin to add subcontractors</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
       </div>
@@ -1560,6 +1668,145 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
     );
   };
 
+  const SubcontractorManagementModal = ({ isOpen, onClose, subcontractor, onSubmit }) => {
+    if (!isOpen || !subcontractor) return null;
+
+    return (
+      <div className="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-6">
+        <div className="bg-white w-full sm:w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-6 max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-xl font-bold text-slate-900">Add Subcontractor User</h3>
+            <TouchButton
+              onClick={onClose}
+              variant="ghost"
+              size="md"
+              className="p-2"
+            >
+              <XMarkIcon className="h-5 w-5" />
+            </TouchButton>
+          </div>
+
+          <div className="space-y-4">
+            {/* Subcontractor Details */}
+            <div className="p-3 bg-slate-50 rounded-lg">
+              <div className="flex items-center space-x-2 mb-2">
+                <h4 className="font-medium text-slate-900 text-sm">{subcontractor.company_name}</h4>
+                <span className="text-xs px-2 py-1 bg-construction-100 text-construction-800 rounded-full">
+                  {subcontractor.trade_type}
+                </span>
+              </div>
+              <p className="text-xs text-slate-600">Contact: {subcontractor.name}</p>
+              <p className="text-xs text-slate-500">Current Users: {subcontractor.users ? subcontractor.users.length : 0}</p>
+            </div>
+
+            {/* Existing Users */}
+            {subcontractor.users && subcontractor.users.length > 0 && (
+              <div>
+                <h5 className="text-sm font-medium text-slate-700 mb-2">Current Users</h5>
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {subcontractor.users.map(user => (
+                    <div key={user.id} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
+                      <div>
+                        <div className="text-sm font-medium text-slate-900">{user.name}</div>
+                        <div className="text-xs text-slate-600">{user.email}</div>
+                      </div>
+                      <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">
+                        {user.role || 'Worker'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* New User Form */}
+            <div className="border-t border-slate-200 pt-4">
+              <h5 className="text-sm font-medium text-slate-700 mb-3">Add New User</h5>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    User Name *
+                  </label>
+                  <input
+                    type="text"
+                    value={newSubcontractorUser.name}
+                    onChange={(e) => setNewSubcontractorUser(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="Enter user's full name"
+                    className="form-input w-full py-2 text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    value={newSubcontractorUser.email}
+                    onChange={(e) => setNewSubcontractorUser(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="user@company.com"
+                    className="form-input w-full py-2 text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Phone Number
+                  </label>
+                  <input
+                    type="tel"
+                    value={newSubcontractorUser.phone}
+                    onChange={(e) => setNewSubcontractorUser(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="+1-555-0123"
+                    className="form-input w-full py-2 text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">
+                    Role/Position
+                  </label>
+                  <input
+                    type="text"
+                    value={newSubcontractorUser.role}
+                    onChange={(e) => setNewSubcontractorUser(prev => ({ ...prev, role: e.target.value }))}
+                    placeholder="e.g., Lead Technician, Supervisor, Worker"
+                    className="form-input w-full py-2 text-sm"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-2 text-xs text-slate-600 bg-blue-50 p-3 rounded-lg">
+              <strong>Note:</strong> This user will be added to {subcontractor.company_name} and will have access to assigned projects.
+            </div>
+
+            <div className="flex space-x-3 pt-4">
+              <TouchButton
+                onClick={onClose}
+                variant="outline"
+                size="lg"
+                className="flex-1"
+              >
+                Cancel
+              </TouchButton>
+              <TouchButton
+                onClick={onSubmit}
+                variant="primary"
+                size="lg"
+                className="flex-1"
+                disabled={!newSubcontractorUser.name.trim() || !newSubcontractorUser.email.trim()}
+              >
+                Add User
+              </TouchButton>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const SubcontractorBlockerModal = ({ isOpen, onClose, blocker, action, onSubmit }) => {
     if (!isOpen || !blocker) return null;
 
@@ -2068,6 +2315,13 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
         blocker={selectedSubcontractorBlocker}
         action={blockerAction}
         onSubmit={handleSubcontractorBlockerSubmit}
+      />
+
+      <SubcontractorManagementModal
+        isOpen={showSubcontractorManagementModal}
+        onClose={() => setShowSubcontractorManagementModal(false)}
+        subcontractor={selectedSubcontractorForProject}
+        onSubmit={handleAddSubcontractorUser}
       />
     </div>
   );

@@ -6,6 +6,7 @@ const FieldWorkerWrapper = () => {
   const { user } = useSmartAuth();
   const [projects, setProjects] = useState([]);
   const [blockers, setBlockers] = useState([]);
+  const [allSubcontractors, setAllSubcontractors] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -142,8 +143,141 @@ const FieldWorkerWrapper = () => {
           }
         ];
 
+        // Mock subcontractors from company admin page
+        const mockAllSubcontractors = [
+          {
+            id: 'sub_1',
+            name: 'Mike Wilson',
+            email: 'mike.wilson@plumbingpro.com',
+            phone: '+1-555-0201',
+            company_name: 'PlumbingPro LLC',
+            trade_type: 'Plumbing',
+            status: 'active',
+            project_access: ['1', '2'],
+            addedAt: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
+            users: [
+              {
+                id: 'user_1',
+                name: 'Mike Wilson',
+                email: 'mike.wilson@plumbingpro.com',
+                phone: '+1-555-0201',
+                role: 'Lead Plumber'
+              },
+              {
+                id: 'user_2',
+                name: 'John Smith',
+                email: 'john.smith@plumbingpro.com',
+                phone: '+1-555-0202',
+                role: 'Plumber'
+              }
+            ]
+          },
+          {
+            id: 'sub_2',
+            name: 'Sarah Martinez',
+            email: 'sarah.martinez@steelworks.com',
+            phone: '+1-555-0301',
+            company_name: 'SteelWorks Construction',
+            trade_type: 'Structural Steel',
+            status: 'active',
+            project_access: ['1'],
+            addedAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
+            users: [
+              {
+                id: 'user_3',
+                name: 'Sarah Martinez',
+                email: 'sarah.martinez@steelworks.com',
+                phone: '+1-555-0301',
+                role: 'Steel Foreman'
+              },
+              {
+                id: 'user_4',
+                name: 'David Chen',
+                email: 'david.chen@steelworks.com',
+                phone: '+1-555-0302',
+                role: 'Welder'
+              },
+              {
+                id: 'user_5',
+                name: 'Lisa Rodriguez',
+                email: 'lisa.rodriguez@steelworks.com',
+                phone: '+1-555-0303',
+                role: 'Structural Engineer'
+              }
+            ]
+          },
+          {
+            id: 'sub_3',
+            name: 'Tom Jackson',
+            email: 'tom.jackson@voltageexperts.com',
+            phone: '+1-555-0401',
+            company_name: 'Voltage Experts Inc',
+            trade_type: 'Electrical',
+            status: 'active',
+            project_access: ['2', '3'],
+            addedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+            users: [
+              {
+                id: 'user_6',
+                name: 'Tom Jackson',
+                email: 'tom.jackson@voltageexperts.com',
+                phone: '+1-555-0401',
+                role: 'Master Electrician'
+              }
+            ]
+          },
+          {
+            id: 'sub_4',
+            name: 'Maria Gonzalez',
+            email: 'maria.gonzalez@concretemastery.com',
+            phone: '+1-555-0501',
+            company_name: 'Concrete Mastery LLC',
+            trade_type: 'Concrete',
+            status: 'active',
+            project_access: ['1', '2', '3'],
+            addedAt: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(),
+            users: [
+              {
+                id: 'user_7',
+                name: 'Maria Gonzalez',
+                email: 'maria.gonzalez@concretemastery.com',
+                phone: '+1-555-0501',
+                role: 'Concrete Supervisor'
+              },
+              {
+                id: 'user_8',
+                name: 'Robert Kim',
+                email: 'robert.kim@concretemastery.com',
+                phone: '+1-555-0502',
+                role: 'Concrete Finisher'
+              }
+            ]
+          },
+          {
+            id: 'sub_5',
+            name: 'James Wright',
+            email: 'james.wright@hvacpro.com',
+            phone: '+1-555-0601',
+            company_name: 'HVAC Pro Services',
+            trade_type: 'HVAC',
+            status: 'active',
+            project_access: ['1'],
+            addedAt: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(),
+            users: [
+              {
+                id: 'user_9',
+                name: 'James Wright',
+                email: 'james.wright@hvacpro.com',
+                phone: '+1-555-0601',
+                role: 'HVAC Technician'
+              }
+            ]
+          }
+        ];
+
         setProjects(mockProjects);
         setBlockers(mockBlockers);
+        setAllSubcontractors(mockAllSubcontractors);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -166,6 +300,12 @@ const FieldWorkerWrapper = () => {
     ));
   };
 
+  const handleUpdateSubcontractor = (updatedSubcontractor) => {
+    setAllSubcontractors(prev => prev.map(sub =>
+      sub.id === updatedSubcontractor.id ? updatedSubcontractor : sub
+    ));
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -179,8 +319,10 @@ const FieldWorkerWrapper = () => {
       user={user}
       projects={projects}
       blockers={blockers}
+      allSubcontractors={allSubcontractors}
       onCreateBlocker={handleCreateBlocker}
       onUpdateBlocker={handleUpdateBlocker}
+      onUpdateSubcontractor={handleUpdateSubcontractor}
     />
   );
 };
