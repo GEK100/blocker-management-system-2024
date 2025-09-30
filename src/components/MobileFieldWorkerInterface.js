@@ -17,7 +17,9 @@ import {
   SpeakerWaveIcon,
   ChevronUpIcon,
   ChevronDownIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  ChartBarIcon,
+  ClockIcon
 } from '@heroicons/react/24/outline';
 import {
   CameraIcon as CameraIconSolid,
@@ -1121,6 +1123,196 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
     </div>
   );
 
+  const renderAnalyticsTab = () => {
+    // Filter blockers for the selected project only
+    const projectBlockers = blockers.filter(blocker =>
+      blocker.projectId === selectedProject?.id || blocker.project_id === selectedProject?.id
+    );
+
+    // Calculate analytics for the specific project
+    const totalBlockers = projectBlockers.length;
+    const pendingCount = projectBlockers.filter(b => b.status === 'pending_review').length;
+    const assignedCount = projectBlockers.filter(b => b.status === 'assigned').length;
+    const completedCount = projectBlockers.filter(b => b.status === 'completed').length;
+
+    // Priority breakdown
+    const highPriority = projectBlockers.filter(b => b.priority === 'high').length;
+    const mediumPriority = projectBlockers.filter(b => b.priority === 'medium').length;
+    const lowPriority = projectBlockers.filter(b => b.priority === 'low').length;
+
+    // Recent activity (last 7 days)
+    const lastWeek = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const recentBlockers = projectBlockers.filter(b => new Date(b.created_at) >= lastWeek).length;
+
+    // Average resolution time (for completed blockers)
+    const completedBlockers = projectBlockers.filter(b => b.status === 'completed' && b.assignedAt && b.completedAt);
+    const avgResolutionTime = completedBlockers.length > 0
+      ? completedBlockers.reduce((sum, b) => {
+          const assigned = new Date(b.assignedAt);
+          const completed = new Date(b.completedAt);
+          return sum + (completed - assigned) / (1000 * 60 * 60 * 24); // days
+        }, 0) / completedBlockers.length
+      : 0;
+
+    return (
+      <div className="flex-1 overflow-y-auto pb-20">
+        <div className="p-4 sm:p-6">
+          <div className="flex items-center justify-between mb-6">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900">Project Analytics</h1>
+            {selectedProject && (
+              <div className="text-right">
+                <p className="text-sm font-medium text-slate-600">Current Project</p>
+                <p className="text-lg font-bold text-construction-600">{selectedProject.name}</p>
+              </div>
+            )}
+          </div>
+
+          {!selectedProject ? (
+            <div className="text-center py-12">
+              <ChartBarIcon className="h-16 w-16 text-slate-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-slate-900 mb-2">No Project Selected</h3>
+              <p className="text-slate-600 mb-6">Select a project to view analytics</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* Overview Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="bg-white rounded-lg p-4 border border-slate-200">
+                  <div className="text-2xl font-bold text-slate-900">{totalBlockers}</div>
+                  <div className="text-sm text-slate-600">Total Blockers</div>
+                </div>
+                <div className="bg-white rounded-lg p-4 border border-slate-200">
+                  <div className="text-2xl font-bold text-amber-600">{pendingCount}</div>
+                  <div className="text-sm text-slate-600">Pending</div>
+                </div>
+                <div className="bg-white rounded-lg p-4 border border-slate-200">
+                  <div className="text-2xl font-bold text-blue-600">{assignedCount}</div>
+                  <div className="text-sm text-slate-600">In Progress</div>
+                </div>
+                <div className="bg-white rounded-lg p-4 border border-slate-200">
+                  <div className="text-2xl font-bold text-green-600">{completedCount}</div>
+                  <div className="text-sm text-slate-600">Completed</div>
+                </div>
+              </div>
+
+              {/* Priority Breakdown */}
+              <div className="bg-white rounded-lg p-4 border border-slate-200">
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Priority Distribution</h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-red-500 rounded-full mr-3"></div>
+                      <span className="text-sm font-medium text-slate-700">High Priority</span>
+                    </div>
+                    <span className="text-sm font-bold text-slate-900">{highPriority}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-yellow-500 rounded-full mr-3"></div>
+                      <span className="text-sm font-medium text-slate-700">Medium Priority</span>
+                    </div>
+                    <span className="text-sm font-bold text-slate-900">{mediumPriority}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-green-500 rounded-full mr-3"></div>
+                      <span className="text-sm font-medium text-slate-700">Low Priority</span>
+                    </div>
+                    <span className="text-sm font-bold text-slate-900">{lowPriority}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              {totalBlockers > 0 && (
+                <div className="bg-white rounded-lg p-4 border border-slate-200">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-4">Project Progress</h3>
+                  <div className="w-full bg-slate-200 rounded-full h-3 mb-2">
+                    <div
+                      className="bg-green-500 h-3 rounded-full transition-all duration-300"
+                      style={{ width: `${(completedCount / totalBlockers) * 100}%` }}
+                    ></div>
+                  </div>
+                  <div className="flex justify-between text-sm text-slate-600">
+                    <span>{completedCount} completed</span>
+                    <span>{Math.round((completedCount / totalBlockers) * 100)}% complete</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Recent Activity */}
+              <div className="bg-white rounded-lg p-4 border border-slate-200">
+                <h3 className="text-lg font-semibold text-slate-900 mb-4">Recent Activity</h3>
+                <div className="flex items-center">
+                  <ClipboardDocumentListIcon className="h-8 w-8 text-construction-600 mr-3" />
+                  <div>
+                    <div className="text-lg font-bold text-slate-900">{recentBlockers}</div>
+                    <div className="text-sm text-slate-600">New blockers in last 7 days</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Performance Metrics */}
+              {avgResolutionTime > 0 && (
+                <div className="bg-white rounded-lg p-4 border border-slate-200">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-4">Performance</h3>
+                  <div className="flex items-center">
+                    <ClockIcon className="h-8 w-8 text-blue-600 mr-3" />
+                    <div>
+                      <div className="text-lg font-bold text-slate-900">{avgResolutionTime.toFixed(1)} days</div>
+                      <div className="text-sm text-slate-600">Average resolution time</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Recent Blockers List */}
+              {projectBlockers.length > 0 && (
+                <div className="bg-white rounded-lg p-4 border border-slate-200">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-4">Latest Blockers</h3>
+                  <div className="space-y-3">
+                    {projectBlockers.slice(0, 5).map(blocker => (
+                      <div key={blocker.id} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg">
+                        <div className="flex-1">
+                          <div className="text-sm font-medium text-slate-900 truncate">{blocker.title}</div>
+                          <div className="text-xs text-slate-600">{blocker.location || 'No location'}</div>
+                        </div>
+                        <span className={`text-xs px-2 py-1 rounded-full ${
+                          blocker.status === 'pending_review' ? 'bg-amber-100 text-amber-800' :
+                          blocker.status === 'assigned' ? 'bg-blue-100 text-blue-800' :
+                          blocker.status === 'completed' ? 'bg-green-100 text-green-800' :
+                          'bg-purple-100 text-purple-800'
+                        }`}>
+                          {blocker.status.replace('_', ' ')}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {totalBlockers === 0 && (
+                <div className="text-center py-12">
+                  <ChartBarIcon className="h-16 w-16 text-slate-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-slate-900 mb-2">No Data Available</h3>
+                  <p className="text-slate-600 mb-6">No blockers have been reported for this project yet</p>
+                  <TouchButton
+                    onClick={() => setActiveTab('create')}
+                    variant="primary"
+                    size="lg"
+                  >
+                    <PlusIcon className="h-5 w-5 mr-2" />
+                    Report First Blocker
+                  </TouchButton>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   const AssignmentModal = ({ isOpen, onClose, blocker, onSubmit }) => {
     if (!isOpen || !blocker) return null;
 
@@ -1273,12 +1465,13 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
         {activeTab === 'home' && renderHomeTab()}
         {activeTab === 'create' && renderCreateTab()}
         {activeTab === 'blockers' && renderBlockersTab()}
+        {activeTab === 'analytics' && renderAnalyticsTab()}
         {activeTab === 'floor-plan' && renderFloorPlanTab()}
       </main>
 
       {/* Bottom Navigation */}
       <nav className="bg-white border-t border-slate-200 safe-area-bottom flex-shrink-0">
-        <div className="grid grid-cols-4">
+        <div className="grid grid-cols-5">
           <MobileTab
             icon={HomeIcon}
             label="Home"
@@ -1299,8 +1492,14 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
             badge={pendingBlockers > 0 ? pendingBlockers : null}
           />
           <MobileTab
+            icon={ChartBarIcon}
+            label="Analytics"
+            active={activeTab === 'analytics'}
+            onClick={() => setActiveTab('analytics')}
+          />
+          <MobileTab
             icon={DocumentIcon}
-            label="Floor Plan"
+            label="Plan"
             active={activeTab === 'floor-plan'}
             onClick={() => setActiveTab('floor-plan')}
           />
