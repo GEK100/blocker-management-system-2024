@@ -1081,68 +1081,91 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       {/* Company Metrics */}
       {renderCompanyMetrics()}
 
-      {/* Project Analytics Buttons */}
+      {/* Projects Management & Analytics */}
       <Card className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h4 className="text-lg font-semibold text-slate-900">Project Analytics</h4>
-            <p className="text-sm text-slate-600">Click on any project to view detailed analytics and insights</p>
+            <h4 className="text-lg font-semibold text-slate-900">Projects Management & Analytics</h4>
+            <p className="text-sm text-slate-600">Manage projects, view analytics, and handle project operations</p>
           </div>
+          <Button variant="primary" size="sm" onClick={handleAddProject}>
+            <PlusIcon className="h-4 w-4 mr-2" />
+            Add Project
+          </Button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {projects.map((project) => {
             const resolutionRate = project.blockers > 0 ?
               ((project.resolved / (project.blockers + project.resolved)) * 100).toFixed(1) : 100;
             const criticalIssues = project.critical || 0;
 
             return (
-              <button
-                key={project.id}
-                onClick={() => setSelectedProject(project)}
-                className="card text-left p-4 hover:border-emerald-300 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h5 className="text-lg font-semibold text-slate-900 truncate">{project.name}</h5>
-                    <Badge
-                      variant={project.status === 'active' ? 'construction' : 'secondary'}
+              <Card key={project.id} className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <h4 className="text-lg font-semibold text-slate-900">{project.name}</h4>
+                    <p className="text-sm text-slate-600">{project.manager}</p>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      variant="ghost"
                       size="sm"
+                      onClick={() => setSelectedProject(project)}
+                      title="View Analytics"
                     >
+                      <ChartBarIcon className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditProject(project)}
+                      title="Edit Project"
+                    >
+                      <PencilIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-slate-600">Status</span>
+                    <Badge variant={project.status === 'active' ? 'primary' : 'secondary'}>
                       {project.status}
                     </Badge>
                   </div>
-
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <p className="text-slate-600">Progress</p>
-                      <p className="font-semibold text-slate-900">{project.progress}%</p>
-                    </div>
-                    <div>
-                      <p className="text-slate-600">Blockers</p>
-                      <p className="font-semibold text-slate-900">{project.blockers}</p>
-                    </div>
-                    <div>
-                      <p className="text-slate-600">Resolution Rate</p>
-                      <p className="font-semibold text-green-600">{resolutionRate}%</p>
-                    </div>
-                    <div>
-                      <p className="text-slate-600">Critical</p>
-                      <p className={`font-semibold ${criticalIssues > 0 ? 'text-red-600' : 'text-slate-900'}`}>
-                        {criticalIssues}
-                      </p>
-                    </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-slate-600">Progress</span>
+                    <span className="text-sm font-medium">{project.progress}%</span>
                   </div>
-
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                    <span className="text-xs text-slate-500">Manager: {project.manager}</span>
-                    <div className="flex items-center text-emerald-600">
-                      <span className="text-xs font-medium">View Analytics</span>
-                      <ArrowRightIcon className="h-3 w-3 ml-1" />
-                    </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-slate-600">Active Blockers</span>
+                    <span className="text-sm font-medium">{project.blockers}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-slate-600">Resolved</span>
+                    <span className="text-sm font-medium text-green-600">{project.resolved || 0}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-slate-600">Critical Issues</span>
+                    <span className={`text-sm font-medium ${criticalIssues > 0 ? 'text-red-600' : 'text-slate-900'}`}>
+                      {criticalIssues}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-slate-600">Budget</span>
+                    <span className="text-sm font-medium">${project.budget?.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-slate-600">Timeline</span>
+                    <span className="text-sm font-medium">{project.timeline}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-slate-600">Resolution Rate</span>
+                    <span className="text-sm font-medium text-emerald-600">{resolutionRate}%</span>
                   </div>
                 </div>
-              </button>
+              </Card>
             );
           })}
         </div>
@@ -1153,7 +1176,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
         <Card className="p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
-              <h4 className="text-lg font-semibold text-slate-900">{selectedProject.name} - Detailed Analytics</h4>
+              <h4 className="text-lg font-semibold text-slate-900">{selectedProject.name} - Project Management</h4>
               <p className="text-sm text-slate-600">Project manager: {selectedProject.manager}</p>
             </div>
             <button
@@ -1162,6 +1185,51 @@ const CompanyOverviewDashboard = ({ companyId }) => {
             >
               <XMarkIcon className="h-6 w-6" />
             </button>
+          </div>
+
+          {/* Project Navigation Actions */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setSelectedProjectForTeam(selectedProject);
+                setShowProjectTeamManagement(true);
+              }}
+              className="flex items-center justify-center p-4"
+            >
+              <UserGroupIcon className="h-5 w-5 mr-2" />
+              Manage Team
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setShowDrawingsManager(true);
+              }}
+              className="flex items-center justify-center p-4"
+            >
+              <FolderOpenIcon className="h-5 w-5 mr-2" />
+              Drawings
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => console.log('Navigate to blockers for', selectedProject.name)}
+              className="flex items-center justify-center p-4"
+            >
+              <ExclamationTriangleIcon className="h-5 w-5 mr-2" />
+              Blockers
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => console.log('View project reports for', selectedProject.name)}
+              className="flex items-center justify-center p-4"
+            >
+              <DocumentIcon className="h-5 w-5 mr-2" />
+              Reports
+            </Button>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
