@@ -15,7 +15,8 @@ import {
   MagnifyingGlassIcon,
   UserGroupIcon,
   ArrowDownTrayIcon,
-  BellIcon
+  BellIcon,
+  PencilIcon
 } from '@heroicons/react/24/outline';
 import {
   CameraIcon as CameraIconSolid
