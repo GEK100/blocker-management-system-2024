@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { subcontractorAPI } from '../lib/subcontractorAPI';
+import notificationService from '../lib/notificationService';
 import {
   CameraIcon,
   MapPinIcon,
@@ -666,19 +667,30 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
     setShowVoiceRecording(false);
   };
 
-  const handleSubmitBlocker = () => {
+  const handleSubmitBlocker = async () => {
     if (!newBlocker.title.trim()) {
       alert('Please enter a blocker title');
       return;
     }
 
-    onCreateBlocker({
+    const blockerData = {
       ...newBlocker,
       id: Date.now().toString(),
       created_at: new Date().toISOString(),
       created_by: user,
       status: 'pending_review'
-    });
+    };
+
+    onCreateBlocker(blockerData);
+
+    // If this is from a main contractor, notify ALL subcontractors
+    if (user?.role === 'main_contractor' || user?.role === 'project_manager' || user?.role === 'company_admin') {
+      try {
+        await notificationService.notifyBlockerToAllSubcontractors(blockerData);
+      } catch (error) {
+        console.error('Error sending blocker notification to all subcontractors:', error);
+      }
+    }
 
     setNewBlocker({
       title: '',
@@ -845,7 +857,7 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
     setShowSubcontractorManagementModal(true);
   };
 
-  const handleAddSubcontractorUser = () => {
+  const handleAddSubcontractorUser = async () => {
     if (!newSubcontractorUser.name.trim() || !newSubcontractorUser.email.trim()) {
       alert('Please enter user name and email');
       return;
@@ -877,6 +889,21 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
 
     setShowSubcontractorManagementModal(false);
     setSelectedSubcontractorForProject(null);
+    // Notify subcontractors about the new user addition
+    const newUserData = {
+      id: `user_${Date.now()}`,
+      ...newSubcontractorUser,
+      addedAt: new Date().toISOString(),
+      addedBy: user?.email,
+      companyId: selectedSubcontractorForProject.companyId || 'default_company'
+    };
+
+    try {
+      await notificationService.notifyUserAddition(newUserData);
+    } catch (error) {
+      console.error('Error sending user addition notification:', error);
+    }
+
     alert('Subcontractor user added successfully!');
   };
 

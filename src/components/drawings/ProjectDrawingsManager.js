@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSmartAuth } from '../../hooks/useSmartAuth';
 import { drawingAPI } from '../../lib/drawingAPI';
+import notificationService from '../../lib/notificationService';
 import Button from '../../design-system/components/Button';
 import Card from '../../design-system/components/Card';
 import Badge from '../../design-system/components/Badge';
@@ -256,6 +257,15 @@ const ProjectDrawingsManager = ({ companyId, onBack }) => {
 
       const uploadedDrawings = await Promise.all(uploadPromises);
       setDrawings(prev => [...prev, ...uploadedDrawings]);
+
+      // Notify subcontractors of new drawings
+      for (const drawing of uploadedDrawings) {
+        try {
+          await notificationService.notifyDrawingUpload(drawing);
+        } catch (error) {
+          console.error('Error sending drawing notification:', error);
+        }
+      }
 
       // Reset form
       setUploadFiles([]);

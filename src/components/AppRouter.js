@@ -8,6 +8,8 @@ import SuperAdminInterface from './SuperAdminInterface';
 import CompanyAdminInterface from './CompanyAdminInterface';
 import FieldWorkerWrapper from './FieldWorkerWrapper';
 import SubcontractorWrapper from './SubcontractorWrapper';
+import SubcontractorLogin from './SubcontractorLogin';
+import SubcontractorDashboard from './SubcontractorDashboard';
 import GDPRConsentForm from './GDPRConsentForm';
 import BlockerWorkflowManager from './BlockerWorkflowManager';
 import AnalyticsDashboard from './AnalyticsDashboard';
@@ -47,6 +49,7 @@ const AppRouter = () => {
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
+          <Route path="/subcontractor-login" element={<SubcontractorLogin />} />
 
           {/* Company Onboarding - Public route with token validation */}
           <Route path="/company-onboarding" element={<CompanyOnboarding />} />
@@ -97,6 +100,12 @@ const AppRouter = () => {
             </ProtectedRoute>
           } />
 
+          <Route path="/subcontractor-dashboard" element={
+            <ProtectedRoute allowedRoles={['subcontractor', 'subcontractor_manager']}>
+              <SubcontractorDashboard />
+            </ProtectedRoute>
+          } />
+
           <Route path="/blockers" element={
             <ProtectedRoute>
               <BlockerWorkflowManager />
@@ -141,13 +150,15 @@ const DashboardRouter = () => {
       return <Navigate to="/company-admin" replace />;
 
     case 'field_worker':
-    case 'subcontractor':
     case 'supervisor':
       return <Navigate to="/mobile" replace />;
 
+    case 'subcontractor':
+    case 'subcontractor_manager':
+      return <Navigate to="/subcontractor-dashboard" replace />;
+
     case 'main_contractor':
     case 'project_manager':
-    case 'subcontractor_manager':
     default:
       return <RoleBasedDashboard />;
   }

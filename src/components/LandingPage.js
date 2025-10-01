@@ -164,6 +164,14 @@ const LandingPage = () => {
               Sign In
             </Button>
           </div>
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => navigate('/subcontractor-login')}
+              className="text-construction-100 hover:text-white text-sm underline"
+            >
+              Subcontractor Portal →
+            </button>
+          </div>
         </div>
       </section>
 
