@@ -1,5 +1,5 @@
 {
-  "name": "blocker-management-app",
+  "name": "blocker-management-system-2024",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -32,6 +32,7 @@
     "eject": "react-scripts eject",
     "deploy": "node deploy.js",
     "deploy:existing": "node deploy-existing.js",
+    "deploy:fresh": "node deploy-fresh.js",
     "deploy:preview": "npm run build && vercel",
     "deploy:prod": "npm run build && vercel --prod",
     "vercel:link": "vercel link"
