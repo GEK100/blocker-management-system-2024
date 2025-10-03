@@ -60,7 +60,7 @@ const SuperAdminDashboard = () => {
     try {
       setLoading(true);
       const [companiesData, statsData, plansData] = await Promise.all([
-        companyLifecycleAPI.getAllCompaniesWithStatus(),
+        superAdminAPI.getAllCompanies(),
         superAdminAPI.getPlatformAnalytics(),
         superAdminAPI.getSubscriptionPlans()
       ]);
@@ -122,7 +122,15 @@ const SuperAdminDashboard = () => {
 
     setActionLoading(true);
     try {
-      await companyLifecycleAPI.suspendCompany(selectedCompany.id, suspensionReason);
+      // Try the new lifecycle API first, fallback to old admin API
+      try {
+        await companyLifecycleAPI.suspendCompany(selectedCompany.id, suspensionReason);
+      } catch (lifecycleError) {
+        console.warn('Lifecycle API failed, trying fallback:', lifecycleError);
+        // Fallback to old suspend method if available
+        await superAdminAPI.suspendCompany(selectedCompany.id, suspensionReason);
+      }
+
       await loadDashboardData();
       setShowSuspendModal(false);
       setSuspensionReason('');
@@ -139,7 +147,15 @@ const SuperAdminDashboard = () => {
   const handleReactivateCompany = async () => {
     setActionLoading(true);
     try {
-      await companyLifecycleAPI.reactivateCompany(selectedCompany.id, reactivationReason);
+      // Try the new lifecycle API first, fallback to old admin API
+      try {
+        await companyLifecycleAPI.reactivateCompany(selectedCompany.id, reactivationReason);
+      } catch (lifecycleError) {
+        console.warn('Lifecycle API failed, trying fallback:', lifecycleError);
+        // Fallback to old reactivate method if available
+        await superAdminAPI.reactivateCompany(selectedCompany.id, reactivationReason);
+      }
+
       await loadDashboardData();
       setShowReactivateModal(false);
       setReactivationReason('Payment issues resolved');
@@ -165,6 +181,21 @@ const SuperAdminDashboard = () => {
     }
   };
 
+  const getCompanyStatus = (company) => {
+    // Handle both new lifecycle-managed companies and existing companies
+    if (company.status) {
+      return company.status;
+    }
+    // Fallback to old status logic for existing companies
+    if (company.is_suspended) {
+      return 'suspended';
+    }
+    if (company.is_active) {
+      return 'active';
+    }
+    return 'pending';
+  };
+
   const getStatusBadge = (status) => {
     const statusConfig = {
       active: { bg: 'bg-green-100', text: 'text-green-800', label: 'Active' },
@@ -174,7 +205,7 @@ const SuperAdminDashboard = () => {
       archived: { bg: 'bg-purple-100', text: 'text-purple-800', label: 'Archived' }
     };
 
-    const config = statusConfig[status] || statusConfig.pending;
+    const config = statusConfig[status] || statusConfig.active; // Default to active for existing companies
     return (
       <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${config.bg} ${config.text}`}>
         {config.label}
@@ -189,7 +220,7 @@ const SuperAdminDashboard = () => {
       case 'suspended': return <ShieldExclamationIcon className="h-4 w-4 text-red-600" />;
       case 'cancelled': return <XMarkIcon className="h-4 w-4 text-gray-600" />;
       case 'archived': return <ArchiveBoxIcon className="h-4 w-4 text-purple-600" />;
-      default: return <ClockIcon className="h-4 w-4 text-gray-600" />;
+      default: return <CheckCircleIcon className="h-4 w-4 text-green-600" />; // Default to active
     }
   };
 
@@ -350,8 +381,8 @@ const SuperAdminDashboard = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center space-x-2">
-                              {getStatusIcon(company.status)}
-                              {getStatusBadge(company.status)}
+                              {getStatusIcon(getCompanyStatus(company))}
+                              {getStatusBadge(getCompanyStatus(company))}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -371,7 +402,7 @@ const SuperAdminDashboard = () => {
                                 <EyeIcon className="h-5 w-5" />
                               </button>
 
-                              {company.status === 'suspended' ? (
+                              {getCompanyStatus(company) === 'suspended' ? (
                                 <button
                                   onClick={() => {
                                     setSelectedCompany(company);
@@ -382,7 +413,7 @@ const SuperAdminDashboard = () => {
                                 >
                                   <CheckCircleIcon className="h-5 w-5" />
                                 </button>
-                              ) : company.status === 'active' ? (
+                              ) : getCompanyStatus(company) === 'active' ? (
                                 <button
                                   onClick={() => {
                                     setSelectedCompany(company);
@@ -393,7 +424,18 @@ const SuperAdminDashboard = () => {
                                 >
                                   <ShieldExclamationIcon className="h-5 w-5" />
                                 </button>
-                              ) : null}
+                              ) : (
+                                <button
+                                  onClick={() => {
+                                    setSelectedCompany(company);
+                                    setShowSuspendModal(true);
+                                  }}
+                                  className="text-red-600 hover:text-red-900"
+                                  title="Suspend Company"
+                                >
+                                  <ShieldExclamationIcon className="h-5 w-5" />
+                                </button>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -615,8 +657,8 @@ const SuperAdminDashboard = () => {
                   <div>
                     <span className="text-sm font-medium text-gray-600">Status:</span>
                     <div className="mt-1 flex items-center space-x-2">
-                      {getStatusIcon(selectedCompany.status)}
-                      {getStatusBadge(selectedCompany.status)}
+                      {getStatusIcon(getCompanyStatus(selectedCompany))}
+                      {getStatusBadge(getCompanyStatus(selectedCompany))}
                     </div>
                   </div>
                   <div>
@@ -694,7 +736,7 @@ const SuperAdminDashboard = () => {
 
             {/* Action Buttons */}
             <div className="mt-6 flex justify-end space-x-3">
-              {selectedCompany.status === 'suspended' ? (
+              {getCompanyStatus(selectedCompany) === 'suspended' ? (
                 <button
                   onClick={() => {
                     setShowCompanyDetails(false);
@@ -705,7 +747,7 @@ const SuperAdminDashboard = () => {
                   <CheckCircleIcon className="h-4 w-4 mr-2" />
                   Reactivate Company
                 </button>
-              ) : selectedCompany.status === 'active' ? (
+              ) : (
                 <button
                   onClick={() => {
                     setShowCompanyDetails(false);
@@ -716,7 +758,7 @@ const SuperAdminDashboard = () => {
                   <ShieldExclamationIcon className="h-4 w-4 mr-2" />
                   Suspend Company
                 </button>
-              ) : null}
+              )}
             </div>
           </div>
         </div>
