@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { subcontractorAPI } from '../lib/subcontractorAPI';
 import notificationService from '../lib/notificationService';
+import offlineDataService from '../lib/offlineDataService';
+import OfflineIndicator from './OfflineIndicator';
 import {
   CameraIcon,
   MapPinIcon,
@@ -681,15 +683,31 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
       status: 'pending_review'
     };
 
-    onCreateBlocker(blockerData);
+    try {
+      // Save using offline data service (works both online and offline)
+      await offlineDataService.createBlocker(blockerData);
 
-    // If this is from a main contractor, notify ALL subcontractors
-    if (user?.role === 'main_contractor' || user?.role === 'project_manager' || user?.role === 'company_admin') {
-      try {
-        await notificationService.notifyBlockerToAllSubcontractors(blockerData);
-      } catch (error) {
-        console.error('Error sending blocker notification to all subcontractors:', error);
+      // Also call the parent callback if provided
+      if (onCreateBlocker) {
+        onCreateBlocker(blockerData);
       }
+
+      // If this is from a main contractor, notify ALL subcontractors
+      if (user?.role === 'main_contractor' || user?.role === 'project_manager' || user?.role === 'company_admin') {
+        try {
+          await notificationService.notifyBlockerToAllSubcontractors(blockerData);
+        } catch (error) {
+          console.error('Error sending blocker notification to all subcontractors:', error);
+        }
+      }
+
+      // Show success message
+      alert('Blocker created successfully! It will sync when connection is available.');
+
+    } catch (error) {
+      console.error('Failed to create blocker:', error);
+      alert('Failed to create blocker. Please try again.');
+      return;
     }
 
     setNewBlocker({
@@ -889,7 +907,7 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
 
     setShowSubcontractorManagementModal(false);
     setSelectedSubcontractorForProject(null);
-    // Notify subcontractors about the new user addition
+    // Save user using offline data service and notify subcontractors
     const newUserData = {
       id: `user_${Date.now()}`,
       ...newSubcontractorUser,
@@ -899,9 +917,13 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
     };
 
     try {
+      // Save user offline
+      await offlineDataService.saveUser(newUserData);
+
+      // Send notification
       await notificationService.notifyUserAddition(newUserData);
     } catch (error) {
-      console.error('Error sending user addition notification:', error);
+      console.error('Error saving user or sending notification:', error);
     }
 
     alert('Subcontractor user added successfully!');
@@ -2483,6 +2505,11 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
 
   return (
     <div className="mobile-viewport bg-slate-50 flex flex-col touch-manipulation no-zoom">
+      {/* Offline Status Indicator */}
+      <div className="sticky top-0 z-40 p-2 bg-slate-50 border-b border-slate-200">
+        <OfflineIndicator className="sm:hidden" />
+      </div>
+
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto relative">
         {activeTab === 'home' && renderHomeTab()}

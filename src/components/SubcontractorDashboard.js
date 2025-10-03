@@ -18,6 +18,7 @@ import { subcontractorAPI } from '../lib/subcontractorAPI';
 import { drawingAPI } from '../lib/drawingAPI';
 import { blockerAPI } from '../lib/multitenant-api';
 import notificationService from '../lib/notificationService';
+import OfflineIndicator from './OfflineIndicator';
 
 const SubcontractorDashboard = () => {
   const { user, userRole, logout } = useSmartAuth();
@@ -390,6 +391,7 @@ const SubcontractorDashboard = () => {
               <h1 className="text-xl font-bold text-slate-900">Subcontractor Portal</h1>
             </div>
             <div className="flex items-center space-x-4">
+              <OfflineIndicator className="hidden sm:block" />
               <span className="text-sm text-slate-600">
                 Welcome, {user?.name || user?.email}
               </span>
