@@ -1148,32 +1148,32 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
                     </span>
                   </div>
 
-                  <div className="flex space-x-2">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-2">
                     <TouchButton
                       onClick={() => handleSubcontractorBlockerAction(blocker, 'accept')}
                       variant="success"
-                      size="sm"
-                      className="flex-1 text-xs py-2"
+                      size="lg"
+                      className="w-full sm:flex-1 text-sm py-4 sm:py-3 font-medium min-h-[48px] hover-lift"
                     >
-                      <CheckCircleIcon className="h-4 w-4 mr-1" />
+                      <CheckCircleIcon className="h-5 w-5 mr-2" />
                       Accept
                     </TouchButton>
                     <TouchButton
                       onClick={() => handleSubcontractorBlockerAction(blocker, 'reassign')}
                       variant="outline"
-                      size="sm"
-                      className="flex-1 text-xs py-2"
+                      size="lg"
+                      className="w-full sm:flex-1 text-sm py-4 sm:py-3 font-medium min-h-[48px] hover-lift"
                     >
-                      <ArrowPathIcon className="h-4 w-4 mr-1" />
+                      <ArrowPathIcon className="h-5 w-5 mr-2" />
                       Reassign
                     </TouchButton>
                     <TouchButton
                       onClick={() => handleSubcontractorBlockerAction(blocker, 'reject')}
                       variant="danger"
-                      size="sm"
-                      className="flex-1 text-xs py-2"
+                      size="lg"
+                      className="w-full sm:flex-1 text-sm py-4 sm:py-3 font-medium min-h-[48px] hover-lift"
                     >
-                      <XMarkIcon className="h-4 w-4 mr-1" />
+                      <XMarkIcon className="h-5 w-5 mr-2" />
                       Reject
                     </TouchButton>
                   </div>
@@ -1853,17 +1853,17 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
                     <span>{new Date(drawing.uploadedAt).toLocaleDateString()}</span>
                   </div>
 
-                  <div className="mt-3 flex space-x-2">
+                  <div className="mt-3 flex flex-col sm:flex-row gap-3 sm:gap-2">
                     <TouchButton
                       onClick={() => {
                         // In a real app, this would open the drawing file
                         alert(`Opening ${drawing.name} - ${drawing.fileUrl}`);
                       }}
                       variant="outline"
-                      size="sm"
-                      className="flex-1 text-xs py-2"
+                      size="lg"
+                      className="w-full sm:flex-1 text-sm py-3 font-medium min-h-[44px] hover-lift"
                     >
-                      <EyeIcon className="h-4 w-4 mr-1" />
+                      <EyeIcon className="h-5 w-5 mr-2" />
                       View
                     </TouchButton>
                     <TouchButton
@@ -1878,10 +1878,10 @@ const MobileFieldWorkerInterface = ({ user, project, projects = [], blockers = [
                         setActiveTab('create');
                       }}
                       variant="primary"
-                      size="sm"
-                      className="flex-1 text-xs py-2"
+                      size="lg"
+                      className="w-full sm:flex-1 text-sm py-3 font-medium min-h-[44px] hover-lift"
                     >
-                      <PlusIcon className="h-4 w-4 mr-1" />
+                      <PlusIcon className="h-5 w-5 mr-2" />
                       Reference in Blocker
                     </TouchButton>
                   </div>
