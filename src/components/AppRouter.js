@@ -5,6 +5,7 @@ import LandingPage from './LandingPage';
 import LoginForm from './LoginForm';
 import RegisterForm from './RegisterForm';
 import SuperAdminInterface from './SuperAdminInterface';
+import SuperAdminDashboard from './SuperAdminDashboard';
 import CompanyAdminInterface from './CompanyAdminInterface';
 import FieldWorkerWrapper from './FieldWorkerWrapper';
 import SubcontractorWrapper from './SubcontractorWrapper';
@@ -15,6 +16,9 @@ import BlockerWorkflowManager from './BlockerWorkflowManager';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import RoleBasedDashboard from './RoleBasedDashboard';
 import CompanyOnboarding from './onboarding/CompanyOnboarding';
+import CompanyInvitationAccept from './CompanyInvitationAccept';
+import UserInvitationAccept from './UserInvitationAccept';
+import MultiTenantTestPage from './MultiTenantTestPage';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles = [] }) => {
@@ -51,8 +55,10 @@ const AppRouter = () => {
           <Route path="/register" element={<RegisterForm />} />
           <Route path="/subcontractor-login" element={<SubcontractorLogin />} />
 
-          {/* Company Onboarding - Public route with token validation */}
+          {/* Company and User Invitations - Public routes with token validation */}
           <Route path="/company-onboarding" element={<CompanyOnboarding />} />
+          <Route path="/accept-company-invitation" element={<CompanyInvitationAccept />} />
+          <Route path="/accept-invitation" element={<UserInvitationAccept />} />
 
           {/* GDPR Consent */}
           <Route path="/consent" element={
@@ -79,6 +85,18 @@ const AppRouter = () => {
           <Route path="/super-admin" element={
             <ProtectedRoute allowedRoles={['super_admin']}>
               <SuperAdminInterface />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/super-admin/dashboard" element={
+            <ProtectedRoute allowedRoles={['super_admin']}>
+              <SuperAdminDashboard />
+            </ProtectedRoute>
+          } />
+
+          <Route path="/test-multitenant" element={
+            <ProtectedRoute>
+              <MultiTenantTestPage />
             </ProtectedRoute>
           } />
 

@@ -19,7 +19,10 @@
       "Bash(npx tailwindcss:*)",
       "Bash(vercel:*)",
       "Bash(find:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(npm run deploy:fresh:*)",
+      "Bash(git remote set-url:*)",
+      "Bash(npm start)"
     ],
     "deny": [],
     "ask": []

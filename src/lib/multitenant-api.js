@@ -1,6 +1,8 @@
 import { supabase } from './supabase'
+import superAdminAPI from './superAdminAPI'
+import companyInvitationAPI from './companyInvitationAPI'
 
-// Multi-tenant API layer with complete data isolation
+// Multi-tenant API layer with complete data isolation and super admin support
 
 // Company API
 export const companyAPI = {
@@ -136,15 +138,17 @@ export const authAPI = {
 
       if (authError) throw authError
 
-      // Create company
+      // Create company with proper subscription
       const { data: company, error: companyError } = await companyAPI.create({
         ...companyData,
-        slug: companyData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+        slug: companyData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        subscription_status: 'trial',
+        trial_ends_at: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
       })
 
       if (companyError) throw companyError
 
-      // Create user profile as owner
+      // Create user profile as company owner
       if (authData.user) {
         const { error: profileError } = await userAPI.createProfile({
           id: authData.user.id,
@@ -152,7 +156,7 @@ export const authAPI = {
           email: userData.email,
           name: userData.name,
           phone: userData.phone,
-          role: 'owner'
+          role: 'company_owner'
         })
 
         if (profileError) throw profileError
@@ -164,12 +168,15 @@ export const authAPI = {
     }
   },
 
-  // Sign up user to existing company via invitation
+  // Sign up user via invitation token (company or user invitation)
   signUpWithInvitation: async (userData, invitationToken) => {
     try {
-      // Verify invitation
-      const { data: invitation, error: inviteError } = await invitationAPI.getByToken(invitationToken)
-      if (inviteError) throw inviteError
+      // Validate invitation token
+      const { valid, tokenData } = await companyInvitationAPI.validateInvitationToken(invitationToken)
+
+      if (!valid) {
+        throw new Error('Invalid or expired invitation token')
+      }
 
       // Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -179,31 +186,51 @@ export const authAPI = {
           data: {
             name: userData.name,
             phone: userData.phone,
-            company_id: invitation.company_id
+            company_id: tokenData.company_id
           }
         }
       })
 
       if (authError) throw authError
 
-      // Create user profile
+      // Accept invitation and create profile
       if (authData.user) {
-        const { error: profileError } = await userAPI.createProfile({
-          id: authData.user.id,
-          company_id: invitation.company_id,
-          email: userData.email,
-          name: userData.name,
-          phone: userData.phone,
-          role: invitation.role
-        })
+        const result = await companyInvitationAPI.acceptInvitation(invitationToken, userData)
 
-        if (profileError) throw profileError
+        if (!result.success) {
+          throw new Error('Failed to accept invitation')
+        }
 
-        // Mark invitation as used
-        await invitationAPI.markAsUsed(invitation.id)
+        return { data: { user: authData.user, userProfile: result.userProfile }, error: null }
       }
 
       return { data: authData, error: null }
+    } catch (error) {
+      return { data: null, error }
+    }
+  },
+
+  // Sign in and check company context
+  signInWithCompanyContext: async (email, password) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
+      if (error) throw error
+
+      // Get user profile with company context
+      const { data: userProfile } = await userAPI.getCurrentProfile()
+
+      return {
+        data: {
+          user: data.user,
+          session: data.session,
+          userProfile
+        },
+        error: null
+      }
     } catch (error) {
       return { data: null, error }
     }
