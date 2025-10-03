@@ -11,10 +11,15 @@ import {
   PlusIcon,
   EyeIcon,
   PencilIcon,
-  TrashIcon
+  TrashIcon,
+  ClockIcon,
+  BanknotesIcon,
+  ShieldExclamationIcon,
+  ArchiveBoxIcon
 } from '@heroicons/react/24/outline';
 import superAdminAPI from '../lib/superAdminAPI';
 import companyInvitationAPI from '../lib/companyInvitationAPI';
+import companyLifecycleAPI from '../lib/companyLifecycleAPI';
 import authMiddleware from '../lib/authMiddleware';
 
 const SuperAdminDashboard = () => {
@@ -37,6 +42,16 @@ const SuperAdminDashboard = () => {
     subscriptionPlanId: ''
   });
 
+  // Company management state
+  const [selectedCompany, setSelectedCompany] = useState(null);
+  const [showCompanyDetails, setShowCompanyDetails] = useState(false);
+  const [showSuspendModal, setShowSuspendModal] = useState(false);
+  const [showReactivateModal, setShowReactivateModal] = useState(false);
+  const [suspensionReason, setSuspensionReason] = useState('');
+  const [reactivationReason, setReactivationReason] = useState('Payment issues resolved');
+  const [actionLoading, setActionLoading] = useState(false);
+  const [companyAuditTrail, setCompanyAuditTrail] = useState([]);
+
   useEffect(() => {
     loadDashboardData();
   }, []);
@@ -45,7 +60,7 @@ const SuperAdminDashboard = () => {
     try {
       setLoading(true);
       const [companiesData, statsData, plansData] = await Promise.all([
-        superAdminAPI.getAllCompanies(),
+        companyLifecycleAPI.getAllCompaniesWithStatus(),
         superAdminAPI.getPlatformAnalytics(),
         superAdminAPI.getSubscriptionPlans()
       ]);
@@ -63,21 +78,22 @@ const SuperAdminDashboard = () => {
 
   const handleCreateCompany = async (e) => {
     e.preventDefault();
+    setActionLoading(true);
 
     try {
-      const result = await superAdminAPI.createCompanyWithInvitation(
+      const result = await companyLifecycleAPI.createCompanyWithCredentials(
         {
           name: newCompanyData.name,
           email: newCompanyData.email,
           phone: newCompanyData.phone,
           address: newCompanyData.address,
-          subscriptionPlanId: newCompanyData.subscriptionPlanId
+          subscription_plan_id: newCompanyData.subscriptionPlanId
         },
         newCompanyData.ownerEmail,
         newCompanyData.ownerName
       );
 
-      setCompanies([result.company, ...companies]);
+      await loadDashboardData();
       setShowCreateCompany(false);
       setNewCompanyData({
         name: '',
@@ -89,36 +105,91 @@ const SuperAdminDashboard = () => {
         subscriptionPlanId: ''
       });
 
-      alert(`Company created successfully! Invitation sent to ${newCompanyData.ownerEmail}`);
+      alert(`Company created successfully! Setup email sent to ${newCompanyData.ownerEmail}\nSetup URL: ${result.setupUrl}`);
     } catch (err) {
       console.error('Error creating company:', err);
       alert('Error creating company: ' + err.message);
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  const handleSuspendCompany = async (companyId, reason) => {
-    if (!confirm('Are you sure you want to suspend this company?')) return;
+  const handleSuspendCompany = async () => {
+    if (!suspensionReason.trim()) {
+      alert('Please provide a reason for suspension');
+      return;
+    }
 
+    setActionLoading(true);
     try {
-      await superAdminAPI.suspendCompany(companyId, reason);
+      await companyLifecycleAPI.suspendCompany(selectedCompany.id, suspensionReason);
       await loadDashboardData();
+      setShowSuspendModal(false);
+      setSuspensionReason('');
+      setSelectedCompany(null);
       alert('Company suspended successfully');
     } catch (err) {
       console.error('Error suspending company:', err);
       alert('Error suspending company: ' + err.message);
+    } finally {
+      setActionLoading(false);
     }
   };
 
-  const handleReactivateCompany = async (companyId) => {
-    if (!confirm('Are you sure you want to reactivate this company?')) return;
-
+  const handleReactivateCompany = async () => {
+    setActionLoading(true);
     try {
-      await superAdminAPI.reactivateCompany(companyId);
+      await companyLifecycleAPI.reactivateCompany(selectedCompany.id, reactivationReason);
       await loadDashboardData();
+      setShowReactivateModal(false);
+      setReactivationReason('Payment issues resolved');
+      setSelectedCompany(null);
       alert('Company reactivated successfully');
     } catch (err) {
       console.error('Error reactivating company:', err);
       alert('Error reactivating company: ' + err.message);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleShowCompanyDetails = async (company) => {
+    setSelectedCompany(company);
+    try {
+      const auditTrail = await companyLifecycleAPI.getCompanyAuditTrail(company.id);
+      setCompanyAuditTrail(auditTrail);
+      setShowCompanyDetails(true);
+    } catch (err) {
+      console.error('Error loading company details:', err);
+      alert('Error loading company details: ' + err.message);
+    }
+  };
+
+  const getStatusBadge = (status) => {
+    const statusConfig = {
+      active: { bg: 'bg-green-100', text: 'text-green-800', label: 'Active' },
+      pending: { bg: 'bg-yellow-100', text: 'text-yellow-800', label: 'Pending Setup' },
+      suspended: { bg: 'bg-red-100', text: 'text-red-800', label: 'Suspended' },
+      cancelled: { bg: 'bg-gray-100', text: 'text-gray-800', label: 'Cancelled' },
+      archived: { bg: 'bg-purple-100', text: 'text-purple-800', label: 'Archived' }
+    };
+
+    const config = statusConfig[status] || statusConfig.pending;
+    return (
+      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${config.bg} ${config.text}`}>
+        {config.label}
+      </span>
+    );
+  };
+
+  const getStatusIcon = (status) => {
+    switch (status) {
+      case 'active': return <CheckCircleIcon className="h-4 w-4 text-green-600" />;
+      case 'pending': return <ClockIcon className="h-4 w-4 text-yellow-600" />;
+      case 'suspended': return <ShieldExclamationIcon className="h-4 w-4 text-red-600" />;
+      case 'cancelled': return <XMarkIcon className="h-4 w-4 text-gray-600" />;
+      case 'archived': return <ArchiveBoxIcon className="h-4 w-4 text-purple-600" />;
+      default: return <ClockIcon className="h-4 w-4 text-gray-600" />;
     }
   };
 
@@ -278,15 +349,10 @@ const SuperAdminDashboard = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                              company.is_suspended
-                                ? 'bg-red-100 text-red-800'
-                                : company.is_active
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-gray-100 text-gray-800'
-                            }`}>
-                              {company.is_suspended ? 'Suspended' : company.is_active ? 'Active' : 'Inactive'}
-                            </span>
+                            <div className="flex items-center space-x-2">
+                              {getStatusIcon(company.status)}
+                              {getStatusBadge(company.status)}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">{company.subscription_plan?.name || 'No Plan'}</div>
@@ -297,27 +363,37 @@ const SuperAdminDashboard = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div className="flex space-x-2">
-                              <button className="text-blue-600 hover:text-blue-900">
+                              <button
+                                onClick={() => handleShowCompanyDetails(company)}
+                                className="text-blue-600 hover:text-blue-900"
+                                title="View Details"
+                              >
                                 <EyeIcon className="h-5 w-5" />
                               </button>
-                              <button className="text-green-600 hover:text-green-900">
-                                <PencilIcon className="h-5 w-5" />
-                              </button>
-                              {company.is_suspended ? (
+
+                              {company.status === 'suspended' ? (
                                 <button
-                                  onClick={() => handleReactivateCompany(company.id)}
+                                  onClick={() => {
+                                    setSelectedCompany(company);
+                                    setShowReactivateModal(true);
+                                  }}
                                   className="text-green-600 hover:text-green-900"
+                                  title="Reactivate Company"
                                 >
                                   <CheckCircleIcon className="h-5 w-5" />
                                 </button>
-                              ) : (
+                              ) : company.status === 'active' ? (
                                 <button
-                                  onClick={() => handleSuspendCompany(company.id, 'Admin action')}
+                                  onClick={() => {
+                                    setSelectedCompany(company);
+                                    setShowSuspendModal(true);
+                                  }}
                                   className="text-red-600 hover:text-red-900"
+                                  title="Suspend Company"
                                 >
-                                  <XMarkIcon className="h-5 w-5" />
+                                  <ShieldExclamationIcon className="h-5 w-5" />
                                 </button>
-                              )}
+                              ) : null}
                             </div>
                           </td>
                         </tr>
@@ -410,6 +486,242 @@ const SuperAdminDashboard = () => {
         </div>
       </div>
 
+      {/* Suspend Company Modal */}
+      {showSuspendModal && selectedCompany && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Suspend Company</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              You are about to suspend <strong>{selectedCompany.name}</strong>.
+              All users from this company will immediately lose access to the application.
+            </p>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Reason for Suspension *
+              </label>
+              <textarea
+                value={suspensionReason}
+                onChange={(e) => setSuspensionReason(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                rows="3"
+                placeholder="e.g., Payment overdue, Terms violation, Security concerns..."
+                required
+              />
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowSuspendModal(false);
+                  setSuspensionReason('');
+                  setSelectedCompany(null);
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                disabled={actionLoading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSuspendCompany}
+                disabled={actionLoading || !suspensionReason.trim()}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              >
+                {actionLoading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                ) : null}
+                Suspend Company
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reactivate Company Modal */}
+      {showReactivateModal && selectedCompany && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Reactivate Company</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              You are about to reactivate <strong>{selectedCompany.name}</strong>.
+              All users from this company will regain access to the application.
+            </p>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Reason for Reactivation
+              </label>
+              <input
+                type="text"
+                value={reactivationReason}
+                onChange={(e) => setReactivationReason(e.target.value)}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                placeholder="e.g., Payment received, Issue resolved..."
+              />
+            </div>
+
+            <div className="flex justify-end space-x-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowReactivateModal(false);
+                  setReactivationReason('Payment issues resolved');
+                  setSelectedCompany(null);
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                disabled={actionLoading}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleReactivateCompany}
+                disabled={actionLoading}
+                className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+              >
+                {actionLoading ? (
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                ) : null}
+                Reactivate Company
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Company Details Modal */}
+      {showCompanyDetails && selectedCompany && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-lg max-w-4xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-medium text-gray-900">Company Details: {selectedCompany.name}</h3>
+              <button
+                onClick={() => {
+                  setShowCompanyDetails(false);
+                  setSelectedCompany(null);
+                  setCompanyAuditTrail([]);
+                }}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Company Information */}
+              <div className="space-y-4">
+                <h4 className="text-md font-medium text-gray-900">Company Information</h4>
+                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                  <div>
+                    <span className="text-sm font-medium text-gray-600">Status:</span>
+                    <div className="mt-1 flex items-center space-x-2">
+                      {getStatusIcon(selectedCompany.status)}
+                      {getStatusBadge(selectedCompany.status)}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-600">Email:</span>
+                    <div className="text-sm text-gray-900">{selectedCompany.email}</div>
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-600">Phone:</span>
+                    <div className="text-sm text-gray-900">{selectedCompany.phone || 'Not provided'}</div>
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-600">Created:</span>
+                    <div className="text-sm text-gray-900">
+                      {new Date(selectedCompany.created_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                  <div>
+                    <span className="text-sm font-medium text-gray-600">Subscription:</span>
+                    <div className="text-sm text-gray-900">
+                      {selectedCompany.subscription_plan?.name || 'No Plan'}
+                    </div>
+                  </div>
+                  {selectedCompany.status === 'suspended' && selectedCompany.suspended_at && (
+                    <>
+                      <div>
+                        <span className="text-sm font-medium text-gray-600">Suspended:</span>
+                        <div className="text-sm text-gray-900">
+                          {new Date(selectedCompany.suspended_at).toLocaleDateString()}
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium text-gray-600">Suspension Reason:</span>
+                        <div className="text-sm text-gray-900">
+                          {selectedCompany.suspension_reason || 'No reason provided'}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Audit Trail */}
+              <div className="space-y-4">
+                <h4 className="text-md font-medium text-gray-900">Audit Trail</h4>
+                <div className="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
+                  {companyAuditTrail.length > 0 ? (
+                    <div className="space-y-3">
+                      {companyAuditTrail.map((audit, index) => (
+                        <div key={index} className="border-l-4 border-blue-200 pl-3">
+                          <div className="text-sm font-medium text-gray-900 capitalize">
+                            {audit.action.replace('_', ' ')}
+                          </div>
+                          <div className="text-xs text-gray-600">
+                            {new Date(audit.created_at).toLocaleString()}
+                          </div>
+                          {audit.reason && (
+                            <div className="text-xs text-gray-700 mt-1">
+                              Reason: {audit.reason}
+                            </div>
+                          )}
+                          {audit.performed_by_user?.name && (
+                            <div className="text-xs text-gray-600">
+                              By: {audit.performed_by_user.name}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-500">No audit trail available</div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="mt-6 flex justify-end space-x-3">
+              {selectedCompany.status === 'suspended' ? (
+                <button
+                  onClick={() => {
+                    setShowCompanyDetails(false);
+                    setShowReactivateModal(true);
+                  }}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 flex items-center"
+                >
+                  <CheckCircleIcon className="h-4 w-4 mr-2" />
+                  Reactivate Company
+                </button>
+              ) : selectedCompany.status === 'active' ? (
+                <button
+                  onClick={() => {
+                    setShowCompanyDetails(false);
+                    setShowSuspendModal(true);
+                  }}
+                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 flex items-center"
+                >
+                  <ShieldExclamationIcon className="h-4 w-4 mr-2" />
+                  Suspend Company
+                </button>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Create Company Modal */}
       {showCreateCompany && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center p-4">
@@ -480,13 +792,18 @@ const SuperAdminDashboard = () => {
                   type="button"
                   onClick={() => setShowCreateCompany(false)}
                   className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  disabled={actionLoading}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                  disabled={actionLoading}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                 >
+                  {actionLoading ? (
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  ) : null}
                   Create Company
                 </button>
               </div>
