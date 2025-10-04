@@ -41,6 +41,14 @@ const CrossProjectIntelligenceTab = ({ companyId }) => {
     }
   }, [user, userProfile, companyId, authCompanyId]);
 
+  // Reload data when filters change
+  useEffect(() => {
+    const currentCompanyId = companyId || authCompanyId || userProfile?.company_id || user?.user_metadata?.company_id;
+    if (currentCompanyId) {
+      loadDashboardData();
+    }
+  }, [filters]);
+
   const loadDashboardData = async () => {
     try {
       setLoading(true);
@@ -57,13 +65,13 @@ const CrossProjectIntelligenceTab = ({ companyId }) => {
         benchmarkData
       ] = await Promise.all([
         crossProjectIntelligenceAPI.getDashboardOverview(currentCompanyId),
-        crossProjectIntelligenceAPI.getRecurringIssues(currentCompanyId),
-        crossProjectIntelligenceAPI.getDesignFlaws(currentCompanyId),
-        crossProjectIntelligenceAPI.getBestPractices(currentCompanyId),
+        crossProjectIntelligenceAPI.getRecurringIssues(currentCompanyId, filters),
+        crossProjectIntelligenceAPI.getDesignFlaws(currentCompanyId, filters),
+        crossProjectIntelligenceAPI.getBestPractices(currentCompanyId, filters),
         crossProjectIntelligenceAPI.getSuccessPatterns(currentCompanyId),
         crossProjectIntelligenceAPI.getCorrelationAnalysis(currentCompanyId),
         crossProjectIntelligenceAPI.getTradePerformanceAnalysis(currentCompanyId),
-        crossProjectIntelligenceAPI.getProjectBenchmarks(currentCompanyId)
+        crossProjectIntelligenceAPI.getProjectBenchmarks(currentCompanyId, filters)
       ]);
 
       setOverview(overviewData);
@@ -314,8 +322,12 @@ const CrossProjectIntelligenceTab = ({ companyId }) => {
             <option value="mechanical">Mechanical</option>
             <option value="electrical">Electrical</option>
             <option value="plumbing">Plumbing</option>
+            <option value="safety">Safety</option>
             <option value="coordination">Coordination</option>
             <option value="design">Design</option>
+            <option value="technology">Technology</option>
+            <option value="planning">Planning</option>
+            <option value="quality">Quality</option>
           </select>
           <select
             value={filters.minOccurrences}

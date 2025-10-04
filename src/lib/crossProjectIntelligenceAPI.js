@@ -101,7 +101,7 @@ class CrossProjectIntelligenceAPI {
 
       if (!isSupabaseWorking) {
         // Return mock data for development
-        return [
+        let mockData = [
           {
             issue_id: 'mock-1',
             issue_description: 'Insufficient space for mechanical systems in ceiling void',
@@ -164,6 +164,20 @@ class CrossProjectIntelligenceAPI {
             ]
           }
         ];
+
+        // Apply filters to mock data
+        if (filters.category) {
+          mockData = mockData.filter(item => item.issue_category === filters.category);
+        }
+
+        if (filters.minOccurrences) {
+          const minOccur = parseInt(filters.minOccurrences);
+          if (minOccur) {
+            mockData = mockData.filter(item => item.occurrence_count >= minOccur);
+          }
+        }
+
+        return mockData;
       }
 
       let query = this.supabase
@@ -198,7 +212,7 @@ class CrossProjectIntelligenceAPI {
     } catch (error) {
       console.error('Error fetching recurring issues:', error);
       // Return mock data as fallback
-      return [
+      let mockData = [
         {
           issue_id: 'mock-1',
           issue_description: 'Insufficient space for mechanical systems in ceiling void',
@@ -261,6 +275,20 @@ class CrossProjectIntelligenceAPI {
           ]
         }
       ];
+
+      // Apply filters to mock data
+      if (filters.category) {
+        mockData = mockData.filter(item => item.issue_category === filters.category);
+      }
+
+      if (filters.minOccurrences) {
+        const minOccur = parseInt(filters.minOccurrences);
+        if (minOccur) {
+          mockData = mockData.filter(item => item.occurrence_count >= minOccur);
+        }
+      }
+
+      return mockData;
     }
   }
 
@@ -273,7 +301,7 @@ class CrossProjectIntelligenceAPI {
 
       if (!isSupabaseWorking) {
         // Return mock data for development
-        return [
+        let mockData = [
           {
             flaw_id: 'mock-flaw-1',
             design_element: 'HVAC Ductwork Routing',
@@ -335,6 +363,21 @@ class CrossProjectIntelligenceAPI {
             prevention_strategy: 'Apply electrical code clearance requirements during space planning'
           }
         ];
+
+        // Apply filters to mock data
+        if (filters.category) {
+          mockData = mockData.filter(item => item.architect_firm === filters.category ||
+            (item.building_types && item.building_types.includes(filters.category)));
+        }
+
+        if (filters.minSeverity) {
+          const minSev = parseInt(filters.minSeverity);
+          if (minSev) {
+            mockData = mockData.filter(item => item.severity_score >= minSev);
+          }
+        }
+
+        return mockData;
       }
 
       let query = this.supabase
@@ -362,7 +405,7 @@ class CrossProjectIntelligenceAPI {
     } catch (error) {
       console.error('Error fetching design flaws:', error);
       // Return mock data as fallback
-      return [
+      let mockData = [
         {
           flaw_id: 'mock-flaw-1',
           design_element: 'HVAC Ductwork Routing',
@@ -424,6 +467,21 @@ class CrossProjectIntelligenceAPI {
           prevention_strategy: 'Apply electrical code clearance requirements during space planning'
         }
       ];
+
+      // Apply filters to mock data
+      if (filters.category) {
+        mockData = mockData.filter(item => item.architect_firm === filters.category ||
+          (item.building_types && item.building_types.includes(filters.category)));
+      }
+
+      if (filters.minSeverity) {
+        const minSev = parseInt(filters.minSeverity);
+        if (minSev) {
+          mockData = mockData.filter(item => item.severity_score >= minSev);
+        }
+      }
+
+      return mockData;
     }
   }
 
@@ -436,7 +494,7 @@ class CrossProjectIntelligenceAPI {
 
       if (!isSupabaseWorking) {
         // Return mock data for development
-        return [
+        let mockData = [
           {
             practice_id: 'mock-practice-1',
             category: 'coordination',
@@ -503,6 +561,20 @@ class CrossProjectIntelligenceAPI {
             required_resources: ['Quality control checklists', 'Dedicated QC inspector time']
           }
         ];
+
+        // Apply filters to mock data
+        if (filters.category) {
+          mockData = mockData.filter(item => item.category === filters.category);
+        }
+
+        if (filters.minSuccessRate) {
+          const minRate = parseFloat(filters.minSuccessRate);
+          if (minRate) {
+            mockData = mockData.filter(item => item.success_rate_improvement >= minRate);
+          }
+        }
+
+        return mockData;
       }
 
       let query = this.supabase
@@ -526,7 +598,7 @@ class CrossProjectIntelligenceAPI {
     } catch (error) {
       console.error('Error fetching best practices:', error);
       // Return mock data as fallback
-      return [
+      let mockData = [
         {
           practice_id: 'mock-practice-1',
           category: 'coordination',
@@ -593,6 +665,20 @@ class CrossProjectIntelligenceAPI {
           required_resources: ['Quality control checklists', 'Dedicated QC inspector time']
         }
       ];
+
+      // Apply filters to mock data
+      if (filters.category) {
+        mockData = mockData.filter(item => item.category === filters.category);
+      }
+
+      if (filters.minSuccessRate) {
+        const minRate = parseFloat(filters.minSuccessRate);
+        if (minRate) {
+          mockData = mockData.filter(item => item.success_rate_improvement >= minRate);
+        }
+      }
+
+      return mockData;
     }
   }
 
@@ -648,7 +734,7 @@ class CrossProjectIntelligenceAPI {
 
       if (!isSupabaseWorking) {
         // Return mock project benchmark data for development
-        return [
+        let mockData = [
           {
             benchmark_id: 'mock-benchmark-1',
             project_id: 'project-1',
@@ -796,6 +882,27 @@ class CrossProjectIntelligenceAPI {
             ]
           }
         ];
+
+        // Apply filters to mock data
+        if (filters.category) {
+          mockData = mockData.filter(item =>
+            item.project.architect_firm === filters.category ||
+            item.performance_grade === filters.category
+          );
+        }
+
+        if (filters.performanceGrade) {
+          mockData = mockData.filter(item => item.performance_grade === filters.performanceGrade);
+        }
+
+        if (filters.minQualityScore) {
+          const minScore = parseInt(filters.minQualityScore);
+          if (minScore) {
+            mockData = mockData.filter(item => item.quality_score >= minScore);
+          }
+        }
+
+        return mockData;
       }
 
       let query = this.supabase
@@ -822,7 +929,7 @@ class CrossProjectIntelligenceAPI {
     } catch (error) {
       console.error('Error fetching project benchmarks:', error);
       // Return mock project benchmark data as fallback
-      return [
+      let mockData = [
         {
           benchmark_id: 'mock-benchmark-1',
           project_id: 'project-1',
@@ -970,6 +1077,27 @@ class CrossProjectIntelligenceAPI {
           ]
         }
       ];
+
+      // Apply filters to mock data
+      if (filters.category) {
+        mockData = mockData.filter(item =>
+          item.project.architect_firm === filters.category ||
+          item.performance_grade === filters.category
+        );
+      }
+
+      if (filters.performanceGrade) {
+        mockData = mockData.filter(item => item.performance_grade === filters.performanceGrade);
+      }
+
+      if (filters.minQualityScore) {
+        const minScore = parseInt(filters.minQualityScore);
+        if (minScore) {
+          mockData = mockData.filter(item => item.quality_score >= minScore);
+        }
+      }
+
+      return mockData;
     }
   }
 
