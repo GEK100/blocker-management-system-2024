@@ -7,6 +7,7 @@ import SubcontractorPerformanceAnalytics from './SubcontractorPerformanceAnalyti
 import ProjectTeamManagement from '../team/ProjectTeamManagement';
 import ProjectDrawingsManager from '../drawings/ProjectDrawingsManager';
 import LessonsLearnedReport from './LessonsLearnedReport';
+import EOTDocumentationTab from '../eot/EOTDocumentationTab';
 import Button from '../../design-system/components/Button';
 import Card from '../../design-system/components/Card';
 import Badge from '../../design-system/components/Badge';
@@ -26,6 +27,7 @@ import {
   ArrowTrendingUpIcon,
   ArrowRightIcon,
   DocumentIcon,
+  DocumentTextIcon,
   XMarkIcon,
   LightBulbIcon
 } from '@heroicons/react/24/outline';
@@ -496,6 +498,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
 
   const tabs = [
     { id: 'overview', label: 'Company Overview', icon: ChartBarIcon },
+    { id: 'eot-documentation', label: 'EOT Documentation', icon: DocumentTextIcon },
     { id: 'lessons-learned', label: 'Lessons Learned', icon: LightBulbIcon },
     { id: 'settings', label: 'Settings', icon: CogIcon }
   ];
@@ -2555,6 +2558,12 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       <div className="mt-4 sm:mt-6 px-1 sm:px-0">
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'companies' && userRole === 'super_admin' && renderCompanies()}
+        {activeTab === 'eot-documentation' && (
+          <EOTDocumentationTab
+            projectId={selectedProject?.project_id}
+            projectData={selectedProject}
+          />
+        )}
         {activeTab === 'lessons-learned' && (
           <LessonsLearnedReport
             blockers={blockers}
