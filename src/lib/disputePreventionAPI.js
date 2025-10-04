@@ -122,28 +122,28 @@ class DisputePreventionAPI {
           {
             risk_id: 'risk-1',
             project_id: 'project-1',
-            dispute_type: 'payment',
+            dispute_type: 'quality',
             risk_level: 'critical',
             risk_score: 92,
             escalation_stage: 'formal_notice',
             status: 'active',
-            estimated_value: 125000,
+            estimated_delay_days: 45,
             created_date: '2024-01-15T10:00:00Z',
             last_updated: '2024-01-20T14:30:00Z',
             risk_factors: [
-              'Invoice payment overdue by 45 days',
-              'Multiple payment disputes in past',
-              'Subcontractor threatening legal action'
+              'Multiple quality failures requiring rework',
+              'Workmanship not meeting specification',
+              'Repeated defects in electrical installations'
             ],
             mitigation_actions: [
-              'Schedule immediate payment negotiation meeting',
-              'Review contract payment terms',
-              'Engage legal counsel for dispute resolution'
+              'Schedule immediate quality review meeting',
+              'Implement enhanced quality control measures',
+              'Arrange additional training for subcontractor team'
             ],
             project: {
               name: 'Office Complex Alpha',
               status: 'in_progress',
-              budget: 3800000
+              planned_completion: '2024-12-31'
             },
             subcontractor: {
               company_name: 'Elite Electrical Services',
@@ -205,7 +205,7 @@ class DisputePreventionAPI {
             project: {
               name: 'Office Complex Alpha',
               status: 'in_progress',
-              budget: 3800000
+              planned_completion: '2024-12-31'
             },
             subcontractor: {
               company_name: 'Premium Plumbing Co.',
@@ -360,7 +360,7 @@ class DisputePreventionAPI {
           project: {
             name: 'Office Complex Alpha',
             status: 'in_progress',
-            budget: 3800000
+            planned_completion: '2024-12-31'
           },
           subcontractor: {
             company_name: 'Elite Electrical Services',

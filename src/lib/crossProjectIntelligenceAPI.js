@@ -23,7 +23,7 @@ class CrossProjectIntelligenceAPI {
           total_best_practices: 18,
           best_practices_identified: 18,
           identified_success_patterns: 7,
-          cost_savings_achieved: 125000,
+          time_savings_achieved_days: 45,
           productivity_improvement: 15.3,
           success_patterns_count: 7,
           lessons_learned_count: 23
@@ -50,7 +50,7 @@ class CrossProjectIntelligenceAPI {
         total_best_practices: 18,
         best_practices_identified: 18,
         identified_success_patterns: 7,
-        cost_savings_achieved: 125000,
+        time_savings_achieved_days: 45,
         productivity_improvement: 15.3,
         success_patterns_count: 7,
         lessons_learned_count: 23
@@ -107,7 +107,7 @@ class CrossProjectIntelligenceAPI {
             issue_description: 'Insufficient space for mechanical systems in ceiling void',
             issue_category: 'mechanical',
             occurrence_count: 8,
-            total_cost_impact: 45000,
+            total_delay_days: 18,
             root_cause_type: 'design_coordination',
             prevention_recommendation: 'Conduct thorough MEP coordination before finalizing ceiling heights',
             projects: [
@@ -120,7 +120,7 @@ class CrossProjectIntelligenceAPI {
             issue_description: 'Electrical conduit conflicts with structural elements',
             issue_category: 'electrical',
             occurrence_count: 6,
-            total_cost_impact: 32000,
+            total_delay_days: 12,
             root_cause_type: 'coordination_timing',
             prevention_recommendation: 'Schedule electrical rough-in reviews before concrete pour',
             projects: [
@@ -132,7 +132,7 @@ class CrossProjectIntelligenceAPI {
             issue_description: 'Plumbing access panels blocked by architectural features',
             issue_category: 'plumbing',
             occurrence_count: 5,
-            total_cost_impact: 28000,
+            total_delay_days: 10,
             root_cause_type: 'design_oversight',
             prevention_recommendation: 'Include maintenance access requirements in initial design brief',
             projects: [
@@ -144,7 +144,7 @@ class CrossProjectIntelligenceAPI {
             issue_description: 'Fire safety equipment access blocked during construction',
             issue_category: 'safety',
             occurrence_count: 4,
-            total_cost_impact: 22000,
+            total_delay_days: 8,
             root_cause_type: 'sequencing_error',
             prevention_recommendation: 'Create detailed construction sequencing plan for safety systems',
             projects: [
@@ -156,7 +156,7 @@ class CrossProjectIntelligenceAPI {
             issue_description: 'Structural steel delivery delayed due to access constraints',
             issue_category: 'structural',
             occurrence_count: 3,
-            total_cost_impact: 18000,
+            total_delay_days: 6,
             root_cause_type: 'logistics_planning',
             prevention_recommendation: 'Conduct crane and delivery access study during pre-construction',
             projects: [
@@ -200,12 +200,12 @@ class CrossProjectIntelligenceAPI {
         query = query.gte('occurrence_count', filters.minOccurrences);
       }
 
-      if (filters.minCostImpact) {
-        query = query.gte('total_cost_impact', filters.minCostImpact);
+      if (filters.minDelayDays) {
+        query = query.gte('total_delay_days', filters.minDelayDays);
       }
 
       const { data, error } = await query
-        .order('total_cost_impact', { ascending: false });
+        .order('total_delay_days', { ascending: false });
 
       if (error) throw error;
       return data;
@@ -218,7 +218,7 @@ class CrossProjectIntelligenceAPI {
           issue_description: 'Insufficient space for mechanical systems in ceiling void',
           issue_category: 'mechanical',
           occurrence_count: 8,
-          total_cost_impact: 45000,
+          total_delay_days: 18,
           root_cause_type: 'design_coordination',
           prevention_recommendation: 'Conduct thorough MEP coordination before finalizing ceiling heights',
           projects: [
@@ -231,7 +231,7 @@ class CrossProjectIntelligenceAPI {
           issue_description: 'Electrical conduit conflicts with structural elements',
           issue_category: 'electrical',
           occurrence_count: 6,
-          total_cost_impact: 32000,
+          total_delay_days: 12,
           root_cause_type: 'coordination_timing',
           prevention_recommendation: 'Schedule electrical rough-in reviews before concrete pour',
           projects: [
@@ -243,7 +243,7 @@ class CrossProjectIntelligenceAPI {
           issue_description: 'Plumbing access panels blocked by architectural features',
           issue_category: 'plumbing',
           occurrence_count: 5,
-          total_cost_impact: 28000,
+          total_delay_days: 10,
           root_cause_type: 'design_oversight',
           prevention_recommendation: 'Include maintenance access requirements in initial design brief',
           projects: [
@@ -255,7 +255,7 @@ class CrossProjectIntelligenceAPI {
           issue_description: 'Fire safety equipment access blocked during construction',
           issue_category: 'safety',
           occurrence_count: 4,
-          total_cost_impact: 22000,
+          total_delay_days: 8,
           root_cause_type: 'sequencing_error',
           prevention_recommendation: 'Create detailed construction sequencing plan for safety systems',
           projects: [
@@ -267,7 +267,7 @@ class CrossProjectIntelligenceAPI {
           issue_description: 'Structural steel delivery delayed due to access constraints',
           issue_category: 'structural',
           occurrence_count: 3,
-          total_cost_impact: 18000,
+          total_delay_days: 6,
           root_cause_type: 'logistics_planning',
           prevention_recommendation: 'Conduct crane and delivery access study during pre-construction',
           projects: [
@@ -307,7 +307,7 @@ class CrossProjectIntelligenceAPI {
             design_element: 'HVAC Ductwork Routing',
             severity_score: 8,
             projects_affected: ['project-1', 'project-2', 'project-3'],
-            typical_cost_impact: 35000,
+            typical_delay_days: 14,
             architect_firm: 'Modern Design Studio',
             building_types: ['office', 'commercial'],
             recommended_design_change: 'Coordinate HVAC routing with structural framing during schematic design phase',
@@ -319,7 +319,7 @@ class CrossProjectIntelligenceAPI {
             design_element: 'Window Placement vs. MEP Systems',
             severity_score: 7,
             projects_affected: ['project-2', 'project-4'],
-            typical_cost_impact: 28000,
+            typical_delay_days: 11,
             architect_firm: 'Urban Architecture',
             building_types: ['residential', 'mixed_use'],
             recommended_design_change: 'Reserve dedicated zones for MEP systems near windows',
@@ -331,7 +331,7 @@ class CrossProjectIntelligenceAPI {
             design_element: 'Ceiling Height Coordination',
             severity_score: 6,
             projects_affected: ['project-1', 'project-3'],
-            typical_cost_impact: 22000,
+            typical_delay_days: 9,
             architect_firm: 'Healthcare Design Partners',
             building_types: ['healthcare', 'institutional'],
             recommended_design_change: 'Add minimum 18" clearance above suspended ceiling for MEP systems',
@@ -343,7 +343,7 @@ class CrossProjectIntelligenceAPI {
             design_element: 'Structural Column Placement',
             severity_score: 5,
             projects_affected: ['project-5'],
-            typical_cost_impact: 15000,
+            typical_delay_days: 6,
             architect_firm: 'Skyline Architects',
             building_types: ['office', 'commercial'],
             recommended_design_change: 'Align structural grid with equipment placement requirements',
@@ -355,7 +355,7 @@ class CrossProjectIntelligenceAPI {
             design_element: 'Electrical Room Access',
             severity_score: 4,
             projects_affected: ['project-2', 'project-6'],
-            typical_cost_impact: 12000,
+            typical_delay_days: 5,
             architect_firm: 'Commercial Architecture Group',
             building_types: ['retail', 'commercial'],
             recommended_design_change: 'Ensure 36" minimum clear access around electrical panels',
@@ -398,7 +398,7 @@ class CrossProjectIntelligenceAPI {
       }
 
       const { data, error } = await query
-        .order('typical_cost_impact', { ascending: false });
+        .order('typical_delay_days', { ascending: false });
 
       if (error) throw error;
       return data;
@@ -411,7 +411,7 @@ class CrossProjectIntelligenceAPI {
           design_element: 'HVAC Ductwork Routing',
           severity_score: 8,
           projects_affected: ['project-1', 'project-2', 'project-3'],
-          typical_cost_impact: 35000,
+          typical_delay_days: 14,
           architect_firm: 'Modern Design Studio',
           building_types: ['office', 'commercial'],
           recommended_design_change: 'Coordinate HVAC routing with structural framing during schematic design phase',
@@ -423,7 +423,7 @@ class CrossProjectIntelligenceAPI {
           design_element: 'Window Placement vs. MEP Systems',
           severity_score: 7,
           projects_affected: ['project-2', 'project-4'],
-          typical_cost_impact: 28000,
+          typical_delay_days: 11,
           architect_firm: 'Urban Architecture',
           building_types: ['residential', 'mixed_use'],
           recommended_design_change: 'Reserve dedicated zones for MEP systems near windows',
@@ -435,7 +435,7 @@ class CrossProjectIntelligenceAPI {
           design_element: 'Ceiling Height Coordination',
           severity_score: 6,
           projects_affected: ['project-1', 'project-3'],
-          typical_cost_impact: 22000,
+          typical_delay_days: 9,
           architect_firm: 'Healthcare Design Partners',
           building_types: ['healthcare', 'institutional'],
           recommended_design_change: 'Add minimum 18" clearance above suspended ceiling for MEP systems',
@@ -447,7 +447,7 @@ class CrossProjectIntelligenceAPI {
           design_element: 'Structural Column Placement',
           severity_score: 5,
           projects_affected: ['project-5'],
-          typical_cost_impact: 15000,
+          typical_delay_days: 6,
           architect_firm: 'Skyline Architects',
           building_types: ['office', 'commercial'],
           recommended_design_change: 'Align structural grid with equipment placement requirements',
@@ -459,7 +459,7 @@ class CrossProjectIntelligenceAPI {
           design_element: 'Electrical Room Access',
           severity_score: 4,
           projects_affected: ['project-2', 'project-6'],
-          typical_cost_impact: 12000,
+          typical_delay_days: 5,
           architect_firm: 'Commercial Architecture Group',
           building_types: ['retail', 'commercial'],
           recommended_design_change: 'Ensure 36" minimum clear access around electrical panels',
@@ -504,7 +504,7 @@ class CrossProjectIntelligenceAPI {
             blocker_reduction_percentage: 65,
             projects_implemented: ['project-1', 'project-3', 'project-5'],
             implementation_guide: 'Schedule weekly 2-hour meetings with all MEP trades present. Use 3D models to identify and resolve conflicts before installation.',
-            cost_savings_per_project: 25000,
+            time_savings_per_project_days: 10,
             implementation_difficulty: 'Medium',
             required_resources: ['Project coordinator', '3D modeling software', 'Meeting room with projection']
           },
@@ -517,7 +517,7 @@ class CrossProjectIntelligenceAPI {
             blocker_reduction_percentage: 58,
             projects_implemented: ['project-2', 'project-4', 'project-6'],
             implementation_guide: 'Engage MEP consultants during initial design phases, not just design development. Include them in space planning discussions.',
-            cost_savings_per_project: 32000,
+            time_savings_per_project_days: 13,
             implementation_difficulty: 'Low',
             required_resources: ['Early consultant engagement budget', 'Design team coordination']
           },
@@ -530,7 +530,7 @@ class CrossProjectIntelligenceAPI {
             blocker_reduction_percentage: 72,
             projects_implemented: ['project-1', 'project-2', 'project-7'],
             implementation_guide: 'Run automated clash detection weekly during design phase. Resolve all major clashes before construction documents.',
-            cost_savings_per_project: 45000,
+            time_savings_per_project_days: 18,
             implementation_difficulty: 'High',
             required_resources: ['BIM software licenses', 'Trained BIM coordinators', 'Standardized modeling protocols']
           },
@@ -543,7 +543,7 @@ class CrossProjectIntelligenceAPI {
             blocker_reduction_percentage: 45,
             projects_implemented: ['project-3', 'project-5'],
             implementation_guide: 'Conduct site logistics study before construction. Plan material delivery schedules and crane access routes.',
-            cost_savings_per_project: 18000,
+            time_savings_per_project_days: 7,
             implementation_difficulty: 'Medium',
             required_resources: ['Site survey team', 'Logistics coordinator', 'Crane and access planning software']
           },
@@ -556,7 +556,7 @@ class CrossProjectIntelligenceAPI {
             blocker_reduction_percentage: 38,
             projects_implemented: ['project-4', 'project-6'],
             implementation_guide: 'Implement formal quality checkpoints at 25%, 50%, 75%, and 100% completion milestones for each trade.',
-            cost_savings_per_project: 15000,
+            time_savings_per_project_days: 6,
             implementation_difficulty: 'Low',
             required_resources: ['Quality control checklists', 'Dedicated QC inspector time']
           }
@@ -608,7 +608,7 @@ class CrossProjectIntelligenceAPI {
           blocker_reduction_percentage: 65,
           projects_implemented: ['project-1', 'project-3', 'project-5'],
           implementation_guide: 'Schedule weekly 2-hour meetings with all MEP trades present. Use 3D models to identify and resolve conflicts before installation.',
-          cost_savings_per_project: 25000,
+          time_savings_per_project_days: 10,
           implementation_difficulty: 'Medium',
           required_resources: ['Project coordinator', '3D modeling software', 'Meeting room with projection']
         },
@@ -621,7 +621,7 @@ class CrossProjectIntelligenceAPI {
           blocker_reduction_percentage: 58,
           projects_implemented: ['project-2', 'project-4', 'project-6'],
           implementation_guide: 'Engage MEP consultants during initial design phases, not just design development. Include them in space planning discussions.',
-          cost_savings_per_project: 32000,
+          time_savings_per_project_days: 13,
           implementation_difficulty: 'Low',
           required_resources: ['Early consultant engagement budget', 'Design team coordination']
         },
@@ -634,7 +634,7 @@ class CrossProjectIntelligenceAPI {
           blocker_reduction_percentage: 72,
           projects_implemented: ['project-1', 'project-2', 'project-7'],
           implementation_guide: 'Run automated clash detection weekly during design phase. Resolve all major clashes before construction documents.',
-          cost_savings_per_project: 45000,
+          time_savings_per_project_days: 18,
           implementation_difficulty: 'High',
           required_resources: ['BIM software licenses', 'Trained BIM coordinators', 'Standardized modeling protocols']
         },
@@ -647,7 +647,7 @@ class CrossProjectIntelligenceAPI {
           blocker_reduction_percentage: 45,
           projects_implemented: ['project-3', 'project-5'],
           implementation_guide: 'Conduct site logistics study before construction. Plan material delivery schedules and crane access routes.',
-          cost_savings_per_project: 18000,
+          time_savings_per_project_days: 7,
           implementation_difficulty: 'Medium',
           required_resources: ['Site survey team', 'Logistics coordinator', 'Crane and access planning software']
         },
@@ -660,7 +660,7 @@ class CrossProjectIntelligenceAPI {
           blocker_reduction_percentage: 38,
           projects_implemented: ['project-4', 'project-6'],
           implementation_guide: 'Implement formal quality checkpoints at 25%, 50%, 75%, and 100% completion milestones for each trade.',
-          cost_savings_per_project: 15000,
+          time_savings_per_project_days: 6,
           implementation_difficulty: 'Low',
           required_resources: ['Quality control checklists', 'Dedicated QC inspector time']
         }
@@ -742,7 +742,7 @@ class CrossProjectIntelligenceAPI {
             total_blockers: 8,
             average_resolution_time: 3.2,
             blocker_density: 2.1,
-            cost_impact_percentage: 1.8,
+            schedule_impact_percentage: 1.8,
             quality_score: 94,
             project: {
               name: 'Office Complex Alpha',
@@ -766,7 +766,7 @@ class CrossProjectIntelligenceAPI {
             total_blockers: 6,
             average_resolution_time: 2.8,
             blocker_density: 1.8,
-            cost_impact_percentage: 1.2,
+            schedule_impact_percentage: 1.2,
             quality_score: 96,
             project: {
               name: 'Hospital Wing Delta',
@@ -790,7 +790,7 @@ class CrossProjectIntelligenceAPI {
             total_blockers: 14,
             average_resolution_time: 5.1,
             blocker_density: 3.2,
-            cost_impact_percentage: 2.8,
+            schedule_impact_percentage: 2.8,
             quality_score: 82,
             project: {
               name: 'Retail Center Beta',
@@ -814,7 +814,7 @@ class CrossProjectIntelligenceAPI {
             total_blockers: 16,
             average_resolution_time: 6.3,
             blocker_density: 3.8,
-            cost_impact_percentage: 3.2,
+            schedule_impact_percentage: 3.2,
             quality_score: 78,
             project: {
               name: 'Apartment Complex Gamma',
@@ -838,7 +838,7 @@ class CrossProjectIntelligenceAPI {
             total_blockers: 23,
             average_resolution_time: 8.7,
             blocker_density: 5.2,
-            cost_impact_percentage: 4.8,
+            schedule_impact_percentage: 4.8,
             quality_score: 65,
             project: {
               name: 'Shopping Mall Epsilon',
@@ -863,7 +863,7 @@ class CrossProjectIntelligenceAPI {
             total_blockers: 31,
             average_resolution_time: 12.1,
             blocker_density: 7.8,
-            cost_impact_percentage: 6.5,
+            schedule_impact_percentage: 6.5,
             quality_score: 52,
             project: {
               name: 'Corporate Tower Zeta',
@@ -937,7 +937,7 @@ class CrossProjectIntelligenceAPI {
           total_blockers: 8,
           average_resolution_time: 3.2,
           blocker_density: 2.1,
-          cost_impact_percentage: 1.8,
+          schedule_impact_percentage: 1.8,
           quality_score: 94,
           project: {
             name: 'Office Complex Alpha',
@@ -961,7 +961,7 @@ class CrossProjectIntelligenceAPI {
           total_blockers: 6,
           average_resolution_time: 2.8,
           blocker_density: 1.8,
-          cost_impact_percentage: 1.2,
+          schedule_impact_percentage: 1.2,
           quality_score: 96,
           project: {
             name: 'Hospital Wing Delta',
@@ -985,7 +985,7 @@ class CrossProjectIntelligenceAPI {
           total_blockers: 14,
           average_resolution_time: 5.1,
           blocker_density: 3.2,
-          cost_impact_percentage: 2.8,
+          schedule_impact_percentage: 2.8,
           quality_score: 82,
           project: {
             name: 'Retail Center Beta',
@@ -1009,7 +1009,7 @@ class CrossProjectIntelligenceAPI {
           total_blockers: 16,
           average_resolution_time: 6.3,
           blocker_density: 3.8,
-          cost_impact_percentage: 3.2,
+          schedule_impact_percentage: 3.2,
           quality_score: 78,
           project: {
             name: 'Apartment Complex Gamma',
@@ -1033,7 +1033,7 @@ class CrossProjectIntelligenceAPI {
           total_blockers: 23,
           average_resolution_time: 8.7,
           blocker_density: 5.2,
-          cost_impact_percentage: 4.8,
+          schedule_impact_percentage: 4.8,
           quality_score: 65,
           project: {
             name: 'Shopping Mall Epsilon',
@@ -1058,7 +1058,7 @@ class CrossProjectIntelligenceAPI {
           total_blockers: 31,
           average_resolution_time: 12.1,
           blocker_density: 7.8,
-          cost_impact_percentage: 6.5,
+          schedule_impact_percentage: 6.5,
           quality_score: 52,
           project: {
             name: 'Corporate Tower Zeta',
@@ -1135,7 +1135,7 @@ class CrossProjectIntelligenceAPI {
             supporting_projects: ['project-1', 'project-3', 'project-5', 'project-7'],
             success_metrics: {
               blocker_reduction: 45,
-              cost_savings: 28000,
+              time_savings_days: 11,
               time_savings: 12.5,
               quality_improvement: 15
             },
@@ -1155,7 +1155,7 @@ class CrossProjectIntelligenceAPI {
             supporting_projects: ['project-2', 'project-4', 'project-6'],
             success_metrics: {
               blocker_reduction: 62,
-              cost_savings: 42000,
+              time_savings_days: 17,
               time_savings: 18.0,
               quality_improvement: 25
             },
@@ -1175,7 +1175,7 @@ class CrossProjectIntelligenceAPI {
             supporting_projects: ['project-1', 'project-2', 'project-8'],
             success_metrics: {
               blocker_reduction: 35,
-              cost_savings: 22000,
+              time_savings_days: 9,
               time_savings: 8.5,
               quality_improvement: 12
             },
@@ -1195,7 +1195,7 @@ class CrossProjectIntelligenceAPI {
             supporting_projects: ['project-3', 'project-5', 'project-9'],
             success_metrics: {
               blocker_reduction: 28,
-              cost_savings: 15000,
+              time_savings_days: 6,
               time_savings: 6.2,
               quality_improvement: 8
             },
@@ -1215,7 +1215,7 @@ class CrossProjectIntelligenceAPI {
             supporting_projects: ['project-4', 'project-6', 'project-10'],
             success_metrics: {
               blocker_reduction: 32,
-              cost_savings: 18500,
+              time_savings_days: 7,
               time_savings: 7.8,
               quality_improvement: 20
             },
@@ -1250,7 +1250,7 @@ class CrossProjectIntelligenceAPI {
           supporting_projects: ['project-1', 'project-3', 'project-5', 'project-7'],
           success_metrics: {
             blocker_reduction: 45,
-            cost_savings: 28000,
+            time_savings_days: 11,
             time_savings: 12.5,
             quality_improvement: 15
           },
@@ -1270,7 +1270,7 @@ class CrossProjectIntelligenceAPI {
           supporting_projects: ['project-2', 'project-4', 'project-6'],
           success_metrics: {
             blocker_reduction: 62,
-            cost_savings: 42000,
+            time_savings_days: 17,
             time_savings: 18.0,
             quality_improvement: 25
           },
@@ -1290,7 +1290,7 @@ class CrossProjectIntelligenceAPI {
           supporting_projects: ['project-1', 'project-2', 'project-8'],
           success_metrics: {
             blocker_reduction: 35,
-            cost_savings: 22000,
+            time_savings_days: 9,
             time_savings: 8.5,
             quality_improvement: 12
           },
@@ -1310,7 +1310,7 @@ class CrossProjectIntelligenceAPI {
           supporting_projects: ['project-3', 'project-5', 'project-9'],
           success_metrics: {
             blocker_reduction: 28,
-            cost_savings: 15000,
+            time_savings_days: 6,
             time_savings: 6.2,
             quality_improvement: 8
           },
@@ -1330,7 +1330,7 @@ class CrossProjectIntelligenceAPI {
           supporting_projects: ['project-4', 'project-6', 'project-10'],
           success_metrics: {
             blocker_reduction: 32,
-            cost_savings: 18500,
+            time_savings_days: 7,
             time_savings: 7.8,
             quality_improvement: 20
           },
@@ -1456,14 +1456,14 @@ class CrossProjectIntelligenceAPI {
       difference: avgResolutionA - avgResolutionB
     };
 
-    // Cost impact
-    const costImpactA = blockersA.reduce((sum, b) => sum + (b.cost_impact || 0), 0);
-    const costImpactB = blockersB.reduce((sum, b) => sum + (b.cost_impact || 0), 0);
+    // Schedule impact
+    const scheduleImpactA = blockersA.reduce((sum, b) => sum + (b.delay_days || 0), 0);
+    const scheduleImpactB = blockersB.reduce((sum, b) => sum + (b.delay_days || 0), 0);
 
-    delta.costImpact = {
-      projectA: costImpactA,
-      projectB: costImpactB,
-      difference: costImpactA - costImpactB
+    delta.scheduleImpact = {
+      projectA: scheduleImpactA,
+      projectB: scheduleImpactB,
+      difference: scheduleImpactA - scheduleImpactB
     };
 
     return delta;
@@ -1565,7 +1565,7 @@ class CrossProjectIntelligenceAPI {
         .from('projects')
         .select(`
           *,
-          blockers(id, category, created_date, resolved_date, cost_impact)
+          blockers(id, category, created_date, resolved_date, delay_days)
         `)
         .eq('company_id', companyId);
 
@@ -1731,7 +1731,7 @@ class CrossProjectIntelligenceAPI {
             totalBlockers: 18,
             averageResolutionTime: 4.2,
             resolutionRate: 94.4,
-            averageCostImpact: 3200,
+            averageDelayDays: 13,
             projectsWorkedOn: 6,
             topCategories: [
               { category: 'coordination', count: 8 },
@@ -1749,7 +1749,7 @@ class CrossProjectIntelligenceAPI {
             totalBlockers: 22,
             averageResolutionTime: 5.8,
             resolutionRate: 86.4,
-            averageCostImpact: 4500,
+            averageDelayDays: 18,
             projectsWorkedOn: 5,
             topCategories: [
               { category: 'space_conflict', count: 9 },
@@ -1767,7 +1767,7 @@ class CrossProjectIntelligenceAPI {
             totalBlockers: 15,
             averageResolutionTime: 6.3,
             resolutionRate: 80.0,
-            averageCostImpact: 2800,
+            averageDelayDays: 11,
             projectsWorkedOn: 4,
             topCategories: [
               { category: 'access_issues', count: 6 },
@@ -1785,7 +1785,7 @@ class CrossProjectIntelligenceAPI {
             totalBlockers: 12,
             averageResolutionTime: 8.1,
             resolutionRate: 83.3,
-            averageCostImpact: 8200,
+            averageDelayDays: 33,
             projectsWorkedOn: 3,
             topCategories: [
               { category: 'delivery_logistics', count: 5 },
@@ -1803,7 +1803,7 @@ class CrossProjectIntelligenceAPI {
             totalBlockers: 9,
             averageResolutionTime: 3.2,
             resolutionRate: 100.0,
-            averageCostImpact: 1500,
+            averageDelayDays: 6,
             projectsWorkedOn: 4,
             topCategories: [
               { category: 'preceding_work', count: 4 },
@@ -1821,7 +1821,7 @@ class CrossProjectIntelligenceAPI {
             totalBlockers: 7,
             averageResolutionTime: 9.5,
             resolutionRate: 71.4,
-            averageCostImpact: 2200,
+            averageDelayDays: 9,
             projectsWorkedOn: 3,
             topCategories: [
               { category: 'surface_prep', count: 3 },
@@ -1858,7 +1858,7 @@ class CrossProjectIntelligenceAPI {
           totalBlockers: 18,
           averageResolutionTime: 4.2,
           resolutionRate: 94.4,
-          averageCostImpact: 3200,
+          averageDelayDays: 13,
           projectsWorkedOn: 6,
           topCategories: [
             { category: 'coordination', count: 8 },
@@ -1876,7 +1876,7 @@ class CrossProjectIntelligenceAPI {
           totalBlockers: 22,
           averageResolutionTime: 5.8,
           resolutionRate: 86.4,
-          averageCostImpact: 4500,
+          averageDelayDays: 18,
           projectsWorkedOn: 5,
           topCategories: [
             { category: 'space_conflict', count: 9 },
@@ -1894,7 +1894,7 @@ class CrossProjectIntelligenceAPI {
           totalBlockers: 15,
           averageResolutionTime: 6.3,
           resolutionRate: 80.0,
-          averageCostImpact: 2800,
+          averageDelayDays: 11,
           projectsWorkedOn: 4,
           topCategories: [
             { category: 'access_issues', count: 6 },
@@ -1912,7 +1912,7 @@ class CrossProjectIntelligenceAPI {
           totalBlockers: 12,
           averageResolutionTime: 8.1,
           resolutionRate: 83.3,
-          averageCostImpact: 8200,
+          averageDelayDays: 33,
           projectsWorkedOn: 3,
           topCategories: [
             { category: 'delivery_logistics', count: 5 },
@@ -1930,7 +1930,7 @@ class CrossProjectIntelligenceAPI {
           totalBlockers: 9,
           averageResolutionTime: 3.2,
           resolutionRate: 100.0,
-          averageCostImpact: 1500,
+          averageDelayDays: 6,
           projectsWorkedOn: 4,
           topCategories: [
             { category: 'preceding_work', count: 4 },
@@ -1948,7 +1948,7 @@ class CrossProjectIntelligenceAPI {
           totalBlockers: 7,
           averageResolutionTime: 9.5,
           resolutionRate: 71.4,
-          averageCostImpact: 2200,
+          averageDelayDays: 9,
           projectsWorkedOn: 3,
           topCategories: [
             { category: 'surface_prep', count: 3 },
@@ -1977,7 +1977,7 @@ class CrossProjectIntelligenceAPI {
           totalBlockers: 0,
           totalResolutionTime: 0,
           resolvedBlockers: 0,
-          totalCostImpact: 0,
+          totalDelayDays: 0,
           categories: {},
           projects: new Set()
         };
@@ -1985,7 +1985,7 @@ class CrossProjectIntelligenceAPI {
 
       const stats = tradeStats[trade];
       stats.totalBlockers++;
-      stats.totalCostImpact += blocker.cost_impact || 0;
+      stats.totalDelayDays += blocker.delay_days || 0;
       stats.projects.add(blocker.project_id);
 
       if (blocker.resolved_date) {
@@ -2005,7 +2005,7 @@ class CrossProjectIntelligenceAPI {
       averageResolutionTime: stats.resolvedBlockers > 0 ?
         stats.totalResolutionTime / stats.resolvedBlockers : null,
       resolutionRate: (stats.resolvedBlockers / stats.totalBlockers) * 100,
-      averageCostImpact: stats.totalCostImpact / stats.totalBlockers,
+      averageDelayDays: stats.totalDelayDays / stats.totalBlockers,
       projectsWorkedOn: stats.projects.size,
       topCategories: Object.entries(stats.categories)
         .sort(([,a], [,b]) => b - a)
@@ -2100,7 +2100,7 @@ class CrossProjectIntelligenceAPI {
       best_practices_documented: overview?.total_best_practices || 0,
       success_patterns_found: overview?.identified_success_patterns || 0,
       potential_savings: recurringIssues.slice(0, 5).reduce((sum, issue) =>
-        sum + (issue.total_cost_impact || 0), 0
+        sum + (issue.total_delay_days || 0), 0
       ),
       key_insight: recurringIssues.length > 0 ?
         `Top recurring issue: ${recurringIssues[0]?.issue_description}` :
@@ -2115,7 +2115,7 @@ class CrossProjectIntelligenceAPI {
     const insights = [];
     const topIssue = issues[0];
 
-    insights.push(`Most costly recurring issue: "${topIssue.issue_description}" (${topIssue.occurrence_count} occurrences, £${topIssue.total_cost_impact?.toLocaleString()})`);
+    insights.push(`Most impactful recurring issue: "${topIssue.issue_description}" (${topIssue.occurrence_count} occurrences, ${topIssue.total_delay_days} total delay days)`);
 
     const categories = issues.reduce((acc, issue) => {
       acc[issue.issue_category] = (acc[issue.issue_category] || 0) + 1;
@@ -2258,7 +2258,7 @@ class CrossProjectIntelligenceAPI {
         title: 'Address Top Recurring Issue',
         description: `Focus on resolving "${topIssue.issue_description}" which has occurred ${topIssue.occurrence_count} times`,
         action: topIssue.prevention_recommendation || 'Conduct root cause analysis and implement prevention strategy',
-        expected_impact: `Potential savings of £${topIssue.total_cost_impact?.toLocaleString()}`
+        expected_impact: `Potential time savings of ${topIssue.total_delay_days} days`
       });
     }
 
@@ -2338,12 +2338,12 @@ class CrossProjectIntelligenceAPI {
 
     // Recurring Issues CSV
     if (report.sections.recurring_issues.data.length > 0) {
-      const headers = ['Issue Description', 'Category', 'Occurrences', 'Cost Impact', 'Root Cause', 'Prevention Recommendation'];
+      const headers = ['Issue Description', 'Category', 'Occurrences', 'Delay Impact (Days)', 'Root Cause', 'Prevention Recommendation'];
       const rows = report.sections.recurring_issues.data.map(issue => [
         issue.issue_description,
         issue.issue_category,
         issue.occurrence_count,
-        issue.total_cost_impact || 0,
+        issue.total_delay_days || 0,
         issue.root_cause_type || '',
         issue.prevention_recommendation || ''
       ]);
