@@ -272,44 +272,83 @@ export const companyAPI = {
   // Complete company onboarding
   async completeOnboarding(companyId, onboardingData) {
     try {
-      // Create the company
-      const companyResult = await companyAPI.createCompany({
-        companyName: onboardingData.companyName,
-        subscriptionPlan: onboardingData.subscriptionPlan || 'trial'
-      });
+      let actualCompanyId = companyId;
+      let companyResult = null;
 
-      if (!companyResult.success) {
-        return companyResult;
+      // Check if company already exists
+      const existingCompanies = JSON.parse(localStorage.getItem('companies') || '{}');
+      const existingCompany = Object.values(existingCompanies).find(c => c.name === onboardingData.companyName);
+
+      if (existingCompany) {
+        // Use existing company
+        actualCompanyId = existingCompany.id;
+        companyResult = { success: true, company: existingCompany, companyId: actualCompanyId };
+      } else {
+        // Create the company only if it doesn't exist
+        companyResult = await companyAPI.createCompany({
+          companyName: onboardingData.companyName,
+          subscriptionPlan: onboardingData.subscriptionPlan || 'trial'
+        });
+
+        if (!companyResult.success) {
+          return companyResult;
+        }
+
+        actualCompanyId = companyResult.companyId;
       }
 
-      const actualCompanyId = companyResult.companyId;
+      // Check if project already exists
+      const workspaceData = JSON.parse(localStorage.getItem(`workspace_${actualCompanyId}`) || '{}');
+      let projectResult = null;
+      const existingProject = workspaceData.projects ?
+        Object.values(workspaceData.projects).find(p => p.name === onboardingData.projectName) : null;
 
-      // Create the first project
-      const projectResult = await companyAPI.createProject(actualCompanyId, {
-        projectName: onboardingData.projectName,
-        projectDescription: onboardingData.projectDescription,
-        projectAddress: onboardingData.projectAddress,
-        estimatedStartDate: onboardingData.estimatedStartDate,
-        estimatedEndDate: onboardingData.estimatedEndDate,
-        createdBy: onboardingData.adminUserId
-      });
+      if (existingProject) {
+        // Use existing project
+        projectResult = { success: true, project: existingProject, projectId: existingProject.id };
+      } else {
+        // Create the first project only if it doesn't exist
+        projectResult = await companyAPI.createProject(actualCompanyId, {
+          projectName: onboardingData.projectName,
+          projectDescription: onboardingData.projectDescription,
+          projectAddress: onboardingData.projectAddress,
+          estimatedStartDate: onboardingData.estimatedStartDate,
+          estimatedEndDate: onboardingData.estimatedEndDate,
+          createdBy: onboardingData.adminUserId
+        });
+      }
 
-      // Add initial team members
+      // Add initial team members (only if they don't already exist)
       const userResults = [];
+      const currentWorkspaceData = JSON.parse(localStorage.getItem(`workspace_${actualCompanyId}`) || '{}');
+      const existingUsers = currentWorkspaceData.users || {};
+
       for (const userData of onboardingData.initialUsers) {
         if (userData.email && userData.firstName && userData.lastName) {
-          const userResult = await companyAPI.addUserToCompany(actualCompanyId, userData);
-          userResults.push(userResult);
+          // Check if user with this email already exists
+          const existingUser = Object.values(existingUsers).find(u => u.email === userData.email);
+          if (existingUser) {
+            userResults.push({ success: true, user: existingUser, userId: existingUser.id });
+          } else {
+            const userResult = await companyAPI.addUserToCompany(actualCompanyId, userData);
+            userResults.push(userResult);
+          }
         }
       }
 
-      // Create admin user profile
-      const adminResult = await companyAPI.addUserToCompany(actualCompanyId, {
-        email: onboardingData.email,
-        firstName: onboardingData.firstName,
-        lastName: onboardingData.lastName,
-        role: 'company_admin'
-      });
+      // Create admin user profile (only if doesn't exist)
+      const existingAdmin = Object.values(existingUsers).find(u => u.email === onboardingData.email);
+      let adminResult;
+      if (existingAdmin) {
+        adminResult = { success: true, user: existingAdmin, userId: existingAdmin.id };
+      } else {
+        adminResult = await companyAPI.addUserToCompany(actualCompanyId, {
+          email: onboardingData.email,
+          firstName: onboardingData.firstName,
+          lastName: onboardingData.lastName,
+          role: 'company_admin'
+        });
+      }
 
       return {
         success: true,
