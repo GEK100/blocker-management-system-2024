@@ -11,6 +11,7 @@ import EOTDocumentationTab from '../eot/EOTDocumentationTab';
 import PredictiveRiskIntelligenceTab from '../risk/PredictiveRiskIntelligenceTab';
 import SubcontractorRiskProfilingTab from '../subcontractor/SubcontractorRiskProfilingTab';
 import CrossProjectIntelligenceTab from '../intelligence/CrossProjectIntelligenceTab';
+import DisputePreventionTab from '../dispute/DisputePreventionTab';
 import Button from '../../design-system/components/Button';
 import Card from '../../design-system/components/Card';
 import Badge from '../../design-system/components/Badge';
@@ -34,7 +35,8 @@ import {
   ShieldCheckIcon,
   UsersIcon,
   XMarkIcon,
-  LightBulbIcon
+  LightBulbIcon,
+  ScaleIcon
 } from '@heroicons/react/24/outline';
 
 const CompanyOverviewDashboard = ({ companyId }) => {
@@ -503,6 +505,7 @@ const CompanyOverviewDashboard = ({ companyId }) => {
 
   const tabs = [
     { id: 'overview', label: 'Company Overview', icon: ChartBarIcon },
+    { id: 'dispute-prevention', label: 'Dispute Prevention', icon: ScaleIcon },
     { id: 'cross-project-intelligence', label: 'Cross-Project Intelligence', icon: LightBulbIcon },
     { id: 'risk-intelligence', label: 'Risk Intelligence', icon: ShieldCheckIcon },
     { id: 'subcontractor-profiling', label: 'Subcontractor Profiling', icon: UsersIcon },
@@ -2570,6 +2573,11 @@ const CompanyOverviewDashboard = ({ companyId }) => {
           <PredictiveRiskIntelligenceTab
             companyId={companyId}
             selectedProject={selectedProject}
+          />
+        )}
+        {activeTab === 'dispute-prevention' && (
+          <DisputePreventionTab
+            companyId={companyId}
           />
         )}
         {activeTab === 'cross-project-intelligence' && (
