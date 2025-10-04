@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useSmartAuth } from '../../hooks/useSmartAuth';
 import disputePreventionAPI from '../../lib/disputePreventionAPI';
 import {
   ExclamationTriangleIcon,
@@ -20,7 +20,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 const DisputePreventionTab = () => {
-  const { user } = useAuth();
+  const { user } = useSmartAuth();
   const [activeView, setActiveView] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [overview, setOverview] = useState(null);

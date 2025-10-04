@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import { useSmartAuth } from '../../hooks/useSmartAuth';
 import crossProjectIntelligenceAPI from '../../lib/crossProjectIntelligenceAPI';
 import {
   ChartBarIcon,
@@ -16,7 +16,7 @@ import {
 } from '@heroicons/react/24/outline';
 
 const CrossProjectIntelligenceTab = () => {
-  const { user } = useAuth();
+  const { user } = useSmartAuth();
   const [activeView, setActiveView] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [overview, setOverview] = useState(null);
