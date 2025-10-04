@@ -10,6 +10,7 @@ import LessonsLearnedReport from './LessonsLearnedReport';
 import EOTDocumentationTab from '../eot/EOTDocumentationTab';
 import PredictiveRiskIntelligenceTab from '../risk/PredictiveRiskIntelligenceTab';
 import SubcontractorRiskProfilingTab from '../subcontractor/SubcontractorRiskProfilingTab';
+import CrossProjectIntelligenceTab from '../intelligence/CrossProjectIntelligenceTab';
 import Button from '../../design-system/components/Button';
 import Card from '../../design-system/components/Card';
 import Badge from '../../design-system/components/Badge';
@@ -502,10 +503,11 @@ const CompanyOverviewDashboard = ({ companyId }) => {
 
   const tabs = [
     { id: 'overview', label: 'Company Overview', icon: ChartBarIcon },
+    { id: 'cross-project-intelligence', label: 'Cross-Project Intelligence', icon: LightBulbIcon },
     { id: 'risk-intelligence', label: 'Risk Intelligence', icon: ShieldCheckIcon },
     { id: 'subcontractor-profiling', label: 'Subcontractor Profiling', icon: UsersIcon },
     { id: 'eot-documentation', label: 'EOT Documentation', icon: DocumentTextIcon },
-    { id: 'lessons-learned', label: 'Lessons Learned', icon: LightBulbIcon },
+    { id: 'lessons-learned', label: 'Lessons Learned', icon: DocumentIcon },
     { id: 'settings', label: 'Settings', icon: CogIcon }
   ];
 
@@ -2568,6 +2570,11 @@ const CompanyOverviewDashboard = ({ companyId }) => {
           <PredictiveRiskIntelligenceTab
             companyId={companyId}
             selectedProject={selectedProject}
+          />
+        )}
+        {activeTab === 'cross-project-intelligence' && (
+          <CrossProjectIntelligenceTab
+            companyId={companyId}
           />
         )}
         {activeTab === 'subcontractor-profiling' && (
