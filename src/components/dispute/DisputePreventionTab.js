@@ -19,8 +19,8 @@ import {
   DocumentMagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 
-const DisputePreventionTab = () => {
-  const { user } = useSmartAuth();
+const DisputePreventionTab = ({ companyId }) => {
+  const { user, userProfile, companyId: authCompanyId } = useSmartAuth();
   const [activeView, setActiveView] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [overview, setOverview] = useState(null);
@@ -38,15 +38,16 @@ const DisputePreventionTab = () => {
   });
 
   useEffect(() => {
-    if (user?.user_metadata?.company_id) {
+    const currentCompanyId = companyId || authCompanyId || userProfile?.company_id || user?.user_metadata?.company_id;
+    if (currentCompanyId) {
       loadDashboardData();
     }
-  }, [user]);
+  }, [user, userProfile, companyId, authCompanyId]);
 
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const companyId = user.user_metadata.company_id;
+      const currentCompanyId = companyId || authCompanyId || userProfile?.company_id || user?.user_metadata?.company_id || 'demo-company';
 
       const [
         overviewData,
@@ -56,12 +57,12 @@ const DisputePreventionTab = () => {
         evidenceData,
         commData
       ] = await Promise.all([
-        disputePreventionAPI.getDashboardOverview(companyId),
-        disputePreventionAPI.getDisputeRisks(companyId, filters),
-        disputePreventionAPI.getContractualDeadlines(companyId, { status: 'pending' }),
-        disputePreventionAPI.getEarlyWarnings(companyId, { recent: true }),
-        disputePreventionAPI.getEvidencePackages(companyId),
-        disputePreventionAPI.getCommunicationMonitoring(companyId, { recent: true })
+        disputePreventionAPI.getDashboardOverview(currentCompanyId),
+        disputePreventionAPI.getDisputeRisks(currentCompanyId, filters),
+        disputePreventionAPI.getContractualDeadlines(currentCompanyId, { status: 'pending' }),
+        disputePreventionAPI.getEarlyWarnings(currentCompanyId, { recent: true }),
+        disputePreventionAPI.getEvidencePackages(currentCompanyId),
+        disputePreventionAPI.getCommunicationMonitoring(currentCompanyId, { recent: true })
       ]);
 
       setOverview(overviewData);

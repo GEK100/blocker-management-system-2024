@@ -6,7 +6,6 @@ import ProjectAnalyticsDashboard from './ProjectAnalyticsDashboard';
 import SubcontractorPerformanceAnalytics from './SubcontractorPerformanceAnalytics';
 import ProjectTeamManagement from '../team/ProjectTeamManagement';
 import ProjectDrawingsManager from '../drawings/ProjectDrawingsManager';
-import LessonsLearnedReport from './LessonsLearnedReport';
 import EOTDocumentationTab from '../eot/EOTDocumentationTab';
 import PredictiveRiskIntelligenceTab from '../risk/PredictiveRiskIntelligenceTab';
 import SubcontractorRiskProfilingTab from '../subcontractor/SubcontractorRiskProfilingTab';
@@ -510,7 +509,6 @@ const CompanyOverviewDashboard = ({ companyId }) => {
     { id: 'risk-intelligence', label: 'Risk Intelligence', icon: ShieldCheckIcon },
     { id: 'subcontractor-profiling', label: 'Subcontractor Profiling', icon: UsersIcon },
     { id: 'eot-documentation', label: 'EOT Documentation', icon: DocumentTextIcon },
-    { id: 'lessons-learned', label: 'Lessons Learned', icon: DocumentIcon },
     { id: 'settings', label: 'Settings', icon: CogIcon }
   ];
 
@@ -2594,13 +2592,6 @@ const CompanyOverviewDashboard = ({ companyId }) => {
           <EOTDocumentationTab
             projectId={selectedProject?.project_id}
             projectData={selectedProject}
-          />
-        )}
-        {activeTab === 'lessons-learned' && (
-          <LessonsLearnedReport
-            blockers={blockers}
-            subcontractors={subcontractors}
-            projects={projects}
           />
         )}
         {activeTab === 'settings' && renderSettings()}

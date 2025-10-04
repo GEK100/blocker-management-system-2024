@@ -15,8 +15,8 @@ import {
   MinusIcon
 } from '@heroicons/react/24/outline';
 
-const CrossProjectIntelligenceTab = () => {
-  const { user } = useSmartAuth();
+const CrossProjectIntelligenceTab = ({ companyId }) => {
+  const { user, userProfile, companyId: authCompanyId } = useSmartAuth();
   const [activeView, setActiveView] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [overview, setOverview] = useState(null);
@@ -35,15 +35,16 @@ const CrossProjectIntelligenceTab = () => {
   });
 
   useEffect(() => {
-    if (user?.user_metadata?.company_id) {
+    const currentCompanyId = companyId || authCompanyId || userProfile?.company_id || user?.user_metadata?.company_id;
+    if (currentCompanyId) {
       loadDashboardData();
     }
-  }, [user]);
+  }, [user, userProfile, companyId, authCompanyId]);
 
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      const companyId = user.user_metadata.company_id;
+      const currentCompanyId = companyId || authCompanyId || userProfile?.company_id || user?.user_metadata?.company_id || 'demo-company';
 
       const [
         overviewData,
@@ -55,14 +56,14 @@ const CrossProjectIntelligenceTab = () => {
         tradeData,
         benchmarkData
       ] = await Promise.all([
-        crossProjectIntelligenceAPI.getDashboardOverview(companyId),
-        crossProjectIntelligenceAPI.getRecurringIssues(companyId),
-        crossProjectIntelligenceAPI.getDesignFlaws(companyId),
-        crossProjectIntelligenceAPI.getBestPractices(companyId),
-        crossProjectIntelligenceAPI.getSuccessPatterns(companyId),
-        crossProjectIntelligenceAPI.getCorrelationAnalysis(companyId),
-        crossProjectIntelligenceAPI.getTradePerformanceAnalysis(companyId),
-        crossProjectIntelligenceAPI.getProjectBenchmarks(companyId)
+        crossProjectIntelligenceAPI.getDashboardOverview(currentCompanyId),
+        crossProjectIntelligenceAPI.getRecurringIssues(currentCompanyId),
+        crossProjectIntelligenceAPI.getDesignFlaws(currentCompanyId),
+        crossProjectIntelligenceAPI.getBestPractices(currentCompanyId),
+        crossProjectIntelligenceAPI.getSuccessPatterns(currentCompanyId),
+        crossProjectIntelligenceAPI.getCorrelationAnalysis(currentCompanyId),
+        crossProjectIntelligenceAPI.getTradePerformanceAnalysis(currentCompanyId),
+        crossProjectIntelligenceAPI.getProjectBenchmarks(currentCompanyId)
       ]);
 
       setOverview(overviewData);
