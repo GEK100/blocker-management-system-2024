@@ -9,7 +9,7 @@ import {
   EyeIcon,
   PencilIcon,
   TrashIcon,
-  DownloadIcon,
+  DocumentArrowDownIcon,
   ExclamationTriangleIcon,
   CheckCircleIcon,
   XMarkIcon,
@@ -178,7 +178,7 @@ const EOTDocumentationTab = ({ projectId, projectData }) => {
   };
 
   const handleSubmitClaim = async (claimId) => {
-    if (!confirm('Are you sure you want to submit this claim? This action cannot be undone.')) {
+    if (!window.confirm('Are you sure you want to submit this claim? This action cannot be undone.')) {
       return;
     }
 
@@ -494,7 +494,7 @@ const EOTDocumentationTab = ({ projectId, projectData }) => {
                           className="text-purple-600 hover:text-purple-900"
                           title="Export Document"
                         >
-                          <DownloadIcon className="h-4 w-4" />
+                          <DocumentArrowDownIcon className="h-4 w-4" />
                         </button>
                       </div>
                     </td>
@@ -739,7 +739,7 @@ const EOTDocumentationTab = ({ projectId, projectData }) => {
                     onClick={() => handleExportClaim(selectedClaim.claim_id)}
                     className="flex-1 inline-flex items-center justify-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                   >
-                    <DownloadIcon className="w-4 h-4 mr-2" />
+                    <DocumentArrowDownIcon className="w-4 h-4 mr-2" />
                     Export Full Document
                   </button>
                 </div>

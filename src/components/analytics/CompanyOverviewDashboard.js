@@ -8,6 +8,8 @@ import ProjectTeamManagement from '../team/ProjectTeamManagement';
 import ProjectDrawingsManager from '../drawings/ProjectDrawingsManager';
 import LessonsLearnedReport from './LessonsLearnedReport';
 import EOTDocumentationTab from '../eot/EOTDocumentationTab';
+import PredictiveRiskIntelligenceTab from '../risk/PredictiveRiskIntelligenceTab';
+import SubcontractorRiskProfilingTab from '../subcontractor/SubcontractorRiskProfilingTab';
 import Button from '../../design-system/components/Button';
 import Card from '../../design-system/components/Card';
 import Badge from '../../design-system/components/Badge';
@@ -28,6 +30,8 @@ import {
   ArrowRightIcon,
   DocumentIcon,
   DocumentTextIcon,
+  ShieldCheckIcon,
+  UsersIcon,
   XMarkIcon,
   LightBulbIcon
 } from '@heroicons/react/24/outline';
@@ -498,6 +502,8 @@ const CompanyOverviewDashboard = ({ companyId }) => {
 
   const tabs = [
     { id: 'overview', label: 'Company Overview', icon: ChartBarIcon },
+    { id: 'risk-intelligence', label: 'Risk Intelligence', icon: ShieldCheckIcon },
+    { id: 'subcontractor-profiling', label: 'Subcontractor Profiling', icon: UsersIcon },
     { id: 'eot-documentation', label: 'EOT Documentation', icon: DocumentTextIcon },
     { id: 'lessons-learned', label: 'Lessons Learned', icon: LightBulbIcon },
     { id: 'settings', label: 'Settings', icon: CogIcon }
@@ -2558,6 +2564,17 @@ const CompanyOverviewDashboard = ({ companyId }) => {
       <div className="mt-4 sm:mt-6 px-1 sm:px-0">
         {activeTab === 'overview' && renderOverview()}
         {activeTab === 'companies' && userRole === 'super_admin' && renderCompanies()}
+        {activeTab === 'risk-intelligence' && (
+          <PredictiveRiskIntelligenceTab
+            companyId={companyId}
+            selectedProject={selectedProject}
+          />
+        )}
+        {activeTab === 'subcontractor-profiling' && (
+          <SubcontractorRiskProfilingTab
+            companyId={companyId}
+          />
+        )}
         {activeTab === 'eot-documentation' && (
           <EOTDocumentationTab
             projectId={selectedProject?.project_id}
